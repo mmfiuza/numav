@@ -51,7 +51,7 @@ Surface Loop(1) = {1, 2, 3, 4, 5, 6};
 Volume(1) = {1};
 
 // Set meshing parameters
-Mesh.CharacteristicLengthFactor = 0.5;
+Mesh.CharacteristicLengthMax = 0.4;
 Mesh.ElementOrder = 1;
 Mesh.Algorithm3D = 4; // 4 = Netgen algorithm (good for tets)
 

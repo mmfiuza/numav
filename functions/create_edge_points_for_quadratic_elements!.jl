@@ -15,7 +15,7 @@ function create_edge_points_for_quadratic_elements!(mesh)
         new_elem_vol[4,e] = mesh.elem_vol[4,e]
         
         # add the 6 edge nodes
-        vertex_pairs = [[4,1], [4,2], [4,3], [1,2], [1,3], [2,3]]
+        vertex_pairs = [[1,2], [1,3], [1,4], [2,3], [2,4], [3,4]]
         for i = axes(vertex_pairs,1)
             cur_vertexes_idxs = Tuple(sort([
                 mesh.elem_vol[vertex_pairs[i][1],e],
@@ -49,5 +49,5 @@ function create_edge_points_for_quadratic_elements!(mesh)
             end
         end
     end
-    mesh.elem_vol = new_elem_vol
+    mesh.elem_vol = new_elem_vol;
 end

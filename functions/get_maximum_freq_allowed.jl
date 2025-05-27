@@ -21,7 +21,6 @@ function get_maximum_freq_allowed(mesh, c, nodes_per_lambda)
         end
     end
     sort!(freq_allowed);
-    print("mean freq allowed: ", mean(freq_allowed));
     outlier_partition = 0.001;
     last_outlier_index = Int(round(outlier_partition*6*mesh.num_elem_vol));
     outliers = freq_allowed[1:last_outlier_index];
