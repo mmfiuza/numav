@@ -17,6 +17,10 @@ volume = lx*ly*lz; # [m3]
 source_position = [0.0, 0.0, 0.0]; # x,y,z [m]
 receiver_position = [3.07629, 1.71063, 1.83652]; # x,y,z [m]
 
+volume_velocity_amplitude = 1 ./ omega;
+
+#%% Analytic solution
+
 # calculate modes
 max_mode_idx = 100;
 include("./functions/calculate_modes.jl")
@@ -26,10 +30,8 @@ omega_modes = 2*pi*freq_modes;
 k_modes = omega_modes/c_air;
 
 freq_ana = 1 : 0.1 : 100;
-omega = 2*pi*freq_ana;
-k = omega/c_air;
-
-volume_velocity_amplitude = 1 ./ omega;
+omega_ana = 2*pi*freq_ana;
+k = omega_ana/c_air;
 
 pressure_amplitude = im*omega*rho_air.*volume_velocity_amplitude/volume .* sum(
     transpose(psi_receiver).*transpose(psi_source) ./ (k.^2 .- transpose(k_modes).^2),
@@ -38,6 +40,7 @@ pressure_amplitude = im*omega*rho_air.*volume_velocity_amplitude/volume .* sum(
 
 spl_ana = 20*log10.(abs.(pressure_amplitude)/sqrt(2)/20e-6);
 
+#%% FEM solution
 
 @enum ElementOrder Linear Quadratic
 element_order = Linear
