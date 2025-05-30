@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC  -Wunused-parameter -Wextra -Wreorder -fPIC -O3 -DNDEBUG -shared -Wl,-soname,libnumav.so -o lib/libnumav.so CMakeFiles/numav.dir/src/numav.cpp.o 

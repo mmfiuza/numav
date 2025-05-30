@@ -33,7 +33,7 @@ spl_ana = 20*log10.(abs.(complex_pressure_amplitude_ana)/sqrt(2)/20e-6);
 include("../src/FemFreq3d.jl")
 using .FemFreq3d
 
-element_order = 2
+element_order = 1
 
 # frequency array for the simulation
 freq_fem = 1 : 0.1 : 100;

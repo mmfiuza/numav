@@ -1,0 +1,2 @@
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=./build
+cmake --build build --config Release -j $(nproc)
