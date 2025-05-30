@@ -13,6 +13,7 @@ endif()
 # Dependencies
 # ============
 
+set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_SOURCE_DIR}/build)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 find_package(Julia REQUIRED)
 
