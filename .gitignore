@@ -33,3 +33,9 @@
 
 # pdf
 *.pdf
+
+# built files
+/build
+
+# meshes
+*.bdf
