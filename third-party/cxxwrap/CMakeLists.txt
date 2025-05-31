@@ -48,3 +48,9 @@ install(TARGETS cxxwrap_julia cxxwrap_julia_stl
     RUNTIME DESTINATION bin
     PUBLIC_HEADER DESTINATION include/jlcxx
 )
+
+# Suppress volatile keyword warnings for the julia headers
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
+  target_compile_options(cxxwrap_julia PRIVATE -Wno-volatile)
+  target_compile_options(cxxwrap_julia_stl PRIVATE -Wno-volatile)
+endif()

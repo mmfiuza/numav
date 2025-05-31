@@ -9,14 +9,14 @@ target_link_libraries(numav_julia
     ${Julia_LIBRARY}
 )
 
-# Windows-specific link flags
-if(WIN32 OR CMAKE_CROSSCOMPILING)
-    target_link_options(numav_julia PRIVATE -Wl,--export-all-symbols)
-endif()
-
 # Install settings
 install(TARGETS numav_julia
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib
     RUNTIME DESTINATION bin
 )
+
+# Suppress volatile keyword warnings for the julia headers
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
+  target_compile_options(numav_julia PRIVATE -Wno-volatile)
+endif()
