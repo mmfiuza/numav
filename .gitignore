@@ -46,3 +46,6 @@
 # windows build
 /build_win
 /julia-windows
+
+# julia
+Manifest.toml
