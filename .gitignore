@@ -39,3 +39,10 @@
 
 # meshes
 *.bdf
+
+# zip
+*.zip
+
+# windows build
+/build_win
+/julia-windows
