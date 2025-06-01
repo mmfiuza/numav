@@ -16,17 +16,15 @@ foreach(ver ${jlcxx_version_defines})
         set(JLCXX_VERSION_${CMAKE_MATCH_1} "${CMAKE_MATCH_2}")
     endif()
 endforeach()
-set(${JLCXX_PROJECT_NAME}_VERSION "${JLCXX_VERSION_MAJOR}.${JLCXX_VERSION_MINOR}.${JLCXX_VERSION_PATCH}")
+set(${JLCXX_PROJECT_NAME}_VERSION
+    "${JLCXX_VERSION_MAJOR}.${JLCXX_VERSION_MINOR}.${JLCXX_VERSION_PATCH}")
 
 # Create libraries
 add_library(cxxwrap_julia SHARED ${JLCXX_SOURCES} ${JLCXX_HEADERS})
 add_library(cxxwrap_julia_stl SHARED ${JLCXX_STL_SOURCES})
 
 # Link and include settings
-target_include_directories(cxxwrap_julia PUBLIC
-    ${JLCXX_INCLUDE_DIR}
-    ${Julia_INCLUDE_DIRS}
-)
+target_include_directories(cxxwrap_julia PUBLIC ${JLCXX_INCLUDE_DIR} ${Julia_INCLUDE_DIRS})
 target_link_libraries(cxxwrap_julia ${Julia_LIBRARY})
 target_link_libraries(cxxwrap_julia_stl cxxwrap_julia)
 
@@ -50,7 +48,5 @@ install(TARGETS cxxwrap_julia cxxwrap_julia_stl
 )
 
 # Suppress volatile keyword warnings for the julia headers
-if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
-  target_compile_options(cxxwrap_julia PRIVATE -Wno-volatile)
-  target_compile_options(cxxwrap_julia_stl PRIVATE -Wno-volatile)
-endif()
+target_compile_options(cxxwrap_julia PRIVATE -Wno-volatile)
+target_compile_options(cxxwrap_julia_stl PRIVATE -Wno-volatile)

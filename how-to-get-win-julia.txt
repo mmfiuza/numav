@@ -1,4 +1,0 @@
-apt-get install mingw-w64
-wget https://julialang-s3.julialang.org/bin/winnt/x64/1.11/julia-1.11.5-win64.zip
-apt update && apt install unzip
-unzip julia-1.11.5-win64.zip -d julia-windows

@@ -17,6 +17,4 @@ install(TARGETS numav_julia
 )
 
 # Suppress volatile keyword warnings for the julia headers
-if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
-  target_compile_options(numav_julia PRIVATE -Wno-volatile)
-endif()
+target_compile_options(numav_julia PRIVATE -Wno-volatile)
