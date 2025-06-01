@@ -49,3 +49,6 @@
 
 # julia
 Manifest.toml
+
+# third-party
+third-party/jlcxx
