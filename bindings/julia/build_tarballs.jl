@@ -1,36 +1,37 @@
-using BinaryBuilder, Pkg
+using Pkg
+Pkg.activate(".")
 
-name = "libnumav"
+using BinaryBuilder
+
+name = "Numav"
 version = v"0.0.1"
 
+run(`rm -rf build`)
+run(`rm -rf /tmp/repo_copy`)
+run(`cp -r . /tmp/repo_copy`)
+
 sources = [
-    DirectorySource("src")
+    DirectorySource("/tmp/repo_copy"),
 ]
 
 script = raw"""
-cd ${WORKSPACE}/srcdir/src
 
-# Build with proper dependency paths
+cd $WORKSPACE/srcdir
+
 cmake -B build \
     -DCMAKE_INSTALL_PREFIX=${prefix} \
-    -DCMAKE_PREFIX_PATH=${prefix} \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_SHARED_LIBS=ON
+    -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+    -DCMAKE_BUILD_TYPE=Release
 
-cmake --build build --config Release -- -j${nproc}
+cmake --build build --parallel ${nproc}
 
-# Install library to standard location
-cmake --install build --component Runtime
+cmake --install build
 
-# Install Julia bindings to proper location
-mkdir -p ${prefix}/share/numav
-install -Dvm 644 bindings/julia/Numav.jl ${prefix}/share/numav/Numav.jl
 """
 
 platforms = Platform("x86_64", "linux", libc=:musl)
 platforms = expand_cxxstring_abis(platforms)
 
-# Corrected products section
 products = [
     LibraryProduct("libnumav", :libnumav),
     FileProduct("share/numav/Numav.jl", :Numav_jl)

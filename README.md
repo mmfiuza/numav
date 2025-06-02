@@ -4,8 +4,9 @@ Secret project!
 
 # How to build
 ```
-cmake -S . -B build
-cmake --build build --config Release -j $(nproc)
+cmake -B build -DCMAKE_INSTALL_PREFIX=./install -DCMAKE_BUILD_TYPE=Release
+cmake --build build --parallel ${nproc}
+cmake --install build
 ```
 
 git clone https://github.com/JuliaInterop/libcxxwrap-julia.git
