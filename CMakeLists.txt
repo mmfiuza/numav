@@ -2,22 +2,38 @@ project(numav LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 cmake_minimum_required(VERSION 3.5)
 
-# Global settings
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build/lib")
-set(CMAKE_MODULE_PATH 
-    ${CMAKE_CURRENT_SOURCE_DIR}/third-party/libcxxwrap-julia/install/lib/cmake/JlCxx)
-set(CMAKE_PREFIX_PATH
-    ${CMAKE_PREFIX_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/third-party/libcxxwrap-julia/install)
 
-find_package(Julia REQUIRED)
-find_package(JlCxx REQUIRED)
+find_package(JlCxx)
+get_target_property(JlCxx_location JlCxx::cxxwrap_julia LOCATION)
+get_filename_component(JlCxx_location ${JlCxx_location} DIRECTORY)
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;${JlCxx_location}")
 
-# Common compiler flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wunused-parameter -Wextra -Wreorder -fPIC")
+# Add numav
+set(NUMAV_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/numav.cpp)
+set(NUMAV_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/include/numav.hpp)
+add_library(numav SHARED ${NUMAV_SOURCES} ${NUMAV_HEADERS})
+target_include_directories(numav PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-# Build components
-add_subdirectory(src) # Main library
-option(BUILD_JULIA_BINDINGS "Build Julia bindings" ON)
-if(BUILD_JULIA_BINDINGS)
-    add_subdirectory(bindings/julia) # Julia bindings
-endif()
+# Add numav_jl
+add_library(numav_jl SHARED ${CMAKE_CURRENT_SOURCE_DIR}/bindings/julia/numav_jl.cpp)
+
+target_link_libraries(numav_jl 
+    PRIVATE
+        numav
+        JlCxx::cxxwrap_julia
+        JlCxx::cxxwrap_julia_stl
+        ${Julia_LIBRARY}
+)
+
+install(TARGETS numav
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION bin
+)
+
+install(TARGETS numav_jl
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION bin
+)

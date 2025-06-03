@@ -1,57 +1,54 @@
-using Pkg
-Pkg.activate(".")
-
-using BinaryBuilder
+using BinaryBuilder, Pkg
 
 name = "Numav"
 version = v"0.0.1"
 
 run(`rm -rf build`)
-run(`rm -rf /tmp/repo_copy`)
-run(`cp -r . /tmp/repo_copy`)
+run(`rm -rf /tmp/numav`)
+run(`cp -r . /tmp/numav`)
 
 sources = [
-    DirectorySource("/tmp/repo_copy"),
+    DirectorySource("/tmp/numav"),
 ]
 
 script = raw"""
+    # Override compiler ID to silence the horrible "No features found" cmake error
+    if [[ $target == *"apple-darwin"* ]]; then
+        macos_extra_flags="-DCMAKE_CXX_COMPILER_ID=AppleClang -DCMAKE_CXX_COMPILER_VERSION=10.0.0 -DCMAKE_CXX_STANDARD_COMPUTED_DEFAULT=11"
+    fi
 
-    cd $WORKSPACE/srcdir
+    Julia_PREFIX=$prefix
 
-    # Build libcxxwrap-julia
-    cd third-party/libcxxwrap-julia
-    rm -rf build
-    rm -rf install
     mkdir build && cd build
-    cmake -DCMAKE_INSTALL_PREFIX=../install ..
-    cmake --build . --config Release -j $(nproc)
-    cmake --install .
-    cd ../../../
-
-    # Build libnumav_jl
-    cmake -B build \
-        -DCMAKE_INSTALL_PREFIX=${prefix} \
+    cmake \
+        -DJulia_PREFIX=$Julia_PREFIX \
+        -DCMAKE_FIND_ROOT_PATH=$prefix \
+        -DJlCxx_DIR=$prefix/lib/cmake/JlCxx \
+        -DCMAKE_INSTALL_PREFIX=$prefix \
         -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-        -DCMAKE_BUILD_TYPE=Release
-    cmake --build build --parallel ${nproc}
-    cmake --install build
+        $macos_extra_flags \
+        -DCMAKE_BUILD_TYPE=Release ..
+    VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
 
 """
 
-platforms = Platform("x86_64", "linux", libc=:glibc)
+platforms = [
+    Linux(:armv7l; libc=:glibc, compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
+    Linux(:x86_64; libc=:glibc, compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
+    MacOS(:x86_64; compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
+    Windows(:x86_64; compiler_abi=CompilerABI(cxxstring_abi=:cxx11)),
+]
 platforms = expand_cxxstring_abis(platforms)
 
 products = [
     LibraryProduct("libnumav", :libnumav),
 ]
 
+# Dependencies that must be installed before this package can be built
 dependencies = [
     Dependency("libcxxwrap_julia_jll"),
-    BuildDependency("Julia_jll")
+    BuildDependency(PackageSpec(name="Julia_jll", version=v"1.4.2"))
 ]
 
-build_tarballs(
-    ARGS, name, version, sources, script, platforms, products, dependencies#;
-    # julia_compat="1.7",
-    # preferred_gcc_version=v"9"
-)
+# Build the tarballs, and possibly a `build.jl` as well.
+build_tarballs(ARGS, name, version, sources, script, platforms, products, dependencies; preferred_gcc_version = v"7")
