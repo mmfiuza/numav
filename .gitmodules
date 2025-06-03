@@ -1,0 +1,3 @@
+[submodule "third-party/libcxxwrap-julia"]
+	path = third-party/libcxxwrap-julia
+	url = https://github.com/JuliaInterop/libcxxwrap-julia
