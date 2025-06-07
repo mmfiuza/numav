@@ -12,5 +12,5 @@ cmake --install build
 
 # How to build the JLL
 ```
-julia --project --color=yes ./bindings/julia/build_tarballs.jl --deploy-jll="local" --verbose
+julia --project --color=yes ./bindings/julia/build_tarballs.jl --deploy-jll=local --verbose
 ```

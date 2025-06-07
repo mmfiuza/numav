@@ -1,11 +1,9 @@
 module Numav
     using CxxWrap
     using Libdl
+    using libnumav_jll
 
-    using CxxWrap
-    using Numav_jll
-
-    @wrapmodule Numav
+    @wrapmodule libnumav
 
     function __init__()
         @initcxx

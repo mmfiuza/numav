@@ -1,6 +1,6 @@
 using BinaryBuilder, Pkg
 
-name = "Numav"
+name = "libnumav"
 version = v"0.0.1"
 
 run(`rm -rf build`)
@@ -30,7 +30,7 @@ ls
 """
 
 platforms = [Platform("x86_64", "linux")]
-# platforms = expand_cxxstring_abis(platforms)
+platforms = expand_cxxstring_abis(platforms)
 
 products = [
     LibraryProduct("libnumav", :libnumav),
