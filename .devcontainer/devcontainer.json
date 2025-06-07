@@ -1,10 +1,15 @@
 {
-  "image": "barche/libcxxwrapjulia:latest"
-  "extensions": [
-    "julialang.language-julia",
-    "ms-vscode.cpptools",
-    "twxs.cmake",
-    "ms-vscode.cmake-tools"
+  "name": "Numav Builder",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "runArgs": [
+    "--privileged",  // Critical for mounting
+    "--cap-add=SYS_ADMIN",
+    "--security-opt=apparmor:unconfined"
   ],
-  "runArgs": ["--privileged"]
+  "settings": {
+    "terminal.integrated.shell.linux": "/bin/bash"
+  }
 }

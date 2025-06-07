@@ -10,14 +10,7 @@ cmake --build build --parallel ${nproc}
 cmake --install build
 ```
 
-# How to build libcxxwrap-julia
+# How to build the JLL
 ```
-cd third-party/libcxxwrap-julia
-rm -rf build
-rm -rf install
-mkdir build && cd build
-cmake -DCMAKE_INSTALL_PREFIX=../install ..
-cmake --build . --config Release -j $(nproc)
-cmake --install .
-cd ../../../
+julia --project --color=yes ./bindings/julia/build_tarballs.jl --deploy-jll="local" --verbose
 ```

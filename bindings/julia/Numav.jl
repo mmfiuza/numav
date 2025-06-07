@@ -2,12 +2,10 @@ module Numav
     using CxxWrap
     using Libdl
 
-    function _get_lib_path()
-        libname = Sys.iswindows() ? "numav_julia" : "libnumav_julia"
-        return joinpath(@__DIR__, "..", "..", "build", "lib", libname)
-    end
+    using CxxWrap
+    using Numav_jll
 
-    @wrapmodule(_get_lib_path)
+    @wrapmodule Numav
 
     function __init__()
         @initcxx
