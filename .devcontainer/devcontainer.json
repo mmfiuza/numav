@@ -1,15 +1,23 @@
 {
-  "name": "Numav Builder",
-  "build": {
-    "dockerfile": "Dockerfile",
-    "context": ".."
-  },
-  "runArgs": [
-    "--privileged",  // Critical for mounting
-    "--cap-add=SYS_ADMIN",
-    "--security-opt=apparmor:unconfined"
-  ],
-  "settings": {
-    "terminal.integrated.shell.linux": "/bin/bash"
-  }
+    "name": "Numav",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": ".."
+    },
+    "runArgs": [
+        "--privileged",  // Critical for mounting
+        "--cap-add=SYS_ADMIN",
+        "--security-opt=apparmor:unconfined"
+    ],
+    "settings": {
+        "terminal.integrated.shell.linux": "/bin/bash"
+    },
+    "extensions": [
+        "ms-vscode.cpptools",
+        "ms-vscode.cpptools-extension-pack",
+        "twxs.cmake",
+        "julialang.language-julia",
+        "ms-azuretools.vscode-containers",
+        "ms-azuretools.vscode-docker",
+    ]
 }
