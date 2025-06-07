@@ -1,5 +1,0 @@
-[deps]
-BinaryBuilder = "12aac903-9f7c-5d81-afc2-d9565ea332ae"
-CxxWrap = "1f15a43c-97ca-5a2a-ae31-89f07a497df4"
-Julia_jll = "244e23d5-fc54-5d73-9c72-02c970f46b1e"
-libcxxwrap_julia_jll = "3eaa8342-bff7-56a5-9981-c04077f7cee7"

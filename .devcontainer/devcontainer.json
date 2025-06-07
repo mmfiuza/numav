@@ -5,7 +5,7 @@
         "context": ".."
     },
     "runArgs": [
-        "--privileged",  // Critical for mounting
+        "--privileged",
         "--cap-add=SYS_ADMIN",
         "--security-opt=apparmor:unconfined"
     ],
