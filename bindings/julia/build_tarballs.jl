@@ -1,6 +1,6 @@
-using BinaryBuilder, Pkg
+using BinaryBuilder
 
-name = "libnumav"
+name = "libnumav_jl"
 version = v"0.0.1"
 
 run(`rm -rf build`)
