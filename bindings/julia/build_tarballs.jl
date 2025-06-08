@@ -16,7 +16,7 @@ sources = [
 script = raw"""
 
     mkdir build && cd build
-    
+
     cmake \
         -D CMAKE_BUILD_TYPE=Release \
         -D BIND_JULIA=TRUE \
@@ -25,7 +25,6 @@ script = raw"""
         -D JlCxx_DIR=${prefix}/lib/cmake/JlCxx \
         -D CMAKE_INSTALL_PREFIX=${prefix} \
         -D CMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
-        $macos_extra_flags \
         ..
 
     cmake --build . --config Release --target install -- -j${nproc}
