@@ -49,3 +49,6 @@ Manifest.toml
 
 # third-party
 third-party/jlcxx
+
+# Code editors
+.vscode
