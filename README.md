@@ -1,6 +1,6 @@
 # Numav
 
-Secret project!
+Numav (Numerical Acoustics and Vibrations) is a C++ library with Julia bindings for acoustics and vibrations simulations.
 
 ## How to build libnumav
 ```
@@ -31,5 +31,11 @@ cmake --install build
 ```
 julia +1.7 --color=yes ./bindings/julia/build_tarballs.jl --deploy-jll=local --verbose
 ```
+
+## How to generate the libnumav_jl_jll override
+```
+julia ./bindings/julia/generate_override.jl
+```
+Before using Numav.jl locally, build it first.
 
 ## TODO

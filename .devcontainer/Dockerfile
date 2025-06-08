@@ -2,18 +2,21 @@
 
 FROM debian:bookworm-slim
 
-# Install dependencies
+# install dependencies
 RUN apt-get update && apt-get install -y \
     libc-dev git gcc g++ make cmake curl squashfs-tools
 
-# Install Julia
+# install Julia
 RUN curl -fsSL https://install.julialang.org | sh -s -- --yes
 ENV PATH="/root/.juliaup/bin:$PATH"
 RUN juliaup add 1.7
 
-# Install Julia packages
+# install Julia packages
 RUN julia +1.7 -e \
-'using Pkg; Pkg.add(["CxxWrap", "BinaryBuilder", "libjulia_jll", "libcxxwrap_julia_jll"])'
+    'using Pkg; Pkg.add(["CxxWrap", "BinaryBuilder", "libjulia_jll", "libcxxwrap_julia_jll"])'
 
-# Set privileged mode environment variable
+# set privileged mode environment variable
 ENV BINARYBUILDER_RUNNER=privileged
+
+# agree to the Xcode license terms
+ENV BINARYBUILDER_AUTOMATIC_APPLE=true

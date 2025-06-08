@@ -3,6 +3,7 @@
 using BinaryBuilder
 
 run(`rm -rf build`)
+run(`rm -rf products`)
 run(`rm -rf /tmp/numav`)
 run(`cp -r . /tmp/numav`)
 
@@ -32,9 +33,15 @@ script = raw"""
 """
 
 platforms = [
-    Platform("x86_64", "linux")
+    Platform("x86_64", "linux"; libc=:glibc)
 ]
-platforms = expand_cxxstring_abis(platforms)
+# platforms = supported_platforms()
+# platforms = expand_cxxstring_abis(platforms)
+# platforms = platforms[ # exclude platforms that doesn't work for some reason
+#     findall(
+#         (x) -> x != Platform("i686", "linux"; libc=:musl, cxxstring_abi=:cxx03), platforms
+#     )
+# ]
 
 products = [
     LibraryProduct("libnumav_jl", :libnumav_jl),
@@ -46,6 +53,6 @@ dependencies = [
 ]
 
 build_tarballs(
-    ARGS, name, version, sources, script, platforms, products,
-    dependencies; preferred_gcc_version=v"12"
+    ARGS, name, version, sources, script, platforms, products, dependencies;
+    preferred_gcc_version=v"12", julia_compat="1.6"
 )
