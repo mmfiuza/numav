@@ -1,3 +1,5 @@
+# Copyright (c) 2025 Matheus Machado Fiuza <matheus.fiuza@eac.ufsm.br>
+
 project(numav LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 cmake_minimum_required(VERSION 3.5)

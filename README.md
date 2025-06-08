@@ -35,5 +35,4 @@ juliaup default release
 ```
 
 # TODO
-Create script to generate overrides
 Make the cmakelists either install libnumav_jl.so or libnumav.a
