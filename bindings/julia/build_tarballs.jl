@@ -2,12 +2,12 @@
 
 using BinaryBuilder
 
-name = "libnumav_jl"
-version = v"0.0.1"
-
 run(`rm -rf build`)
 run(`rm -rf /tmp/numav`)
 run(`cp -r . /tmp/numav`)
+
+name = "libnumav_jl"
+version = v"0.0.1"
 
 sources = [
     DirectorySource("/tmp/numav"),
@@ -16,6 +16,7 @@ sources = [
 script = raw"""
 
     mkdir build && cd build
+    
     cmake \
         -D CMAKE_BUILD_TYPE=Release \
         -D BIND_JULIA=TRUE \
@@ -26,7 +27,8 @@ script = raw"""
         -D CMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
         $macos_extra_flags \
         ..
-    VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
+
+    cmake --build . --config Release --target install -- -j${nproc}
 
 """
 
