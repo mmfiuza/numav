@@ -1,5 +1,6 @@
 #include "numav.hpp"
-#include "jlcxx.hpp"
+#include "jlcxx/jlcxx.hpp"
+#include "jlcxx/stl.hpp"
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
     mod.add_type<Simulation>("Simulation")

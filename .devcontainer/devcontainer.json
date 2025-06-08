@@ -1,9 +1,23 @@
 {
-    "extensions": [
-      "julialang.language-julia",
-      "ms-vscode.cpptools",
-      "twxs.cmake"
+    "name": "Numav",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": ".."
+    },
+    "runArgs": [
+        "--privileged",
+        "--cap-add=SYS_ADMIN",
+        "--security-opt=apparmor:unconfined"
     ],
-  
-    "dockerFile": "Dockerfile"
+    "settings": {
+        "terminal.integrated.shell.linux": "/bin/bash"
+    },
+    "extensions": [
+        "ms-vscode.cpptools",
+        "ms-vscode.cpptools-extension-pack",
+        "twxs.cmake",
+        "julialang.language-julia",
+        "ms-azuretools.vscode-containers",
+        "ms-azuretools.vscode-docker",
+    ]
 }

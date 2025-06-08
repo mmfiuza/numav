@@ -36,6 +36,7 @@
 
 # built files
 /build
+/products
 
 # meshes
 *.bdf
@@ -43,6 +44,8 @@
 # zip
 *.zip
 
-# windows build
-/build_win
-/julia-windows
+# julia
+Manifest.toml
+
+# third-party
+third-party/jlcxx
