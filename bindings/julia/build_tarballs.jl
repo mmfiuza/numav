@@ -17,12 +17,13 @@ script = raw"""
 
     mkdir build && cd build
     cmake \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DJulia_PREFIX=${prefix} \
-        -DCMAKE_FIND_ROOT_PATH=${prefix} \
-        -DJlCxx_DIR=${prefix}/lib/cmake/JlCxx \
-        -DCMAKE_INSTALL_PREFIX=${prefix} \
-        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
+        -D CMAKE_BUILD_TYPE=Release \
+        -D BIND_JULIA=TRUE \
+        -D Julia_PREFIX=${prefix} \
+        -D CMAKE_FIND_ROOT_PATH=${prefix} \
+        -D JlCxx_DIR=${prefix}/lib/cmake/JlCxx \
+        -D CMAKE_INSTALL_PREFIX=${prefix} \
+        -D CMAKE_TOOLCHAIN_FILE=${CMAKE_TARGET_TOOLCHAIN} \
         $macos_extra_flags \
         ..
     VERBOSE=ON cmake --build . --config Release --target install -- -j${nproc}
@@ -38,13 +39,11 @@ products = [
     LibraryProduct("libnumav_jl", :libnumav_jl),
 ]
 
-# Dependencies that must be installed before this package can be built
 dependencies = [
     BuildDependency("libjulia_jll"),
     Dependency("libcxxwrap_julia_jll")
 ]
 
-# Build the tarballs, and possibly a `build.jl` as well.
 build_tarballs(
     ARGS, name, version, sources, script, platforms, products,
     dependencies; preferred_gcc_version=v"12"

@@ -2,14 +2,27 @@
 
 Secret project!
 
-# How to build
+# How to build libnumav
 ```
 rm -rf build
 rm -rf install
 cmake -B build \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX=./install \
-    -DCMAKE_PREFIX_PATH=./libcxxwrap-julia/install
+    -D CMAKE_BUILD_TYPE=Release \
+    -D CMAKE_INSTALL_PREFIX=./install \
+    -D CMAKE_PREFIX_PATH=./libcxxwrap-julia/install
+cmake --build build --parallel ${nproc}
+cmake --install build
+```
+
+# How to build libnumav_jl
+```
+rm -rf build
+rm -rf install
+cmake -B build \
+    -D CMAKE_BUILD_TYPE=Release \
+    -D BIND_JULIA=TRUE \
+    -D CMAKE_INSTALL_PREFIX=./install \
+    -D CMAKE_PREFIX_PATH=./libcxxwrap-julia/install
 cmake --build build --parallel ${nproc}
 cmake --install build
 ```
@@ -35,4 +48,4 @@ juliaup default release
 ```
 
 # TODO
-Make the cmakelists either install libnumav_jl.so or libnumav.a
+get libcxxwrap-julia from libcxxwrap_julia_jll intead of building it
