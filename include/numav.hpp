@@ -6,46 +6,54 @@
 #include <vector>
 #include <complex>
 #include <functional>
+#include <memory>
 
 namespace numav {
 
     enum class Phenomenon {
-        acoustic,
+        ACOUSTIC,
     };
 
     enum class NumericalMethod {
-        fem,
+        FEM,
     };
 
     enum class Domain {
-        frequency,
-        time
+        FREQUENCY,
+        TIME
     };
 
     enum class Dimension {
-        d1,
-        d2,
-        d3,
+        D1,
+        D2,
+        D3,
     };
 
-    template <Phenomenon phe, NumericalMethod met, Domain dom, Dimension dim>
-    class Simulation {};
-
     enum TypeOfSource {
-        point,
-        surface,
+        POINT,
+        SURFACE,
     };
 
     enum PhysicalQuantity {
-        pressure,
-        volume_velocity,
+        PRESSURE,
+        VOLUME_VELOCITY,
     };
 
+    // declare the general Simulation class
+    template<
+        Phenomenon PHENOMENON,
+        NumericalMethod NUMERICAL_METHOD,
+        Domain DOMAIN,
+        Dimension DIMENSION
+    >
+    class Simulation {};
+
+    // declare specific Simulation types
     template <> class Simulation<
-        Phenomenon::acoustic,
-        NumericalMethod::fem,
-        Domain::frequency,
-        Dimension::d3
+        Phenomenon::ACOUSTIC,
+        NumericalMethod::FEM,
+        Domain::FREQUENCY,
+        Dimension::D3
     > {
     public:
         Simulation();
@@ -75,4 +83,4 @@ namespace numav {
         std::vector<std::vector<std::complex<double>>> _complex_density;
         std::vector<std::vector<std::complex<double>>> _specific_acoustic_impedance;
     };
-}
+} // namespace numav

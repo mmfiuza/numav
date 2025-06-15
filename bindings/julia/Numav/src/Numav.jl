@@ -2,14 +2,6 @@
 
 module Numav
 
-    # wrap the main Numav module
-    using CxxWrap
-    using libnumav_jl_jll
-    @wrapmodule(() -> libnumav_jl)
-    function __init__()
-        @initcxx
-    end
-
     # wrap the Phenomenon enum class
     module Phenomenon
         using CxxWrap
@@ -48,6 +40,14 @@ module Numav
         function __init__()
             @initcxx
         end
+    end
+
+    # wrap the main Numav module
+    using CxxWrap
+    using libnumav_jl_jll
+    @wrapmodule(() -> libnumav_jl)
+    function __init__()
+        @initcxx
     end
 
 end

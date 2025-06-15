@@ -19,7 +19,12 @@ int main() {
     using namespace numav;
 
     // create the simulation object with some numerical method
-    auto sml = Simulation<acoustic,fem,freq_domain,d3>();
+    auto sml = Simulation<
+        Phenomenon::ACOUSTIC,
+        NumericalMethod::FEM,
+        Domain::FREQUENCY,
+        Dimension::D3
+    >();
     
     // set element order
     sml.set_element_order(2);
@@ -33,33 +38,33 @@ int main() {
     sml.load_mesh("example1.bdf");
 
     // add a volume material (air in this case)
-    uint64_t id_air = 1;
-    double rho_air = 1.20;
-    double c_air = 343;
+    const uint64_t id_air = 1;
+    const double rho_air = 1.20;
+    const double c_air = 343;
     sml.add_volume_material(id_air, rho_air, c_air);
 
     // add volume velocity sources
     std::array<double,3> source_coordinates_1 = {1.0, 1.5, 2.0};
     sml.add_source(
-        point, source_coordinates_1, volume_velocity, get_complex_volume_velocity_amplitude
+        POINT, source_coordinates_1, VOLUME_VELOCITY, get_complex_volume_velocity_amplitude
     );
-    uint64_t id_surface_source_1 = 2;
+    const uint64_t id_surface_source_1 = 2;
     sml.add_source(
-        surface, id_surface_source_1, volume_velocity, get_complex_volume_velocity_amplitude
+        SURFACE, id_surface_source_1, VOLUME_VELOCITY, get_complex_volume_velocity_amplitude
     );
 
     // add pressure sources
     std::array<double,3> source_coordinates_2 = {2.0, 2.5, 1.0};
     sml.add_source(
-        point, source_coordinates_2, pressure, get_complex_pressure_amplitude
+        POINT, source_coordinates_2, PRESSURE, get_complex_pressure_amplitude
     );
-    uint64_t id_surface_source_2 = 3;
+    const uint64_t id_surface_source_2 = 3;
     sml.add_source(
-        surface, id_surface_source_2, pressure, get_complex_pressure_amplitude
+        SURFACE, id_surface_source_2, PRESSURE, get_complex_pressure_amplitude
     );
 
     // add specific surface impedance
-    uint64_t id_surface_impedance = 4;
+    const uint64_t id_surface_impedance = 4;
     sml.add_specific_surface_acoustic_impedance(
         id_surface_impedance, get_specific_surface_acoustic_impedance
     );
