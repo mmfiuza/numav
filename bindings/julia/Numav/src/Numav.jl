@@ -80,9 +80,9 @@ module Numav
         simulation::Simulation{
             Phenomenon.acoustic, NumericalMethod.fem,
             Domain.frequency, Dimension.d3},
-        source_type::TypeOfSource.TypeOfSource_type,
+        source_type::TypeOfSource.type,
         source_coordinates::Vector{Float64},
-        physical_quantity::PhysicalQuantity.PhysicalQuantity_type,
+        physical_quantity::PhysicalQuantity.type,
         quantity_value::Function
     )
         # real part function split

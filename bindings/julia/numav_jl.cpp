@@ -6,42 +6,28 @@
 #include "jlcxx/functions.hpp"
 #include "julia.h"
 
-#include <complex.h>
-
-// namespace c_complex{
-    // extern "C" {
-    //     #include <complex.h>
-    // }
-// }
-// #undef complex
-// #undef I
-// #undef real
-// #undef imag
-// #undef exp
-// #undef log
-
 // Phenomenon enum class
 JLCXX_MODULE define_module_Phenomenon(jlcxx::Module& mod) {
-    mod.add_bits<numav::Phenomenon>("Phenomenon_type", jlcxx::julia_type("CppEnum"));
+    mod.add_bits<numav::Phenomenon>("type", jlcxx::julia_type("CppEnum"));
     mod.set_const("acoustic", numav::Phenomenon::ACOUSTIC);
 }
 
 // NumericalMethod enum class
 JLCXX_MODULE define_module_NumericalMethod(jlcxx::Module& mod) {
-    mod.add_bits<numav::NumericalMethod>("NumericalMethod_type", jlcxx::julia_type("CppEnum"));
+    mod.add_bits<numav::NumericalMethod>("type", jlcxx::julia_type("CppEnum"));
     mod.set_const("fem", numav::NumericalMethod::FEM);
 }
 
 // Domain enum class
 JLCXX_MODULE define_module_Domain(jlcxx::Module& mod) {
-    mod.add_bits<numav::Domain>("Domain_type", jlcxx::julia_type("CppEnum"));
+    mod.add_bits<numav::Domain>("type", jlcxx::julia_type("CppEnum"));
     mod.set_const("frequency", numav::Domain::FREQUENCY);
     mod.set_const("time", numav::Domain::TIME);
 }
 
 // Dimension enum class
 JLCXX_MODULE define_module_Dimension(jlcxx::Module& mod) {
-    mod.add_bits<numav::Dimension>("Dimension_type", jlcxx::julia_type("CppEnum"));
+    mod.add_bits<numav::Dimension>("type", jlcxx::julia_type("CppEnum"));
     mod.set_const("d1", numav::Dimension::D1);
     mod.set_const("d2", numav::Dimension::D2);
     mod.set_const("d3", numav::Dimension::D3);
@@ -49,14 +35,14 @@ JLCXX_MODULE define_module_Dimension(jlcxx::Module& mod) {
 
 // TypeOfSource enum class
 JLCXX_MODULE define_module_TypeOfSource(jlcxx::Module& mod) {
-    mod.add_bits<numav::TypeOfSource>("TypeOfSource_type", jlcxx::julia_type("CppEnum"));
-    mod.set_const("point", numav::TypeOfSource::POINT);
+    mod.add_bits<numav::TypeOfSource>("type", jlcxx::julia_type("CppEnum"));
+    mod.set_const("point_coords", numav::TypeOfSource::POINT);
     mod.set_const("surface", numav::TypeOfSource::SURFACE);
 }
 
 // PhysicalQuantity enum class
 JLCXX_MODULE define_module_PhysicalQuantity(jlcxx::Module& mod) {
-    mod.add_bits<numav::PhysicalQuantity>("PhysicalQuantity_type", jlcxx::julia_type("CppEnum"));
+    mod.add_bits<numav::PhysicalQuantity>("type", jlcxx::julia_type("CppEnum"));
     mod.set_const("pressure", numav::PhysicalQuantity::PRESSURE);
     mod.set_const("volume_velocity", numav::PhysicalQuantity::VOLUME_VELOCITY);
 }
@@ -120,17 +106,19 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
             wrapped.module().method("_add_source",
                 []( WrappedT& w,
                     const numav::TypeOfSource& source_type,
-                    const jlcxx::ArrayRef<double> p,
+                    const jlcxx::ArrayRef<double> point_coords,
                     const numav::PhysicalQuantity& quantity_type,
-                    jlcxx::SafeCFunction real_quantity_value,
-                    jlcxx::SafeCFunction imag_quantity_value
+                    jlcxx::SafeCFunction quantity_value_real,
+                    jlcxx::SafeCFunction quantity_value_imag
                 ) { 
                     std::function<double(double)> real_func_ptr = 
-                        jlcxx::make_function_pointer<double(double)>(real_quantity_value);
+                        jlcxx::make_function_pointer<double(double)>(quantity_value_real);
                     std::function<double(double)> imag_func_ptr = 
-                        jlcxx::make_function_pointer<double(double)>(imag_quantity_value);
+                        jlcxx::make_function_pointer<double(double)>(quantity_value_imag);
 
-                    w.add_source(source_type, std::array<double,3>{p[0],p[1],p[2]}, quantity_type, 
+                    w.add_source(source_type,
+                        std::array<double,3>{point_coords[0], point_coords[1], point_coords[2]},
+                        quantity_type, 
                         [&](const double& n){
                             return std::complex<double>(real_func_ptr(n), imag_func_ptr(n)); 
                         }

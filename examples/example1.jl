@@ -3,7 +3,7 @@
 using Numav
 
 # create the simulation object with some numerical method
-sml = Numav.Simulation{
+s = Numav.Simulation{
     Numav.Phenomenon.acoustic,
     Numav.NumericalMethod.fem,
     Numav.Domain.frequency,
@@ -11,26 +11,26 @@ sml = Numav.Simulation{
 }()
 
 # set element order
-Numav.set_element_order(sml, 2)
+Numav.set_element_order(s, 2)
 
 # determine simulation frequency range
 freq_min = 0
 freq_max = 100
-Numav.set_freq_limits(sml, freq_min, freq_max)
+Numav.set_freq_limits(s, freq_min, freq_max)
 
 # load the mesh
-Numav.load_mesh(sml, "example1.bdf")
+Numav.load_mesh(s, "example1.bdf")
 
 # add a volume material (air in this case)
 id_air = 1
 rho_air = 1.20
 c_air = 343
-Numav.add_volume_material(sml, id_air, rho_air, c_air)
+Numav.add_volume_material(s, id_air, rho_air, c_air)
 
 # add volume velocity sources
 source_coordinates_1 = [1.0, 1.5, 2.0]
 complex_volume_velocity_amplitude(f) = 1/f + 0im
-Numav.add_source(sml,
+Numav.add_source(s,
     Numav.TypeOfSource.point, source_coordinates_1,
     Numav.PhysicalQuantity.volume_velocity, complex_volume_velocity_amplitude
 )
