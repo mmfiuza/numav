@@ -6,7 +6,6 @@
 #include <vector>
 #include <complex>
 #include <functional>
-#include <memory>
 
 namespace numav {
 
@@ -29,12 +28,12 @@ namespace numav {
         D3,
     };
 
-    enum TypeOfSource {
+    enum class TypeOfSource {
         POINT,
         SURFACE,
     };
 
-    enum PhysicalQuantity {
+    enum class PhysicalQuantity {
         PRESSURE,
         VOLUME_VELOCITY,
     };
@@ -64,7 +63,7 @@ namespace numav {
         void add_volume_material(const uint64_t&, const double&, const double&);
         void add_source(
             const TypeOfSource&, const std::array<double,3>&,
-            const PhysicalQuantity&, const std::function<std::complex<double>(double)>&
+            const PhysicalQuantity&, const std::function<double(double)>&
         );
         void add_source(
             const TypeOfSource&, const uint64_t&,

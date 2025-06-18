@@ -2,15 +2,15 @@
 
 #include "numav.hpp"
 
-std::complex<double> get_complex_volume_velocity_amplitude(const double& frequnecy_in_hz) {
-    return 1/frequnecy_in_hz;
+std::complex<double> get_complex_volume_velocity_amplitude(const double& frequency_in_hz) {
+    return 1/frequency_in_hz;
 }
 
-std::complex<double> get_complex_pressure_amplitude(const double& frequnecy_in_hz) {
+std::complex<double> get_complex_pressure_amplitude(const double& frequency_in_hz) {
     return 1;
 }
 
-std::complex<double> get_specific_surface_acoustic_impedance(const double& frequnecy_in_hz) {
+std::complex<double> get_specific_surface_acoustic_impedance(const double& frequency_in_hz) {
     return 1;
 }
 
@@ -46,21 +46,25 @@ int main() {
     // add volume velocity sources
     std::array<double,3> source_coordinates_1 = {1.0, 1.5, 2.0};
     sml.add_source(
-        POINT, source_coordinates_1, VOLUME_VELOCITY, get_complex_volume_velocity_amplitude
+        TypeOfSource::POINT, source_coordinates_1,
+        PhysicalQuantity::VOLUME_VELOCITY, get_complex_volume_velocity_amplitude
     );
     const uint64_t id_surface_source_1 = 2;
     sml.add_source(
-        SURFACE, id_surface_source_1, VOLUME_VELOCITY, get_complex_volume_velocity_amplitude
+        TypeOfSource::SURFACE, id_surface_source_1,
+        PhysicalQuantity::VOLUME_VELOCITY, get_complex_volume_velocity_amplitude
     );
 
     // add pressure sources
     std::array<double,3> source_coordinates_2 = {2.0, 2.5, 1.0};
     sml.add_source(
-        POINT, source_coordinates_2, PRESSURE, get_complex_pressure_amplitude
+        TypeOfSource::POINT, source_coordinates_2,
+        PhysicalQuantity::PRESSURE, get_complex_pressure_amplitude
     );
     const uint64_t id_surface_source_2 = 3;
     sml.add_source(
-        SURFACE, id_surface_source_2, PRESSURE, get_complex_pressure_amplitude
+        TypeOfSource::SURFACE, id_surface_source_2,
+        PhysicalQuantity::PRESSURE, get_complex_pressure_amplitude
     );
 
     // add specific surface impedance
