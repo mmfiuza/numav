@@ -63,7 +63,7 @@ namespace numav {
         void add_volume_material(const uint64_t&, const double&, const double&);
         void add_source(
             const TypeOfSource&, const std::array<double,3>&,
-            const PhysicalQuantity&, const std::function<double(double)>&
+            const PhysicalQuantity&, const std::function<std::complex<double>(double)>&
         );
         void add_source(
             const TypeOfSource&, const uint64_t&,

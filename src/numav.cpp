@@ -34,7 +34,7 @@ void AcFemFreqD3::add_source(
     const TypeOfSource& type_of_source,
     const std::array<double,3>& point_coordinates,
     const PhysicalQuantity& physical_quantity,
-    const std::function<double(double)>& physical_quantity_value
+    const std::function<std::complex<double>(double)>& physical_quantity_value
 ) {
 
 }

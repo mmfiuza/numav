@@ -6,6 +6,20 @@
 #include "jlcxx/functions.hpp"
 #include "julia.h"
 
+#include <complex.h>
+
+// namespace c_complex{
+    // extern "C" {
+    //     #include <complex.h>
+    // }
+// }
+// #undef complex
+// #undef I
+// #undef real
+// #undef imag
+// #undef exp
+// #undef log
+
 // Phenomenon enum class
 JLCXX_MODULE define_module_Phenomenon(jlcxx::Module& mod) {
     mod.add_bits<numav::Phenomenon>("Phenomenon_type", jlcxx::julia_type("CppEnum"));
@@ -108,12 +122,19 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
                     const numav::TypeOfSource& source_type,
                     const jlcxx::ArrayRef<double> p,
                     const numav::PhysicalQuantity& quantity_type,
-                    jlcxx::SafeCFunction quantity_value
+                    jlcxx::SafeCFunction real_quantity_value,
+                    jlcxx::SafeCFunction imag_quantity_value
                 ) { 
-                    auto quantity_value_ptr = 
-                        jlcxx::make_function_pointer<double(double)>(quantity_value);
-                    w.add_source(source_type, std::array<double,3>{p[0],p[1],p[2]},
-                        quantity_type, quantity_value_ptr);
+                    std::function<double(double)> real_func_ptr = 
+                        jlcxx::make_function_pointer<double(double)>(real_quantity_value);
+                    std::function<double(double)> imag_func_ptr = 
+                        jlcxx::make_function_pointer<double(double)>(imag_quantity_value);
+
+                    w.add_source(source_type, std::array<double,3>{p[0],p[1],p[2]}, quantity_type, 
+                        [&](const double& n){
+                            return std::complex<double>(real_func_ptr(n), imag_func_ptr(n)); 
+                        }
+                    );
                 }
             );
         }

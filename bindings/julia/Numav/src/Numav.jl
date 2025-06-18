@@ -70,26 +70,36 @@ module Numav
         @initcxx
     end
     
-    quantity_value_ref = Ref{Function}()
-    safe_cfunction_expr = quote
-        quantity_value_cfunc = CxxWrap.@safe_cfunction(quantity_value_ref, Float64, (Float64,))
+    # declare the expression to crate safa_cfuntions - type: Float64(Float64)
+    function_ref_Float64_Float64 = Ref{Function}()
+    safe_cfunction_expr_Float64_Float64 = quote
+        CxxWrap.@safe_cfunction(function_ref_Float64_Float64[], Float64, (Float64,))
     end
+
     function add_source(
         simulation::Simulation{
-            Phenomenon.acoustic,
-            NumericalMethod.fem,
-            Domain.frequency,
-            Dimension.d3
-        },
+            Phenomenon.acoustic, NumericalMethod.fem,
+            Domain.frequency, Dimension.d3},
         source_type::TypeOfSource.TypeOfSource_type,
         source_coordinates::Vector{Float64},
         physical_quantity::PhysicalQuantity.PhysicalQuantity_type,
         quantity_value::Function
     )
-        quantity_value_ref[] = quantity_value
-        eval(safe_cfunction_expr)
+        # real part function split
+        function_ref_Float64_Float64[] = 
+            function real_part(n::Float64) return Float64(real(quantity_value(n))) end
+        real_safe_cfunc = eval(safe_cfunction_expr_Float64_Float64)
+
+        # imaginary part function split
+        function_ref_Float64_Float64[] =
+            function imag_part(n::Float64) return Float64(imag(quantity_value(n))) end
+        imag_safe_cfunc = eval(safe_cfunction_expr_Float64_Float64)
+
+        # call C++ function
         _add_source(
-            simulation, source_type, source_coordinates, physical_quantity, quantity_value_cfunc)
+            simulation, source_type, source_coordinates, physical_quantity,
+            real_safe_cfunc, imag_safe_cfunc
+        )
     end
 
 end

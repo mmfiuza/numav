@@ -29,7 +29,7 @@ Numav.add_volume_material(sml, id_air, rho_air, c_air)
 
 # add volume velocity sources
 source_coordinates_1 = [1.0, 1.5, 2.0]
-complex_volume_velocity_amplitude(f) = 1/f
+complex_volume_velocity_amplitude(f) = 1/f + 0im
 Numav.add_source(sml,
     Numav.TypeOfSource.point, source_coordinates_1,
     Numav.PhysicalQuantity.volume_velocity, complex_volume_velocity_amplitude
