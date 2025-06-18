@@ -1,4 +1,4 @@
-# Copyright (c) 2025 Matheus Machado Fiuza <matheus.fiuza@eac.ufsm.br>
+# Copyright (c) 2025 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
 # get libnumav_jl_jll uuid
 lines = readlines("/root/.julia/dev/libnumav_jl_jll/Project.toml")

@@ -1,4 +1,4 @@
-# Copyright (c) 2025 Matheus Machado Fiuza <matheus.fiuza@eac.ufsm.br>
+# Copyright (c) 2025 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
 project(numav LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
