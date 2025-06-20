@@ -38,6 +38,27 @@ namespace numav {
         VOLUME_VELOCITY,
     };
 
+    // declare the general Result class
+    template<
+        Phenomenon PHENOMENON,
+        NumericalMethod NUMERICAL_METHOD,
+        Domain DOMAIN,
+        Dimension DIMENSION
+    >
+    class Result {};
+
+    template <> class Result<
+        Phenomenon::ACOUSTIC,
+        NumericalMethod::FEM,
+        Domain::FREQUENCY,
+        Dimension::D3
+    > {
+    public:
+        Result();
+    private:
+        double _data;
+    };
+
     // declare the general Simulation class
     template<
         Phenomenon PHENOMENON,
@@ -69,10 +90,10 @@ namespace numav {
             const TypeOfSource&, const uint64_t&,
             const PhysicalQuantity&, const std::function<std::complex<double>(double)>&
         );
-        void add_specific_surface_acoustic_impedance(
+        void add_surface_specific_acoustic_impedance(
             const uint64_t&, const std::function<std::complex<double>(double)>&
         );
-        std::vector<std::vector<std::complex<double>>> run();
+        Result<Phenomenon::ACOUSTIC, NumericalMethod::FEM, Domain::FREQUENCY, Dimension::D3> run();
     private:
         // Mesh _mesh;
         uint64_t _freq_min;

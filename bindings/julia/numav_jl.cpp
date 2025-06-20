@@ -4,7 +4,6 @@
 #include "jlcxx/jlcxx.hpp"
 #include "jlcxx/stl.hpp"
 #include "jlcxx/functions.hpp"
-#include "julia.h"
 
 // Phenomenon enum class
 JLCXX_MODULE define_module_Phenomenon(jlcxx::Module& mod) {
@@ -36,7 +35,7 @@ JLCXX_MODULE define_module_Dimension(jlcxx::Module& mod) {
 // TypeOfSource enum class
 JLCXX_MODULE define_module_TypeOfSource(jlcxx::Module& mod) {
     mod.add_bits<numav::TypeOfSource>("type", jlcxx::julia_type("CppEnum"));
-    mod.set_const("point_coords", numav::TypeOfSource::POINT);
+    mod.set_const("point", numav::TypeOfSource::POINT);
     mod.set_const("surface", numav::TypeOfSource::SURFACE);
 }
 
@@ -55,20 +54,51 @@ namespace jlcxx
         numav::Domain DOMAIN,
         numav::Dimension DIMENSION
     >
+    struct BuildParameterList<numav::Result<
+    PHENOMENON, NUMERICAL_METHOD, DOMAIN, DIMENSION
+    >> {
+        typedef ParameterList<
+            std::integral_constant<numav::Phenomenon, PHENOMENON>,
+            std::integral_constant<numav::NumericalMethod, NUMERICAL_METHOD>,
+            std::integral_constant<numav::Domain, DOMAIN>,
+            std::integral_constant<numav::Dimension, DIMENSION>
+        > type;
+    };
+
+    template<
+        numav::Phenomenon PHENOMENON,
+        numav::NumericalMethod NUMERICAL_METHOD,
+        numav::Domain DOMAIN,
+        numav::Dimension DIMENSION
+    >
     struct BuildParameterList<numav::Simulation<
     PHENOMENON, NUMERICAL_METHOD, DOMAIN, DIMENSION
     >> {
         typedef ParameterList<
-        std::integral_constant<numav::Phenomenon, PHENOMENON>,
-        std::integral_constant<numav::NumericalMethod, NUMERICAL_METHOD>,
-        std::integral_constant<numav::Domain, DOMAIN>,
-        std::integral_constant<numav::Dimension, DIMENSION>
+            std::integral_constant<numav::Phenomenon, PHENOMENON>,
+            std::integral_constant<numav::NumericalMethod, NUMERICAL_METHOD>,
+            std::integral_constant<numav::Domain, DOMAIN>,
+            std::integral_constant<numav::Dimension, DIMENSION>
         > type;
     };
 } // namespace jlcxx
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
 {   
+    mod.add_type<jlcxx::Parametric<
+        jlcxx::TypeVar<1>, jlcxx::TypeVar<2>, jlcxx::TypeVar<3>, jlcxx::TypeVar<4>
+    >>("Result").apply<numav::Result<
+        numav::Phenomenon::ACOUSTIC,
+        numav::NumericalMethod::FEM,
+        numav::Domain::FREQUENCY,
+        numav::Dimension::D3
+    >>(
+        [](auto&& wrapped) {
+            using WrappedT = typename std::decay_t<decltype(wrapped)>::type;
+            wrapped.template constructor<>();
+        }
+    );
+
     mod.add_type<jlcxx::Parametric<
         jlcxx::TypeVar<1>, jlcxx::TypeVar<2>, jlcxx::TypeVar<3>, jlcxx::TypeVar<4>
     >>("Simulation").apply<numav::Simulation<
@@ -111,19 +141,61 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
                     jlcxx::SafeCFunction quantity_value_real,
                     jlcxx::SafeCFunction quantity_value_imag
                 ) { 
-                    std::function<double(double)> real_func_ptr = 
+                    std::function<double(double)> real_func = 
                         jlcxx::make_function_pointer<double(double)>(quantity_value_real);
-                    std::function<double(double)> imag_func_ptr = 
+                    std::function<double(double)> imag_func = 
                         jlcxx::make_function_pointer<double(double)>(quantity_value_imag);
 
                     w.add_source(source_type,
                         std::array<double,3>{point_coords[0], point_coords[1], point_coords[2]},
                         quantity_type, 
                         [&](const double& n){
-                            return std::complex<double>(real_func_ptr(n), imag_func_ptr(n)); 
+                            return std::complex<double>(real_func(n), imag_func(n)); 
                         }
                     );
                 }
+            );
+            wrapped.module().method("_add_source",
+                []( WrappedT& w,
+                    const numav::TypeOfSource& source_type,
+                    const uint64_t& surface_id,
+                    const numav::PhysicalQuantity& quantity_type,
+                    jlcxx::SafeCFunction quantity_value_real,
+                    jlcxx::SafeCFunction quantity_value_imag
+                ) { 
+                    std::function<double(double)> real_func = 
+                        jlcxx::make_function_pointer<double(double)>(quantity_value_real);
+                    std::function<double(double)> imag_func = 
+                        jlcxx::make_function_pointer<double(double)>(quantity_value_imag);
+
+                    w.add_source(source_type, surface_id, quantity_type, 
+                        [&](const double& n){
+                            return std::complex<double>(real_func(n), imag_func(n)); 
+                        }
+                    );
+                }
+            );
+            wrapped.module().method("_add_surface_specific_acoustic_impedance",
+                []( WrappedT& w,
+                    const uint64_t& surface_id,
+                    jlcxx::SafeCFunction quantity_value_real,
+                    jlcxx::SafeCFunction quantity_value_imag
+                ) { 
+                    std::function<double(double)> real_func = 
+                        jlcxx::make_function_pointer<double(double)>(quantity_value_real);
+                    std::function<double(double)> imag_func = 
+                        jlcxx::make_function_pointer<double(double)>(quantity_value_imag);
+
+                    w.add_surface_specific_acoustic_impedance(
+                        surface_id,
+                        [&](const double& n){
+                            return std::complex<double>(real_func(n), imag_func(n)); 
+                        }
+                    );
+                }
+            );
+            wrapped.module().method("run",
+                [] (WrappedT& w) { return w.run(); }
             );
         }
     );
