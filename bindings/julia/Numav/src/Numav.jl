@@ -10,7 +10,7 @@ module Numav
     
     # export functions
     export set_element_order, set_freq_limits, load_mesh, add_volume_material, add_source,
-        add_specific_surface_acoustic_impedance, run
+        add_specific_surface_acoustic_impedance, simulate
 
     # wrap the Phenomenon enum class
     module Phenomenon

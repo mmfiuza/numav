@@ -33,7 +33,7 @@ add_source(s, coordinates=[1.0, 1.5, 2.0], volume_velocity=Q)
 add_source(s, surface_id=2, volume_velocity=Q)
 
 # add pressure sources
-P(f) = 2/f
+P(f) = 2f
 add_source(s, coordinates=[2.0, 2.5, 1.0], pressure=P)
 add_source(s, surface_id=3, pressure=P)
 
@@ -42,4 +42,4 @@ Z(f) = 1f + 2im
 add_specific_surface_acoustic_impedance(s, surface_id=4, impedance=Z)
 
 # run the simulation
-result = Numav.run(s)
+result = simulate(s)

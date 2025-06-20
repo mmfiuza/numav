@@ -194,7 +194,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
                     );
                 }
             );
-            wrapped.module().method("run",
+            wrapped.module().method("simulate", // "run" is a native Julia function
                 [] (WrappedT& w) { return w.run(); }
             );
         }
