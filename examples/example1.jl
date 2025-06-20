@@ -37,7 +37,7 @@ P(f) = 2f
 add_source(s, coordinates=[2.0, 2.5, 1.0], pressure=P)
 add_source(s, surface_id=3, pressure=P)
 
-# add specific surface impedance
+# add specific surface acoustic impedance
 Z(f) = 1f + 2im
 add_specific_surface_acoustic_impedance(s, surface_id=4, impedance=Z)
 

@@ -3,15 +3,15 @@
 #include "numav.hpp"
 
 std::complex<double> get_complex_volume_velocity_amplitude(const double& frequency_in_hz) {
-    return 1/frequency_in_hz;
+    return std::complex<double>(10/frequency_in_hz, 0);
 }
 
 std::complex<double> get_complex_pressure_amplitude(const double& frequency_in_hz) {
-    return 1;
+    return std::complex<double>(2*frequency_in_hz, 0);
 }
 
 std::complex<double> get_specific_surface_acoustic_impedance(const double& frequency_in_hz) {
-    return 1;
+    return std::complex<double>(frequency_in_hz, 2);
 }
 
 int main() {
@@ -67,12 +67,12 @@ int main() {
         PhysicalQuantity::PRESSURE, get_complex_pressure_amplitude
     );
 
-    // add specific surface impedance
+    // add specific surface acoustic impedance
     const uint64_t id_surface_impedance = 4;
     s.add_specific_surface_acoustic_impedance(
         id_surface_impedance, get_specific_surface_acoustic_impedance
     );
 
     // run the simulation
-    std::vector<std::vector<std::complex<double>>> complex_pressure_amplitude = s.run();
+    auto = s.run();
 }
