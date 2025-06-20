@@ -55,6 +55,7 @@ namespace numav {
     > {
     public:
         Result();
+        ~Result();
     private:
         double _data;
     };

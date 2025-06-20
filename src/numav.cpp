@@ -13,6 +13,10 @@ ResultAcFemFreqD3::Result() {
 
 }
 
+ResultAcFemFreqD3::~Result() {
+
+}
+
 using SimulationAcFemFreqD3 = typename numav::Simulation<
     numav::Phenomenon::ACOUSTIC,
     numav::NumericalMethod::FEM,
@@ -21,6 +25,10 @@ using SimulationAcFemFreqD3 = typename numav::Simulation<
 >;
 
 SimulationAcFemFreqD3::Simulation() {
+
+}
+
+SimulationAcFemFreqD3::~Simulation() {
 
 }
 
