@@ -6,6 +6,7 @@
 #include <vector>
 #include <complex>
 #include <functional>
+#include "Eigen/Dense"
 
 namespace numav {
 

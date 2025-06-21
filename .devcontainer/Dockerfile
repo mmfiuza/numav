@@ -4,7 +4,7 @@ FROM debian:bookworm-slim
 
 # install dependencies
 RUN apt-get update && apt-get install -y \
-    libc-dev git gcc g++ make cmake curl squashfs-tools
+    libc-dev git gcc g++ make cmake curl squashfs-tools libeigen3-dev
 
 # install Julia
 RUN curl -fsSL https://install.julialang.org | sh -s -- --yes
