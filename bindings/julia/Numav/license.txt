@@ -24,4 +24,4 @@ Numav incorporates components from the following third-party projects:
     - Copyright: 2020 Elliot Saba, Keno Fischer, Mose Giordano, Julia Computing, and contributors
     - License: MIT License
 
-Licence texts are in the "license-text/" directory.
+License texts are in the "license-text/" directory.
