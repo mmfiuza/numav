@@ -1,27 +1,27 @@
 Copyright (c) 2025 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
-Numav is free software. You can redistribute it and/or modify it under the terms of the GNU Affero
-General Public License (AGPL), either version 3 or (at your option) any later version.
-
-The AGPL3 License text is in the "license-text/AGPL3.txt" directory.
+All rights reserved.
+No modification or redistribution allowed.
+Commercial use is prohibited unless explicitly licensed.
 
 Numav incorporates components from the following third-party projects:
 
   * Eigen - <https://gitlab.com/libeigen/eigen>
-    - Copyright: 2006 The Eigen Authors, listed in:
-        https://eigen.tuxfamily.org/index.php?title=Main_Page#Contributing_to_Eigen
-    - License: MPL2 License
+  - Copyright: 2006 The Eigen Authors, listed in:
+    https://eigen.tuxfamily.org/index.php?title=Main_Page#Contributing_to_Eigen
+  - License: MPL2 License
 
   * CxxWrap.jl - <https://github.com/JuliaInterop/CxxWrap.jl>
-    - Copyright: 2015 Bart Janssens
-    - License: MIT License
+  - Copyright: 2015 Bart Janssens
+  - License: MIT License
   
   * libcxxwrap-julia - <https://github.com/JuliaInterop/libcxxwrap-julia>
-    - Copyright: 2015 Bart Janssens
-    - License: MIT License
+  - Copyright: 2015 Bart Janssens
+  - License: MIT License
   
   * BinaryBuilder.jl - <https://github.com/JuliaPackaging/BinaryBuilder.jl>
-    - Copyright: 2020 Elliot Saba, Keno Fischer, Mose Giordano, Julia Computing, and contributors
-    - License: MIT License
+  - Copyright: 2020 Elliot Saba, Keno Fischer, Mose Giordano, Julia Computing,
+    and contributors
+  - License: MIT License
 
 License texts are in the "license-text/" directory.

@@ -2,7 +2,7 @@
 
 project(numav LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.5) # TODO: make this the first line
 
 # find Eigen
 find_package (Eigen3 3.4 REQUIRED NO_MODULE)
@@ -11,6 +11,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build/lib")
 
 # add numav
 set(NUMAV_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/numav.cpp)
+# TODO: maybe just put the include directory is the right choice in the line below
 set(NUMAV_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/include/numav.hpp)
 add_library(numav STATIC ${NUMAV_SOURCES} ${NUMAV_HEADERS})
 target_include_directories(numav PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include /usr/include/eigen3)
