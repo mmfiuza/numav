@@ -11,10 +11,13 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build/lib")
 
 # add numav
 set(NUMAV_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/numav.cpp)
-# TODO: maybe just put the include directory is the right choice in the line below
+# TODO:
+# maybe just put the include directory is the right choice in the line below
 set(NUMAV_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/include/numav.hpp)
 add_library(numav STATIC ${NUMAV_SOURCES} ${NUMAV_HEADERS})
-target_include_directories(numav PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include /usr/include/eigen3)
+target_include_directories(numav 
+    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include /usr/include/eigen3
+)
 
 # set install path
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;${JlCxx_location}")
@@ -27,7 +30,9 @@ if(BIND_JULIA)
     get_filename_component(JlCxx_location ${JlCxx_location} DIRECTORY)
     
     # add numav_jl
-    add_library(numav_jl SHARED ${CMAKE_CURRENT_SOURCE_DIR}/bindings/julia/numav_jl.cpp)
+    add_library(numav_jl 
+        SHARED ${CMAKE_CURRENT_SOURCE_DIR}/bindings/julia/numav_jl.cpp
+    )
 
     # define link targets of numav_jl
     target_link_libraries(numav_jl

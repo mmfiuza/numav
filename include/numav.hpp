@@ -65,7 +65,8 @@ namespace numav {
 
     // declare the general Result class
     template<
-        Phenomenon PHENOMENON, NumericalMethod NUMERICAL_METHOD, Domain DOMAIN, Dimension DIMENSION
+        Phenomenon PHENOMENON, NumericalMethod NUMERICAL_METHOD,
+        Domain DOMAIN, Dimension DIMENSION
     >
     class Result {};
 
@@ -84,8 +85,8 @@ namespace numav {
 
     // declare the general Simulation class
     template<
-        Phenomenon PHENOMENON, NumericalMethod NUMERICAL_METHOD, Domain DOMAIN, Dimension DIMENSION,
-        auto... EXTRA
+        Phenomenon PHENOMENON, NumericalMethod NUMERICAL_METHOD,
+        Domain DOMAIN, Dimension DIMENSION, auto... EXTRA
     >
     class Simulation {};
 
@@ -101,29 +102,50 @@ namespace numav {
     public:
         Simulation();
         ~Simulation();
-        void set_freq_limits(const double&, const double&);
-        void load_mesh(const std::string&);
-        void add_volume_material(const uint64_t&, const double&, const double&);
-        void add_source(
-            const TypeOfSource&, const std::array<double,3>&,
-            const PhysicalQuantity&, const std::function<std::complex<double>(double)>&
+        void set_freq_limits(
+            const double&,
+            const double&
+        );
+        void load_mesh(
+            const std::string&
+        );
+        void add_volume_material(
+            const uint64_t&,
+            const double&,
+            const double&
         );
         void add_source(
-            const TypeOfSource&, const uint64_t&,
-            const PhysicalQuantity&, const std::function<std::complex<double>(double)>&
+            const TypeOfSource&,
+            const std::array<double,3>&,
+            const PhysicalQuantity&,
+            const std::function<std::complex<double>(double)>&
+        );
+        void add_source(
+            const TypeOfSource&,
+            const uint64_t&,
+            const PhysicalQuantity&,
+            const std::function<std::complex<double>(double)>&
         );
         void add_surface_specific_acoustic_impedance(
             const uint64_t&, const std::function<std::complex<double>(double)>&
         );
-        Result<Phenomenon::ACOUSTIC, NumericalMethod::FEM, Domain::FREQUENCY, Dimension::D3> run();
+        Result<
+            Phenomenon::ACOUSTIC,
+            NumericalMethod::FEM,
+            Domain::FREQUENCY,
+            Dimension::D3
+        > run();
 
     private:
         class Mesh {
             private:
                 // TODO: remove std::vector from here
-                std::vector<std::array<double,DIMENSION_COUNT<Dimension::D3>>> _node_coords;
-                std::vector<std::array<size_t,NODES_PER_SURF_ELEMENT<ORDER>>> _2d_elem_vtx_idx;
-                std::vector<std::array<size_t,NODES_PER_VOL_ELEMENT<ORDER>>> _3d_elem_vtx_idx;
+                std::vector<std::array<double,DIMENSION_COUNT<Dimension::D3>>>
+                _node_coords;
+                std::vector<std::array<size_t,NODES_PER_SURF_ELEMENT<ORDER>>>
+                _2d_elem_vtx_idx;
+                std::vector<std::array<size_t,NODES_PER_VOL_ELEMENT<ORDER>>>
+                _3d_elem_vtx_idx;
                 std::vector<size_t> _2d_elem_tag;
                 std::vector<size_t> _3d_elem_tag;
                 const size_t _nodes_count;
@@ -136,9 +158,16 @@ namespace numav {
         bool _is_any_source_defined;
         double _freq_min;
         double _freq_max;
+
         std::vector<double> _freq_vector;
-        std::vector<std::vector<std::complex<double>>> _complex_speed_of_sound;
-        std::vector<std::vector<std::complex<double>>> _complex_density;
-        std::vector<std::vector<std::complex<double>>> _specific_acoustic_impedance;
+
+        std::vector<std::vector<std::complex<double>>>
+        _complex_speed_of_sound;
+
+        std::vector<std::vector<std::complex<double>>>
+        _complex_density;
+
+        std::vector<std::vector<std::complex<double>>>
+        _specific_acoustic_impedance;
     };
 } // namespace numav

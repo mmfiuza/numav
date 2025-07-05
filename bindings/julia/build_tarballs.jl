@@ -35,11 +35,14 @@ script = raw"""
 platforms = [
     Platform("x86_64", "linux"; libc=:glibc)
 ]
-# platforms = supported_platforms()
-# platforms = expand_cxxstring_abis(platforms)
+platforms = supported_platforms()
+platforms = expand_cxxstring_abis(platforms)
 # platforms = platforms[ # exclude platforms that doesn't work for some reason
 #     findall(
-#         (x) -> x != Platform("i686", "linux"; libc=:musl, cxxstring_abi=:cxx03), platforms
+#         (x) -> x != Platform(
+#             "i686", "linux"; libc=:musl, cxxstring_abi=:cxx03
+#         ),
+#         platforms
 #     )
 # ]
 

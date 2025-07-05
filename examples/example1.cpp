@@ -2,15 +2,18 @@
 
 #include "numav.hpp"
 
-std::complex<double> get_complex_volume_velocity_amplitude(const double& frequency_in_hz) {
+std::complex<double>
+get_complex_volume_velocity_amplitude(const double& frequency_in_hz) {
     return std::complex<double>(10/frequency_in_hz, 0);
 }
 
-std::complex<double> get_complex_pressure_amplitude(const double& frequency_in_hz) {
+std::complex<double>
+get_complex_pressure_amplitude(const double& frequency_in_hz) {
     return std::complex<double>(2*frequency_in_hz, 0);
 }
 
-std::complex<double> get_specific_surface_acoustic_impedance(const double& frequency_in_hz) {
+std::complex<double>
+get_specific_surface_acoustic_impedance(const double& frequency_in_hz) {
     return std::complex<double>(frequency_in_hz, 2);
 }
 

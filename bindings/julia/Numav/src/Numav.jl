@@ -6,11 +6,12 @@ module Numav
     export Simulation, Result
     
     # export enums
-    export Phenomenon, NumericalMethod, Domain, Dimension, TypeOfSource, PhysicalQuantity
+    export Phenomenon, NumericalMethod, Domain, Dimension, TypeOfSource,
+        PhysicalQuantity
     
     # export functions
-    export set_element_order, set_freq_limits, load_mesh, add_volume_material, add_source,
-        add_specific_surface_acoustic_impedance, simulate
+    export set_element_order, set_freq_limits, load_mesh, add_volume_material,
+        add_source, add_specific_surface_acoustic_impedance, simulate
 
     # wrap the Phenomenon enum class
     module Phenomenon
@@ -83,10 +84,12 @@ module Numav
     struct _Empty end
     const _empty = _Empty()
     
-    # declare the expression to crate safa_cfuntions - type: Float64(Float64)
+    # declare the expression to crate safe_cfuntions - type: Float64(Float64)
     function_ref_Float64_Float64 = Ref{Function}()
     safe_cfunction_expr_Float64_Float64 = quote
-        CxxWrap.@safe_cfunction(function_ref_Float64_Float64[], Float64, (Float64,))
+        CxxWrap.@safe_cfunction(
+            function_ref_Float64_Float64[], Float64, (Float64,)
+        )
     end
 
     function add_source( 
@@ -102,13 +105,21 @@ module Numav
         pressure::Union{Function,_Empty} = _empty
     )
         if coordinates==_empty && surface_id==_empty
-            throw(ArgumentError("`coordinates` and `surface_id` not defined"))
+            throw(ArgumentError(
+                "`coordinates` and `surface_id` not defined"
+            ))
         elseif coordinates!=_empty && surface_id!=_empty
-            throw(ArgumentError("`coordinates` and `surface_id` defined simultaneously"))
+            throw(ArgumentError(
+                "`coordinates` and `surface_id` defined simultaneously"
+            ))
         elseif volume_velocity==_empty && pressure==_empty
-            throw(ArgumentError("`volume_velocity` and `pressure` not defined"))
+            throw(ArgumentError(
+                "`volume_velocity` and `pressure` not defined"
+            ))
         elseif volume_velocity!=_empty && pressure!=_empty
-            throw(ArgumentError("`volume_velocity` and `pressure` defined simultaneously"))
+            throw(ArgumentError(
+                "`volume_velocity` and `pressure` defined simultaneously"
+            ))
         end
 
         # Check if velocity or pressure was given
@@ -126,25 +137,31 @@ module Numav
             function real_part(n::Float64)
                 return real(physical_quantity_function[](n)) |> Float64
             end
-        real_physical_quantity_cfunction = eval(safe_cfunction_expr_Float64_Float64)
+        real_physical_quantity_cfunction = 
+            eval(safe_cfunction_expr_Float64_Float64)
 
         # imaginary part function split
         function_ref_Float64_Float64[] =
             function imag_part(n::Float64)
                 return imag(physical_quantity_function[](n)) |> Float64
             end
-        imag_physical_quantity_cfunction = eval(safe_cfunction_expr_Float64_Float64)
+        imag_physical_quantity_cfunction = 
+            eval(safe_cfunction_expr_Float64_Float64)
 
         # call the C++ function
         if coordinates!=_empty
             _add_source(
-                simulation, TypeOfSource.point, coordinates, physical_quantity, 
-                real_physical_quantity_cfunction, imag_physical_quantity_cfunction
+                simulation, TypeOfSource.point,
+                coordinates, physical_quantity, 
+                real_physical_quantity_cfunction,
+                imag_physical_quantity_cfunction
             )
         else
             _add_source(
-                simulation, TypeOfSource.surface, surface_id, physical_quantity,
-                real_physical_quantity_cfunction, imag_physical_quantity_cfunction
+                simulation, TypeOfSource.surface,
+                surface_id, physical_quantity,
+                real_physical_quantity_cfunction,
+                imag_physical_quantity_cfunction
             )
         end
     end
@@ -175,7 +192,8 @@ module Numav
 
         # call the C++ function
         _add_surface_specific_acoustic_impedance(
-            simulation, surface_id, real_impedance_cfunction, imag_impedance_cfunction
+            simulation, surface_id,
+            real_impedance_cfunction,imag_impedance_cfunction
         )
     end
 

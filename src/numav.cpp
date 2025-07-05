@@ -33,7 +33,9 @@
 
 // }
 
-// void SimulationAcFemFreqD3::set_freq_limits(const double& freq_min, const double& freq_max) {
+// void SimulationAcFemFreqD3::set_freq_limits(
+//     const double& freq_min, const double& freq_max
+// ) {
 
 // }
 
@@ -66,7 +68,8 @@
 // }
 
 // void SimulationAcFemFreqD3::add_surface_specific_acoustic_impedance(
-//     const uint64_t& surface_id, const std::function<std::complex<double>(double)>& impedance
+//     const uint64_t& surface_id,
+//     const std::function<std::complex<double>(double)>& impedance
 // ) {
 
 // }

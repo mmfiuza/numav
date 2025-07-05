@@ -86,7 +86,8 @@ namespace jlcxx
 JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
 {   
     mod.add_type<jlcxx::Parametric<
-        jlcxx::TypeVar<1>, jlcxx::TypeVar<2>, jlcxx::TypeVar<3>, jlcxx::TypeVar<4>
+        jlcxx::TypeVar<1>, jlcxx::TypeVar<2>,
+        jlcxx::TypeVar<3>, jlcxx::TypeVar<4>
     >>("Result").apply<numav::Result<
         numav::Phenomenon::ACOUSTIC,
         numav::NumericalMethod::FEM,
@@ -100,7 +101,8 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
     );
 
     mod.add_type<jlcxx::Parametric<
-        jlcxx::TypeVar<1>, jlcxx::TypeVar<2>, jlcxx::TypeVar<3>, jlcxx::TypeVar<4>
+        jlcxx::TypeVar<1>, jlcxx::TypeVar<2>,
+        jlcxx::TypeVar<3>, jlcxx::TypeVar<4>
     >>("Simulation").apply<numav::Simulation<
         numav::Phenomenon::ACOUSTIC,
         numav::NumericalMethod::FEM,
@@ -142,15 +144,21 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
                     jlcxx::SafeCFunction quantity_value_imag
                 ) { 
                     std::function<double(double)> real_func = 
-                        jlcxx::make_function_pointer<double(double)>(quantity_value_real);
+                        jlcxx::make_function_pointer<double(double)>(
+                            quantity_value_real);
                     std::function<double(double)> imag_func = 
-                        jlcxx::make_function_pointer<double(double)>(quantity_value_imag);
+                        jlcxx::make_function_pointer<double(double)>(
+                            quantity_value_imag);
 
                     w.add_source(source_type,
-                        std::array<double,3>{point_coords[0], point_coords[1], point_coords[2]},
+                        std::array<double,3>{
+                            point_coords[0], point_coords[1], point_coords[2]
+                        },
                         quantity_type, 
                         [&](const double& n){
-                            return std::complex<double>(real_func(n), imag_func(n)); 
+                            return std::complex<double>(
+                                real_func(n), imag_func(n)
+                            ); 
                         }
                     );
                 }
@@ -164,13 +172,19 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
                     jlcxx::SafeCFunction quantity_value_imag
                 ) { 
                     std::function<double(double)> real_func = 
-                        jlcxx::make_function_pointer<double(double)>(quantity_value_real);
+                        jlcxx::make_function_pointer<double(double)>(
+                            quantity_value_real
+                        );
                     std::function<double(double)> imag_func = 
-                        jlcxx::make_function_pointer<double(double)>(quantity_value_imag);
+                        jlcxx::make_function_pointer<double(double)>(
+                            quantity_value_imag
+                        );
 
                     w.add_source(source_type, surface_id, quantity_type, 
                         [&](const double& n){
-                            return std::complex<double>(real_func(n), imag_func(n)); 
+                            return std::complex<double>(
+                                real_func(n), imag_func(n)
+                            ); 
                         }
                     );
                 }
@@ -182,19 +196,26 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
                     jlcxx::SafeCFunction quantity_value_imag
                 ) { 
                     std::function<double(double)> real_func = 
-                        jlcxx::make_function_pointer<double(double)>(quantity_value_real);
+                        jlcxx::make_function_pointer<double(double)>(
+                            quantity_value_real
+                        );
                     std::function<double(double)> imag_func = 
-                        jlcxx::make_function_pointer<double(double)>(quantity_value_imag);
+                        jlcxx::make_function_pointer<double(double)>(
+                            quantity_value_imag
+                        );
 
                     w.add_surface_specific_acoustic_impedance(
                         surface_id,
                         [&](const double& n){
-                            return std::complex<double>(real_func(n), imag_func(n)); 
+                            return std::complex<double>(
+                                real_func(n), imag_func(n)
+                            ); 
                         }
                     );
                 }
             );
-            wrapped.module().method("simulate", // "run" is a native Julia function
+            // "run" is a native Julia function, so whe choose simulate
+            wrapped.module().method("simulate", 
                 [] (WrappedT& w) { return w.run(); }
             );
         }
