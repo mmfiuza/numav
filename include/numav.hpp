@@ -6,6 +6,10 @@
 #include <vector>
 #include <complex>
 #include <functional>
+
+#define SAFE_PTR_DEBUG
+#include "SafePtr.hpp"
+
 #include "Eigen/Dense"
 
 namespace numav {
@@ -139,15 +143,14 @@ namespace numav {
     private:
         class Mesh {
             private:
-                // TODO: remove std::vector from here
-                std::vector<std::array<double,DIMENSION_COUNT<Dimension::D3>>>
+                SafePtr<std::array<double,DIMENSION_COUNT<Dimension::D3>>>
                 _node_coords;
-                std::vector<std::array<size_t,NODES_PER_SURF_ELEMENT<ORDER>>>
+                SafePtr<std::array<size_t,NODES_PER_SURF_ELEMENT<ORDER>>>
                 _2d_elem_vtx_idx;
-                std::vector<std::array<size_t,NODES_PER_VOL_ELEMENT<ORDER>>>
+                SafePtr<std::array<size_t,NODES_PER_VOL_ELEMENT<ORDER>>>
                 _3d_elem_vtx_idx;
-                std::vector<size_t> _2d_elem_tag;
-                std::vector<size_t> _3d_elem_tag;
+                SafePtr<size_t> _2d_elem_tag;
+                SafePtr<size_t> _3d_elem_tag;
                 const size_t _nodes_count;
                 const size_t _2d_elem_count;
                 const size_t _3d_elem_count;
@@ -159,7 +162,7 @@ namespace numav {
         double _freq_min;
         double _freq_max;
 
-        std::vector<double> _freq_vector;
+        SafePtr<double> _freq_vector;
 
         std::vector<std::vector<std::complex<double>>>
         _complex_speed_of_sound;

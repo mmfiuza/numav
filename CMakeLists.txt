@@ -15,8 +15,10 @@ set(NUMAV_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/numav.cpp)
 # maybe just put the include directory is the right choice in the line below
 set(NUMAV_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/include/numav.hpp)
 add_library(numav STATIC ${NUMAV_SOURCES} ${NUMAV_HEADERS})
-target_include_directories(numav 
-    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include /usr/include/eigen3
+target_include_directories(numav PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    /usr/include/eigen3
+    ${CMAKE_CURRENT_SOURCE_DIR}/third-party/safe-ptr/include
 )
 
 # set install path

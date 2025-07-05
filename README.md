@@ -4,13 +4,13 @@ Numav (Numerical Acoustics and Vibrations) is a C++ library with Julia bindings 
 
 ## How to build libnumav
 ```
-rm -rf build
-rm -rf install
+rm -rf build &&
+rm -rf install &&
 cmake -B build \
     -D CMAKE_BUILD_TYPE=Release \
     -D CMAKE_INSTALL_PREFIX=./install \
-    -D CMAKE_PREFIX_PATH=/root/.julia/artifacts/68b3990305fd468fa06214ccfafd50120554feca/
-cmake --build build --parallel ${nproc}
+    -D CMAKE_PREFIX_PATH=/root/.julia/artifacts/68b3990305fd468fa06214ccfafd50120554feca/ &&
+cmake --build build --parallel ${nproc} &&
 cmake --install build
 ```
 
