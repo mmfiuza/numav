@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y \
     git=1:2.39.5-0+deb12u2 \
     gcc=4:12.2.0-3 \
     g++=4:12.2.0-3 \
+    gdb=13.1-3 \
     make=4.3-4.1 \
     cmake=3.25.1-1 \
     curl=7.88.1-10+deb12u12 \
