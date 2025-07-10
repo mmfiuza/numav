@@ -35,6 +35,16 @@ class SafePtr
 {
 public:
     // constructor
+    SafePtr() {
+        #if SAFE_PTR_DEBUG_BOOL
+            std::lock_guard<std::mutex> lock(_mtx);
+            _memory_id = _get_new_memory_id();
+            _ref_count[_memory_id] = 1;
+            _is_deleted[_memory_id] = true;
+        #endif
+    }
+
+    // constructor
     SafePtr(const size_t& size) {
         #if SAFE_PTR_DEBUG_BOOL
             std::lock_guard<std::mutex> lock(_mtx);
