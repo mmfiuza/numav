@@ -316,14 +316,13 @@ public:
             _check_for_usage_after_free();
         #endif
         std::cout << variable_name << ": {\n";
-        if (!this->empty()) {
+        if (!empty()) {
             size_t idx = 0;
-            for (const auto& t : *this) {
-                std::cout << "    " << idx << ": " << t << ",\n";
+            for (const T* it=cbegin(); it!=cend()-1; ++it) {
+                std::cout << "    " << idx << ": " << *it << ",\n";
                 ++idx;
             }
-            std::cout << "\033[A" << "\033[2K"; // move to line above and clear
-            std::cout << "    " << idx-1 << ": " << back() << "\n";
+            std::cout << "    " << idx << ": " << back() << "\n";
         }
         std::cout << "}\n";
     }
@@ -349,12 +348,11 @@ public:
         }
         idx = size() - ELEMENTS_AFTER_DOTS;
         std::cout << "    ...\n";
-        for (const T* it=cend()-ELEMENTS_AFTER_DOTS; it!=cend(); ++it) {
+        for (const T* it=cend()-ELEMENTS_AFTER_DOTS; it!=cend()-1; ++it) {
             std::cout << "    " << idx << ": " << *it << ",\n";
             ++idx;
         }
-        std::cout << "\033[A" << "\033[2K"; // move to line above and clear
-        std::cout << "    " << idx-1 << ": " << back() << "\n";
+        std::cout << "    " << idx << ": " << back() << "\n";
         std::cout << "}\n";
     }
 
