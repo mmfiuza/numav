@@ -47,5 +47,5 @@
 # julia
 Manifest.toml
 
-# third-party
-third-party/jlcxx
+# vs code
+.vscode/settings.json
