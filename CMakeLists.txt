@@ -4,14 +4,19 @@ cmake_minimum_required(VERSION 3.5)
 project(numav LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 
+# add subdirectories
+if(BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif()
+
 # find Eigen
 find_package (Eigen3 3.4 REQUIRED NO_MODULE)
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build/lib")
 
 # add numav
-set(NUMAV_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/numav.cpp)
-set(NUMAV_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/include/numav.hpp)
+file(GLOB NUMAV_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
+file(GLOB NUMAV_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp")
 if(NOT DYNAMIC)
     add_library(numav STATIC ${NUMAV_SOURCES} ${NUMAV_HEADERS})
 else()
