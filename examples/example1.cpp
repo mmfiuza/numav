@@ -36,9 +36,8 @@ int main() {
     s.set_freq_limits(freq_min, freq_max);
 
     // load the mesh
-    s.load_mesh("example1.bdf");
+    s.load_mesh("mesh1.bdf");
 
-    // // add a volume material (air in this case)
     // const uint64_t id_air = 1;
     // const double rho_air = 1.20;
     // const double c_air = 343;

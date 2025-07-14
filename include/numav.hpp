@@ -5,6 +5,7 @@
 #include <array>
 #include <complex>
 #include <functional>
+#include <unordered_map>
 
 #define SAFE_PTR_DEBUG
 #include "SafePtr.hpp"
@@ -32,7 +33,7 @@ namespace numav {
         D3,
     };
 
-    template<Dimension D> constexpr size_t DIMENSION_COUNT = []{
+    template<Dimension D> constexpr size_t DIM_COUNT = []{
         if constexpr (D == Dimension::D1) return 1;
         if constexpr (D == Dimension::D2) return 2;
         if constexpr (D == Dimension::D3) return 3;
@@ -44,16 +45,24 @@ namespace numav {
         O2
     };
 
-    template<ElementOrder O> constexpr size_t NODES_PER_SURF_ELEMENT = []{
+    template<ElementOrder O> constexpr size_t NODES_IN_2D_ELEM = []{
         if constexpr (O == ElementOrder::O1) return 3;
         if constexpr (O == ElementOrder::O2) return 6;
         return 0;
     }();
 
-    template<ElementOrder O> constexpr size_t NODES_PER_VOL_ELEMENT = []{
+    template<ElementOrder O> constexpr size_t EXTRA_NODES_IN_2D_ELEM = []{
+        return NODES_IN_2D_ELEM<O> - NODES_IN_2D_ELEM<ElementOrder::O1>;
+    }();
+
+    template<ElementOrder O> constexpr size_t NODES_IN_3D_ELEM = []{
         if constexpr (O == ElementOrder::O1) return 4;
         if constexpr (O == ElementOrder::O2) return 10;
         return 0;
+    }();
+
+    template<ElementOrder O> constexpr size_t EXTRA_NODES_IN_3D_ELEM = []{
+        return NODES_IN_3D_ELEM<O> - NODES_IN_3D_ELEM<ElementOrder::O1>;
     }();
 
     enum class TypeOfSource {

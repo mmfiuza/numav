@@ -64,28 +64,35 @@ public:
 
 private:
     class Mesh {
-        public:
+    public:
         Mesh();
         ~Mesh();
-
-        private:
-        SafePtr<std::array<double,DIMENSION_COUNT<Dimension::D3>>> _node_coords;
-        SafePtr<std::array<size_t,NODES_PER_SURF_ELEMENT<O>>> _2d_elem_vtx_idx;
-        SafePtr<std::array<size_t,NODES_PER_VOL_ELEMENT<O>>> _3d_elem_vtx_idx;
+        void load_bdf(const char* const);
+    private:
+        void _generate_extra_nodes();
+        SafePtr<std::array<double,DIM_COUNT<Dimension::D3>>> _node_coords;
+        SafePtr<std::array<size_t,NODES_IN_2D_ELEM<O>>> _2d_elem_vtx_idx;
+        SafePtr<std::array<size_t,NODES_IN_3D_ELEM<O>>> _3d_elem_vtx_idx;
         SafePtr<size_t> _2d_elem_tag;
         SafePtr<size_t> _3d_elem_tag;
-        size_t _nodes_count;
+        size_t _node_count;
         size_t _2d_elem_count;
         size_t _3d_elem_count;
+        std::unordered_map<size_t,size_t> _file_id_to_tag_2d;
+        std::unordered_map<size_t,size_t> _file_id_to_tag_3d;
+        size_t _next_2d_elem_tag;
+        size_t _next_3d_elem_tag;
+        SafePtr<std::function<double(std::complex<double>)>> _density;
+        SafePtr<std::function<double(std::complex<double>)>> _sound_speed;
     };
 
     Mesh _mesh;
     bool _is_mesh_defined;
     bool _is_any_source_defined;
+    bool _is_freq_defined;
     double _freq_min;
     double _freq_max;
-
-    std::vector<double> _freq_vector;
+    SafePtr<double> _freq_vector;
 
     std::vector<std::vector<std::complex<double>>>
     _complex_speed_of_sound;

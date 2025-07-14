@@ -27,6 +27,9 @@ target_include_directories(numav PUBLIC
     /usr/include/eigen3
     ${CMAKE_CURRENT_SOURCE_DIR}/third-party/safe-ptr/include
 )
+target_compile_options(numav
+    PRIVATE -g -O0 -fno-inline
+)
 
 # set install path
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;${JlCxx_location}")
