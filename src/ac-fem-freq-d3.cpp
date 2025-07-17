@@ -3,8 +3,6 @@
 #include "numav.hpp"
 #include "logger.hpp"
 
-inline numav::Logger _logger;
-
 #include <tuple>
 
 #include <charconv>
@@ -16,33 +14,47 @@ inline numav::Logger _logger;
 
 #include "typedefs.hpp"
 
+// define a hash function for std::tuple<size_t,size_t>
+namespace std {
+    template<>
+    struct hash<std::tuple<size_t,size_t>> {
+        size_t operator()(const std::tuple<size_t,size_t>& key) const {
+            return (std::get<0>(key) << 4*sizeof(size_t)) + std::get<1>(key);
+        }
+    };
+}
+
+namespace numav{
+
+inline Logger _logger;
+
 using ResultAcFemFreqD3 = typename numav::Result<
-    numav::Phenomenon::ACOUSTIC,
-    numav::NumericalMethod::FEM,
-    numav::Domain::FREQUENCY,
-    numav::Dimension::D3
+    Phenomenon::ACOUSTIC,
+    NumericalMethod::FEM,
+    Domain::FREQUENCY,
+    Dimension::D3
 >;
 
 ResultAcFemFreqD3::Result() = default;
 ResultAcFemFreqD3::~Result() = default;
 
-template<numav::ElementOrder O>
+template<ElementOrder O>
 using SimulationAcFemFreqD3 = typename numav::Simulation<
-    numav::Phenomenon::ACOUSTIC,
-    numav::NumericalMethod::FEM,
-    numav::Domain::FREQUENCY,
-    numav::Dimension::D3,
+    Phenomenon::ACOUSTIC,
+    NumericalMethod::FEM,
+    Domain::FREQUENCY,
+    Dimension::D3,
     O
 >;
 
-template<numav::ElementOrder O>
+template<ElementOrder O>
 SimulationAcFemFreqD3<O>::Simulation() {
     _is_mesh_defined = false;
     _is_freq_range_defined = false;
     _is_any_source_defined = false;
 }
 
-template<numav::ElementOrder O>
+template<ElementOrder O>
 SimulationAcFemFreqD3<O>::~Simulation() {
     _node_coords.free();
     _sfc_elem_node_idx.free();
@@ -68,14 +80,14 @@ fz::SafePtr<double> linspace(
     return result;
 }
 
-template <numav::ElementOrder O>
+template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::_check_if_mesh_is_defined() {
     if (!_is_mesh_defined){
         _logger.error("Mesh not defined. Call load_mesh to do so.");
     }
 }
 
-template <numav::ElementOrder O>
+template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::set_freq_range(
     const double& freq_min,
     const double& freq_max
@@ -85,7 +97,7 @@ void SimulationAcFemFreqD3<O>::set_freq_range(
     _is_freq_range_defined = true;
 }
 
-template <numav::ElementOrder O>
+template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::load_mesh(
     const char* const path_to_mesh
 ) {
@@ -107,7 +119,7 @@ void SimulationAcFemFreqD3<O>::load_mesh(
     _is_mesh_defined = true;
 }
 
-template <numav::ElementOrder O>
+template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::add_volume_material(
     const _epg_t& epg,
     const _FuncRealToCmplx& density,
@@ -125,7 +137,7 @@ void SimulationAcFemFreqD3<O>::add_volume_material(
     _epg_to_ipg_vol.insert({epg, ipg});
 }
 
-template <numav::ElementOrder O>
+template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::add_source(
     const TypeOfSource& type_of_source,
     const std::array<double,3>& point_coordinates,
@@ -133,17 +145,17 @@ void SimulationAcFemFreqD3<O>::add_source(
     const _FuncRealToCmplx& physical_quantity_value
 ) {
     _check_if_mesh_is_defined();
-    if (type_of_source != numav::TypeOfSource::POINT) {
+    if (type_of_source != TypeOfSource::POINT) {
         // TODO: error
     }
     const _idx_t closest_point_idx = _get_closest_point(point_coordinates);
     
-    if (physical_quantity_type == numav::PhysicalQuantity::VOLUME_VELOCITY) {
+    if (physical_quantity_type == PhysicalQuantity::VOLUME_VELOCITY) {
         _point_volvel.push_back(
             std::make_tuple(closest_point_idx, physical_quantity_value)
         );
     }
-    else if (physical_quantity_type == numav::PhysicalQuantity::PRESSURE) {
+    else if (physical_quantity_type == PhysicalQuantity::PRESSURE) {
         _point_volvel.push_back(
             std::make_tuple(closest_point_idx, physical_quantity_value)
         ); 
@@ -154,7 +166,7 @@ void SimulationAcFemFreqD3<O>::add_source(
     _is_any_source_defined = true;
 }
 
-template <numav::ElementOrder O>
+template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::add_source(
     const TypeOfSource& type_of_source,
     const _epg_t& epg,
@@ -162,7 +174,7 @@ void SimulationAcFemFreqD3<O>::add_source(
     const _FuncRealToCmplx& physical_quantity_value
 ) {
     _check_if_mesh_is_defined();
-    if (type_of_source != numav::TypeOfSource::SURFACE) {
+    if (type_of_source != TypeOfSource::SURFACE) {
         // TODO: error
     }
     if (!_existing_epg_sfc.contains(epg)) {
@@ -174,14 +186,14 @@ void SimulationAcFemFreqD3<O>::add_source(
     ) {
         // TODO: error
     }
-    if (physical_quantity_type == numav::PhysicalQuantity::PRESSURE) {
+    if (physical_quantity_type == PhysicalQuantity::PRESSURE) {
         _epg_to_sfc_pressure.insert({epg, physical_quantity_value});
         const _ipg_t ipg = _epg_to_ipg_sfc.size();
         _epg_to_ipg_sfc.insert({epg, ipg});
         _is_any_source_defined = true;
         return;
     }
-    if (physical_quantity_type == numav::PhysicalQuantity::VOLUME_VELOCITY) {
+    if (physical_quantity_type == PhysicalQuantity::VOLUME_VELOCITY) {
         _epg_to_sfc_volvel.insert({epg, physical_quantity_value});
         const _ipg_t ipg = _epg_to_ipg_sfc.size();
         _epg_to_ipg_sfc.insert({epg, ipg});
@@ -191,7 +203,7 @@ void SimulationAcFemFreqD3<O>::add_source(
     // TODO: error
 }
 
-template <numav::ElementOrder O>
+template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::add_surface_specific_acoustic_impedance(
     const _epg_t& epg,
     const _FuncRealToCmplx& impedance
@@ -211,14 +223,14 @@ void SimulationAcFemFreqD3<O>::add_surface_specific_acoustic_impedance(
     _epg_to_ipg_sfc.insert({epg, ipg});
 }
 
-template <numav::ElementOrder O>
+template <ElementOrder O>
 _idx_t SimulationAcFemFreqD3<O>::_get_closest_point(
     const std::array<double,3>&
 ) {
     return 0; // TODO
 }
 
-template <numav::ElementOrder O>
+template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::_check_if_it_can_run() {
     _check_if_mesh_is_defined();
     if (!_is_any_source_defined){
@@ -234,14 +246,14 @@ void SimulationAcFemFreqD3<O>::_check_if_it_can_run() {
     }
 }
 
-template <numav::ElementOrder O>
+template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::_define_freq_vector() {
     // TODO: decide number here
     // TODO: make it not linear
     _freq_vec = linspace(_freq_min, _freq_max, 8192);
 }
 
-template <numav::ElementOrder O>
+template <ElementOrder O>
 ResultAcFemFreqD3 SimulationAcFemFreqD3<O>::run()
 {
     _check_if_it_can_run();
@@ -314,7 +326,7 @@ T parse(std::string_view str) {
     return value;
 }
 
-template <numav::ElementOrder O>
+template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::_load_bdf(const char* const path_to_mesh)
 {
     constexpr size_t MAX_BDF_CHARACTERS_PER_LINE = 80;
@@ -394,18 +406,8 @@ void SimulationAcFemFreqD3<O>::_load_bdf(const char* const path_to_mesh)
 }
 
 template<>
-void SimulationAcFemFreqD3<numav::ElementOrder::O1>::_generate_extra_nodes() {
+void SimulationAcFemFreqD3<ElementOrder::O1>::_generate_extra_nodes() {
     // nothing needs to be done for this case
-}
-
-// define a hash function for std::tuple<size_t,size_t>
-namespace std {
-    template<>
-    struct hash<std::tuple<size_t,size_t>> {
-        size_t operator()(const std::tuple<size_t,size_t>& key) const {
-            return (std::get<0>(key) << 4*sizeof(size_t)) + std::get<1>(key);
-        }
-    };
 }
 
 template<typename... T>
@@ -419,7 +421,7 @@ std::tuple<T,T> make_ascending_tuple(const T& a, const T& b) {
 }
 
 template<>
-void SimulationAcFemFreqD3<numav::ElementOrder::O2>::_generate_extra_nodes()
+void SimulationAcFemFreqD3<ElementOrder::O2>::_generate_extra_nodes()
 {
     constexpr std::array<
         std::array<size_t,2>,EXTRA_NODES_IN_3D_ELEM<ElementOrder::O2>
@@ -504,3 +506,5 @@ void SimulationAcFemFreqD3<numav::ElementOrder::O2>::_generate_extra_nodes()
         }
     }
 }
+
+} // namespace numav
