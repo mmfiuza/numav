@@ -22,12 +22,10 @@
     #include <mutex>
 #endif
 
+namespace fz {
+
 #if SAFE_PTR_TEST_BOOL
     struct _SafePtrWarning {};
-#endif
-
-#ifdef SAFE_PTR_NAMESPACE
-    namespace SAFE_PTR_NAMESPACE {
 #endif
 
 template<typename T>
@@ -425,6 +423,4 @@ private:
     template<typename T> std::mutex SafePtr<T>::_mtx;
 #endif
 
-#ifdef SAFE_PTR_NAMESPACE
-    }
-#endif
+} // namespace fz

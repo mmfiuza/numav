@@ -1,4 +1,4 @@
-# Numav
+# Numav (work in progress)
 
 Numav (Numerical Acoustics and Vibrations) is a C++ library with Julia bindings for acoustics and vibrations simulations.
 

@@ -2,21 +2,6 @@
 
 #include "numav.hpp"
 
-// std::complex<double>
-// get_complex_volume_velocity_amplitude(const double& frequency_in_hz) {
-//     return std::complex<double>(10/frequency_in_hz, 0);
-// }
-
-// std::complex<double>
-// get_complex_pressure_amplitude(const double& frequency_in_hz) {
-//     return std::complex<double>(2*frequency_in_hz, 0);
-// }
-
-// std::complex<double>
-// get_specific_surface_acoustic_impedance(const double& frequency_in_hz) {
-//     return std::complex<double>(frequency_in_hz, 2);
-// }
-
 int main() {
 
     using namespace numav;
@@ -30,49 +15,52 @@ int main() {
         ElementOrder::O2
     >();
 
+    // load the mesh
+    s.load_mesh("./build/examples_bin/mesh1.bdff");
+
     // determine simulation frequency range
     double freq_min = 0;
     double freq_max = 100;
-    s.set_freq_limits(freq_min, freq_max);
+    s.set_freq_range(freq_min, freq_max);
 
-    // load the mesh
-    s.load_mesh("mesh1.bdf");
+    auto rho_air = [](auto f) { return 1.20; };
+    auto c_air = [](auto f) { return 343; };
+    s.add_volume_material(
+        1, // id in mesh file
+        rho_air,
+        c_air
+    );
 
-    // const uint64_t id_air = 1;
-    // const double rho_air = 1.20;
-    // const double c_air = 343;
-    // s.add_volume_material(id_air, rho_air, c_air);
+    // add volume velocity sources
+    auto q =[](auto f) { return 1/f; };
+    s.add_source(
+        TypeOfSource::POINT, {1.0, 1.5, 2.0}, // x,y,z
+        PhysicalQuantity::VOLUME_VELOCITY, q
+    );
+    s.add_source(
+        TypeOfSource::SURFACE, 2, // id in mesh file
+        PhysicalQuantity::VOLUME_VELOCITY, q
+    );
 
-    // // add volume velocity sources
-    // std::array<double,3> source_coordinates_1 = {1.0, 1.5, 2.0};
-    // s.add_source(
-    //     TypeOfSource::POINT, source_coordinates_1,
-    //     PhysicalQuantity::VOLUME_VELOCITY, get_complex_volume_velocity_amplitude
-    // );
-    // const uint64_t id_surface_source_1 = 2;
-    // s.add_source(
-    //     TypeOfSource::SURFACE, id_surface_source_1,
-    //     PhysicalQuantity::VOLUME_VELOCITY, get_complex_volume_velocity_amplitude
-    // );
+    // add pressure sources
+    auto p =[](auto f) { return 1/f; };
+    s.add_source(
+        TypeOfSource::POINT, {2.0, 2.5, 1.0}, // x,y,z
+        PhysicalQuantity::PRESSURE, p
+    );
+    const size_t id_surface_source_2 = 3;
+    s.add_source(
+        TypeOfSource::SURFACE, 3, // id in mesh file
+        PhysicalQuantity::PRESSURE, p
+    );
 
-    // // add pressure sources
-    // std::array<double,3> source_coordinates_2 = {2.0, 2.5, 1.0};
-    // s.add_source(
-    //     TypeOfSource::POINT, source_coordinates_2,
-    //     PhysicalQuantity::PRESSURE, get_complex_pressure_amplitude
-    // );
-    // const uint64_t id_surface_source_2 = 3;
-    // s.add_source(
-    //     TypeOfSource::SURFACE, id_surface_source_2,
-    //     PhysicalQuantity::PRESSURE, get_complex_pressure_amplitude
-    // );
+    // add specific surface acoustic impedance
+    auto Z = [](auto f) { return std::complex<double>(f,2); };
+    s.add_surface_specific_acoustic_impedance(
+        4, // id in mesh file
+        Z
+    );
 
-    // // add specific surface acoustic impedance
-    // const uint64_t id_surface_impedance = 4;
-    // s.add_specific_surface_acoustic_impedance(
-    //     id_surface_impedance, get_specific_surface_acoustic_impedance
-    // );
-
-    // // run the simulation
-    // auto = s.run();
+    // run the simulation
+    auto result = s.run();
 }

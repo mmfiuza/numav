@@ -117,11 +117,11 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
                     const uint64_t& order
                 ) { w.set_element_order(order); }
             );
-            wrapped.module().method("set_freq_limits",
+            wrapped.module().method("set_freq_range",
                 []( WrappedT& w,
                     const double& freq_min,
                     const double& freq_max
-                ) { w.set_freq_limits(freq_min, freq_max); }
+                ) { w.set_freq_range(freq_min, freq_max); }
             );
             wrapped.module().method("load_mesh",
                 []( WrappedT& w,

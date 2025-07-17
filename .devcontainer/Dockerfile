@@ -14,7 +14,8 @@ RUN apt-get update && apt-get install -y \
     cmake=3.25.1-1 \
     curl=7.88.1-10+deb12u12 \
     squashfs-tools=1:4.5.1-1 \
-    libeigen3-dev=3.4.0-4
+    libeigen3-dev=3.4.0-4 \
+    libspdlog-dev=1:1.10.0+ds-0.4
 
 # install Julia
 RUN curl -fsSL https://install.julialang.org | sh -s -- --yes

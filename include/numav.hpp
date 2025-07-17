@@ -1,16 +1,32 @@
 // Copyright (c) 2025 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
+/*
+Glossary:
+
+    entity:
+        Some geometrical body (points, lines, surfaces, volumes, etc).
+
+    index (idx):
+        An unsigned integer that uniquely identifies an entity.
+
+    EPG (External Physical Group):
+        An unsigned integer present in an external mesh file (.bdf, etc) or
+        API that classifies an entity into some group, usually a material. An
+        EPG sequence is NOT necessarily consecutive, since mesh formats can
+        have arbitrary conventions.
+
+    IPG (Internal Physical Group)
+        An unsigned integer that classifies an entity into some group in Numav's
+        internal implementation. An IPG sequence is ALWAYS consecutive starting
+        at 0, because that is conveninent to manipulate in C++.
+*/
+
 #pragma once
 
+#include <iostream>
 #include <array>
 #include <complex>
 #include <functional>
-#include <unordered_map>
-
-#define SAFE_PTR_DEBUG
-#include "SafePtr.hpp"
-
-#include "Eigen/Dense"
 
 namespace numav {
 
@@ -34,9 +50,9 @@ namespace numav {
     };
 
     template<Dimension D> constexpr size_t DIM_COUNT = []{
-        if constexpr (D == Dimension::D1) return 1;
-        if constexpr (D == Dimension::D2) return 2;
-        if constexpr (D == Dimension::D3) return 3;
+        if constexpr (D == Dimension::D1) { return 1; }
+        if constexpr (D == Dimension::D2) { return 2; }
+        if constexpr (D == Dimension::D3) { return 3; }
         return 0;
     }();
 
@@ -46,8 +62,8 @@ namespace numav {
     };
 
     template<ElementOrder O> constexpr size_t NODES_IN_2D_ELEM = []{
-        if constexpr (O == ElementOrder::O1) return 3;
-        if constexpr (O == ElementOrder::O2) return 6;
+        if constexpr (O == ElementOrder::O1) { return 3; }
+        if constexpr (O == ElementOrder::O2) { return 6; }
         return 0;
     }();
 
@@ -56,8 +72,8 @@ namespace numav {
     }();
 
     template<ElementOrder O> constexpr size_t NODES_IN_3D_ELEM = []{
-        if constexpr (O == ElementOrder::O1) return 4;
-        if constexpr (O == ElementOrder::O2) return 10;
+        if constexpr (O == ElementOrder::O1) { return 4;  }
+        if constexpr (O == ElementOrder::O2) { return 10; }
         return 0;
     }();
 

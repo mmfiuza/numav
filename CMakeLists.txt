@@ -9,8 +9,9 @@ if(BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
 
-# find Eigen
+# find dependencies
 find_package (Eigen3 3.4 REQUIRED NO_MODULE)
+find_package(spdlog REQUIRED)
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build/lib")
 
@@ -27,6 +28,7 @@ target_include_directories(numav PUBLIC
     /usr/include/eigen3
     ${CMAKE_CURRENT_SOURCE_DIR}/third-party/safe-ptr/include
 )
+target_link_libraries(numav PRIVATE spdlog::spdlog_header_only)
 target_compile_options(numav
     PRIVATE -g -O0 -fno-inline
 )
