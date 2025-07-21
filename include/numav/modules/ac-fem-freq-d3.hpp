@@ -39,6 +39,7 @@ template<> class Result<
 public:
     Result();
     ~Result();
+    // todo: rule of 5
 private:
     double _data;
 };
