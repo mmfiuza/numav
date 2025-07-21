@@ -10,6 +10,26 @@
 
 namespace numav {
 
+template<ElementOrder O> constexpr size_t NODES_IN_2D_ELEM = [] {
+    if constexpr (O == ElementOrder::O1) { return 3; }
+    if constexpr (O == ElementOrder::O2) { return 6; }
+    return 0;
+}();
+
+template<ElementOrder O> constexpr size_t EXTRA_NODES_IN_2D_ELEM = [] {
+    return NODES_IN_2D_ELEM<O> - NODES_IN_2D_ELEM<ElementOrder::O1>;
+}();
+
+template<ElementOrder O> constexpr size_t NODES_IN_3D_ELEM = [] {
+    if constexpr (O == ElementOrder::O1) { return 4;  }
+    if constexpr (O == ElementOrder::O2) { return 10; }
+    return 0;
+}();
+
+template<ElementOrder O> constexpr size_t EXTRA_NODES_IN_3D_ELEM = [] {
+    return NODES_IN_3D_ELEM<O> - NODES_IN_3D_ELEM<ElementOrder::O1>;
+}();
+
 template<> class Result<
     Phenomenon::ACOUSTIC,
     NumericalMethod::FEM,
@@ -34,7 +54,7 @@ class Simulation<
 public:
     Simulation();
     ~Simulation();
-    void set_freq_range(
+    void set_frequency_range(
         const double&,
         const double&
     );
@@ -46,13 +66,13 @@ public:
         const std::function<std::complex<double>(const double&)>&,
         const std::function<std::complex<double>(const double&)>&
     );
-    void add_source(
+    void add_sound_source(
         const TypeOfSource&,
         const std::array<double,3>&,
         const PhysicalQuantity&,
         const std::function<std::complex<double>(const double&)>&
     );
-    void add_source(
+    void add_sound_source(
         const TypeOfSource&,
         const size_t&,
         const PhysicalQuantity&,
@@ -70,7 +90,7 @@ public:
     > run();
 
 private:
-    #include "typedefs.hpp"
+    #include "numav/typedefs.hpp"
 
     // volume element properties
     struct _VolProp {
@@ -84,6 +104,9 @@ private:
     void _check_if_mesh_is_defined();
     void _check_if_it_can_run();
     void _define_freq_vector();
+    void _organize_physical_group_data();
+    void _analize_sparsity();
+    void _solve();
 
     bool _is_mesh_defined;
     bool _is_any_source_defined;
@@ -119,13 +142,18 @@ private:
     std::unordered_map<_epg_t,_ipg_t> _epg_to_ipg_sfc;
     std::unordered_map<_epg_t,_ipg_t> _epg_to_ipg_vol;
 
-    fz::SafePtr<_ipg_t> _ipg_sfc_elem; // todo rethink this
-    fz::SafePtr<_ipg_t> _ipg_vol_elem; // todo rethink this
+    fz::SafePtr<_ipg_t> _ipg_sfc_elem;
+    fz::SafePtr<_ipg_t> _ipg_vol_elem;
     
     fz::SafePtr<_FuncRealToCmplx> _ipg_to_sfc_volvel;
     fz::SafePtr<_FuncRealToCmplx> _ipg_to_sfc_pressure;
     fz::SafePtr<_FuncRealToCmplx> _ipg_to_sfc_impedance;
     fz::SafePtr<_VolProp>         _ipg_to_volprop;
+
+    fz::SafePtr<_idx_t> _nonzero_row_idx;
+    fz::SafePtr<_idx_t> _nonzero_col_idx;
+    fz::SafePtr<_idx_t> _btb_detj_w_vals;
+    fz::SafePtr<_idx_t> _nnt_detj_w_vals;
 };
 
 // explicit instantiation declarations

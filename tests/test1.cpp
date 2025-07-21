@@ -1,0 +1,60 @@
+// Copyright (c) 2025 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
+
+#include "numav/numav.hpp"
+
+int main() {
+
+    using namespace numav;
+
+    // create the simulation object with some numerical method
+    auto s = Simulation<
+        Phenomenon::ACOUSTIC,
+        NumericalMethod::FEM,
+        Domain::FREQUENCY,
+        Dimension::D3,
+        ElementOrder::O2
+    >();
+
+    // load the mesh
+    s.load_mesh("build/tests_bin/test1.bdf");
+
+    // determine simulation frequency range
+    double freq_min = 0;
+    double freq_max = 100;
+    s.set_frequency_range(freq_min, freq_max);
+
+    s.add_volume_material(1, [](auto f){return 1.2;}, [](auto f){return 343;});
+    s.add_volume_material(
+        2, [](auto f) { return 1.0; },
+        [](auto f) { return std::complex<double>(250,30); }
+    );
+
+    // add volume velocity sources
+    auto q =[](auto f) { return 1/f; };
+    s.add_sound_source(
+        TypeOfSource::POINT, {1.0, 1.5, 2.0},
+        PhysicalQuantity::VOLUME_VELOCITY, q
+    );
+    s.add_sound_source(
+        TypeOfSource::SURFACE, 2,
+        PhysicalQuantity::VOLUME_VELOCITY, q
+    );
+
+    // add pressure sources
+    auto p =[](auto f) { return 1/f; };
+    s.add_sound_source(
+        TypeOfSource::POINT, {2.0, 2.5, 1.0},
+        PhysicalQuantity::PRESSURE, p
+    );
+    s.add_sound_source(
+        TypeOfSource::SURFACE, 3,
+        PhysicalQuantity::PRESSURE, p
+    );
+
+    // add specific surface acoustic impedance
+    auto Z = [](auto f) { return std::complex<double>(f,2); };
+    s.add_surface_specific_acoustic_impedance(4, Z);
+
+    // run the simulation
+    auto result = s.run();
+}

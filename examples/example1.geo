@@ -56,4 +56,4 @@ Mesh.ElementOrder = 1;
 Mesh.Algorithm3D = 4; // 4 = Netgen algorithm (good for tets)
 
 // Generate 3D tetrahedral mesh
-Physical Volume("BoxVolume", 1) = {1}; // Tag volume for FEM software
+Physical Volume("BoxVolume", 1) = {1};

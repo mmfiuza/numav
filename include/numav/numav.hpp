@@ -49,37 +49,10 @@ namespace numav {
         D3,
     };
 
-    template<Dimension D> constexpr size_t DIM_COUNT = []{
-        if constexpr (D == Dimension::D1) { return 1; }
-        if constexpr (D == Dimension::D2) { return 2; }
-        if constexpr (D == Dimension::D3) { return 3; }
-        return 0;
-    }();
-
     enum class ElementOrder {
         O1,
         O2
     };
-
-    template<ElementOrder O> constexpr size_t NODES_IN_2D_ELEM = []{
-        if constexpr (O == ElementOrder::O1) { return 3; }
-        if constexpr (O == ElementOrder::O2) { return 6; }
-        return 0;
-    }();
-
-    template<ElementOrder O> constexpr size_t EXTRA_NODES_IN_2D_ELEM = []{
-        return NODES_IN_2D_ELEM<O> - NODES_IN_2D_ELEM<ElementOrder::O1>;
-    }();
-
-    template<ElementOrder O> constexpr size_t NODES_IN_3D_ELEM = []{
-        if constexpr (O == ElementOrder::O1) { return 4;  }
-        if constexpr (O == ElementOrder::O2) { return 10; }
-        return 0;
-    }();
-
-    template<ElementOrder O> constexpr size_t EXTRA_NODES_IN_3D_ELEM = []{
-        return NODES_IN_3D_ELEM<O> - NODES_IN_3D_ELEM<ElementOrder::O1>;
-    }();
 
     enum class TypeOfSource {
         POINT,
@@ -90,13 +63,21 @@ namespace numav {
         PRESSURE,
         VOLUME_VELOCITY,
     };
+    
+    template<Dimension D> constexpr size_t DIM_COUNT = [] {
+        if constexpr (D == Dimension::D1) { return 1; }
+        if constexpr (D == Dimension::D2) { return 2; }
+        if constexpr (D == Dimension::D3) { return 3; }
+        return 0;
+    }();
 
     // declare the general Result class
     template<
         Phenomenon PHENOMENON,
         NumericalMethod NUMERICAL_METHOD,
         Domain DOMAIN,
-        Dimension DIMENSION
+        Dimension DIMENSION,
+        auto... EXTRA
     >
     class Result {};
 
@@ -112,5 +93,5 @@ namespace numav {
 
 } // namespace numav
 
-// include specific numerical methods
-#include "ac-fem-freq-d3.hpp"
+// include modules
+#include "numav/modules/ac-fem-freq-d3.hpp"

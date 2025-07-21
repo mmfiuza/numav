@@ -1,32 +1,23 @@
 // Copyright (c) 2025 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
-#include "numav.hpp"
-#include "logger.hpp"
-
 #include <tuple>
-
+#include <cmath>
 #include <charconv>
 #include <fstream>
 #undef NDEBUG
 #include <cassert>
 
-#include "Eigen/Dense"
+#include "Eigen/Eigen"
 
-#include "typedefs.hpp"
+#include "numav/numav.hpp"
+#include "numav/typedefs.hpp"
+#include "common/log.hpp"
+#include "common/hash_functions.hpp"
 
-// define a hash function for std::tuple<size_t,size_t>
-namespace std {
-    template<>
-    struct hash<std::tuple<size_t,size_t>> {
-        size_t operator()(const std::tuple<size_t,size_t>& key) const {
-            return (std::get<0>(key) << 4*sizeof(size_t)) + std::get<1>(key);
-        }
-    };
-}
+namespace numav {
 
-namespace numav{
-
-inline Logger _logger;
+static constexpr size_t DIM = DIM_COUNT<Dimension::D3>;
+static constexpr double VOLUME_REF_TET = 1/6;
 
 using ResultAcFemFreqD3 = typename numav::Result<
     Phenomenon::ACOUSTIC,
@@ -49,6 +40,8 @@ using SimulationAcFemFreqD3 = typename numav::Simulation<
 
 template<ElementOrder O>
 SimulationAcFemFreqD3<O>::Simulation() {
+    log::set_level();
+    log::set_pattern();
     _is_mesh_defined = false;
     _is_freq_range_defined = false;
     _is_any_source_defined = false;
@@ -56,12 +49,22 @@ SimulationAcFemFreqD3<O>::Simulation() {
 
 template<ElementOrder O>
 SimulationAcFemFreqD3<O>::~Simulation() {
+    _freq_vec.free();
     _node_coords.free();
     _sfc_elem_node_idx.free();
     _vol_elem_node_idx.free();
     _epg_sfc_elem.free();
     _epg_vol_elem.free();
-    _freq_vec.free();
+    // _ipg_sfc_elem.free();
+    _ipg_vol_elem.free();
+    _ipg_to_sfc_volvel.free();
+    _ipg_to_sfc_pressure.free();
+    _ipg_to_sfc_impedance.free();
+    _ipg_to_volprop.free();
+    _nonzero_row_idx.free();
+    _nonzero_col_idx.free();
+    _btb_detj_w_vals.free();
+    // _nnt_detj_w_vals.free();
 }
 
 fz::SafePtr<double> linspace(
@@ -83,15 +86,21 @@ fz::SafePtr<double> linspace(
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::_check_if_mesh_is_defined() {
     if (!_is_mesh_defined){
-        _logger.error("Mesh not defined. Call load_mesh to do so.");
+        log::error("Mesh not defined. Call load_mesh to do so.");
     }
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::set_freq_range(
+void SimulationAcFemFreqD3<O>::set_frequency_range(
     const double& freq_min,
     const double& freq_max
 ) {
+    if (freq_min<0 || freq_max<0) {
+        log::error("Frequency limits should be positive.");
+    }
+    if (freq_min >= freq_max) {
+        log::error("Upper frequency should be greater than the lower.");
+    }
     _freq_min = freq_min;
     _freq_max = freq_max;
     _is_freq_range_defined = true;
@@ -102,7 +111,7 @@ void SimulationAcFemFreqD3<O>::load_mesh(
     const char* const path_to_mesh
 ) {
     if (_is_mesh_defined) {
-        _logger.error("Mesh is already defined.");
+        log::error("Mesh is already defined.");
     }
     std::string str = path_to_mesh;
     if (str.ends_with(".bdf") || str.ends_with(".nas")) {
@@ -114,8 +123,9 @@ void SimulationAcFemFreqD3<O>::load_mesh(
         const std::string format = std::string(
             str.substr(dot_position, format_len)
         );
-        _logger.error("Unrecognized file format: \"{0}\"", format);
+        log::error("Unrecognized file format: \"{0}\".", format);
     }
+    _generate_extra_nodes(); // call is based on the element order
     _is_mesh_defined = true;
 }
 
@@ -127,10 +137,10 @@ void SimulationAcFemFreqD3<O>::add_volume_material(
 ) {
     _check_if_mesh_is_defined();
     if (!_existing_epg_vol.contains(epg)) {
-        // TODO: error
+        log::error("Tag {} not found in mesh file.", epg);
     }
     if (_epg_to_volprop.contains(epg)) {
-        // TODO: error
+        log::error("Tag {} already assigned.", epg);
     }
     _epg_to_volprop.insert({epg, {density, soundspeed}});
     const _ipg_t ipg = _epg_to_ipg_vol.size();
@@ -138,7 +148,7 @@ void SimulationAcFemFreqD3<O>::add_volume_material(
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::add_source(
+void SimulationAcFemFreqD3<O>::add_sound_source(
     const TypeOfSource& type_of_source,
     const std::array<double,3>& point_coordinates,
     const PhysicalQuantity& physical_quantity_type,
@@ -146,7 +156,7 @@ void SimulationAcFemFreqD3<O>::add_source(
 ) {
     _check_if_mesh_is_defined();
     if (type_of_source != TypeOfSource::POINT) {
-        // TODO: error
+        log::error("Tried to assign coordinates to a surface sound source.");
     }
     const _idx_t closest_point_idx = _get_closest_point(point_coordinates);
     
@@ -158,16 +168,17 @@ void SimulationAcFemFreqD3<O>::add_source(
     else if (physical_quantity_type == PhysicalQuantity::PRESSURE) {
         _point_volvel.push_back(
             std::make_tuple(closest_point_idx, physical_quantity_value)
-        ); 
+        );
     }
     else {
-        // TODO: error
+        log::error("Possible physical quantities are volume velocity"
+            " or pressure.");
     }
     _is_any_source_defined = true;
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::add_source(
+void SimulationAcFemFreqD3<O>::add_sound_source(
     const TypeOfSource& type_of_source,
     const _epg_t& epg,
     const PhysicalQuantity& physical_quantity_type,
@@ -175,32 +186,32 @@ void SimulationAcFemFreqD3<O>::add_source(
 ) {
     _check_if_mesh_is_defined();
     if (type_of_source != TypeOfSource::SURFACE) {
-        // TODO: error
+        log::error("Tried to assign a tag to a point.");
     }
     if (!_existing_epg_sfc.contains(epg)) {
-        // TODO: error
+        log::error("Tag {} not found in mesh file.", epg);
     }
     if (_epg_to_sfc_pressure.contains(epg) ||
         _epg_to_sfc_volvel.contains(epg) ||
         _epg_to_sfc_impedance.contains(epg)
     ) {
-        // TODO: error
+        log::error("Tag {} already assigned.", epg);
     }
     if (physical_quantity_type == PhysicalQuantity::PRESSURE) {
+        const _ipg_t ipg = _epg_to_sfc_pressure.size();
         _epg_to_sfc_pressure.insert({epg, physical_quantity_value});
-        const _ipg_t ipg = _epg_to_ipg_sfc.size();
         _epg_to_ipg_sfc.insert({epg, ipg});
-        _is_any_source_defined = true;
-        return;
     }
-    if (physical_quantity_type == PhysicalQuantity::VOLUME_VELOCITY) {
+    else if (physical_quantity_type == PhysicalQuantity::VOLUME_VELOCITY) {
+        const _ipg_t ipg = _epg_to_sfc_volvel.size();
         _epg_to_sfc_volvel.insert({epg, physical_quantity_value});
-        const _ipg_t ipg = _epg_to_ipg_sfc.size();
         _epg_to_ipg_sfc.insert({epg, ipg});
-        _is_any_source_defined = true;
-        return;
     }
-    // TODO: error
+    else {
+        log::error("Possible physical quantities are volume velocity"
+            " or pressure.");
+    }
+    _is_any_source_defined = true;
 }
 
 template <ElementOrder O>
@@ -210,16 +221,16 @@ void SimulationAcFemFreqD3<O>::add_surface_specific_acoustic_impedance(
 ) {
     _check_if_mesh_is_defined();
     if (!_existing_epg_sfc.contains(epg)) {
-        // TODO: error
+        log::error("Tag {} not found in mesh file.", epg);
     }
     if (_epg_to_sfc_pressure.contains(epg) ||
         _epg_to_sfc_volvel.contains(epg) ||
         _epg_to_sfc_impedance.contains(epg)
     ) {
-        // TODO: error
+        log::error("Tag {} already assigned.", epg);
     }
+    const _ipg_t ipg = _epg_to_sfc_impedance.size();
     _epg_to_sfc_impedance.insert({epg, impedance});
-    const _ipg_t ipg = _epg_to_ipg_sfc.size();
     _epg_to_ipg_sfc.insert({epg, ipg});
 }
 
@@ -234,31 +245,60 @@ template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::_check_if_it_can_run() {
     _check_if_mesh_is_defined();
     if (!_is_any_source_defined){
-        // TODO error
+        log::error("No sound source was defined."
+            " Call add_sound_source to do so.");
     }
     if (!_is_freq_range_defined){
-        // TODO error
+        log::error("Simulation frequency range was not defined."
+            " Call set_frequency_range to do so.");
     }
     for (auto& epg : _existing_epg_vol) {
         if (!_epg_to_volprop.contains(epg)) {
-            // TODO: error
+            log::error("Volume tag {} was not assigned."
+            " Call add_volume_material to do so.", epg);
         }
     }
 }
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::_define_freq_vector() {
-    // TODO: decide number here
-    // TODO: make it not linear
+    // todo: decide number here
+    // todo: make it not linear
     _freq_vec = linspace(_freq_min, _freq_max, 8192);
 }
 
-template <ElementOrder O>
-ResultAcFemFreqD3 SimulationAcFemFreqD3<O>::run()
-{
-    _check_if_it_can_run();
-    _define_freq_vector();
+template<size_t N> constexpr size_t FACTORIAL = [] {
+    size_t result = 1;
+    for(size_t i = 2; i<=N; ++i) {
+        result *= i;
+    }
+    return result;
+}();
 
+template<size_t N, size_t K> constexpr size_t COMB_REP_SIZE = [] {
+    // combination with repetition
+    return FACTORIAL<N+K-1> / (FACTORIAL<K> * FACTORIAL<N-1>);
+}();
+
+template<size_t N>
+constexpr std::array<std::array<size_t,2>, COMB_REP_SIZE<N,2>> 
+COMBINATION_REP = [] { // todo: generalize for K!=2 (maybe)
+    constexpr size_t K = 2;
+    // combination with repetition
+    std::array<std::array<size_t,K>, COMB_REP_SIZE<N,K>> result;
+    auto it_result = result.begin();
+    for (size_t j=0; j!=N; ++j) {
+        for (size_t i=0; i!=j+1; ++i) {
+            *it_result = {i,j};
+            ++it_result;
+        }
+    }
+    return result;
+}();
+
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::_organize_physical_group_data()
+{
     // generate structures accessed through IPG
     _ipg_to_sfc_volvel =
         fz::SafePtr<_FuncRealToCmplx>(_epg_to_sfc_volvel.size());
@@ -285,8 +325,105 @@ ResultAcFemFreqD3 SimulationAcFemFreqD3<O>::run()
         _ipg_to_volprop[ipg] = volprop;
     }
     
-    _ipg_vol_elem = fz::SafePtr<_ipg_t>(_vol_elem_count); // todo
+    // generate the contiguous vector with the ipg of each element
+    _ipg_vol_elem = fz::SafePtr<_ipg_t>(_vol_elem_count);
+    for (_idx_t e=0; e!=_ipg_vol_elem.size(); ++e) {
+        _ipg_vol_elem[e] = _epg_to_ipg_vol.at(_epg_vol_elem[e]);
+    }
+}
 
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::_analize_sparsity()
+{
+    constexpr std::array<
+        std::array<size_t,2>, COMB_REP_SIZE<NODES_IN_3D_ELEM<O>,2>
+    > COMB = COMBINATION_REP<NODES_IN_3D_ELEM<O>>;
+    _nonzero_row_idx = fz::SafePtr<_idx_t>(_vol_elem_count*COMB.size());
+    _nonzero_col_idx = fz::SafePtr<_idx_t>(_vol_elem_count*COMB.size());
+    auto it_nonzero_row_idx = _nonzero_row_idx.begin();
+    auto it_nonzero_col_idx = _nonzero_col_idx.begin();
+    for (_idx_t e=0; e!=_vol_elem_node_idx.size(); ++e) {
+        for (size_t i=0; i!=COMB.size(); ++i) {
+            *it_nonzero_row_idx = _vol_elem_node_idx[e][COMB[i][0]];
+            ++it_nonzero_row_idx;
+            *it_nonzero_col_idx = _vol_elem_node_idx[e][COMB[i][1]];
+            ++it_nonzero_col_idx;
+        }
+    }
+}
+
+template<ElementOrder O>
+Eigen::Matrix<double, NODES_IN_3D_ELEM<O>, 1> shape_func(
+    const double&, const double&, const double&
+);
+
+template<>
+Eigen::Matrix<double, NODES_IN_3D_ELEM<ElementOrder::O1>, 1>
+shape_func<ElementOrder::O1>(
+    const double& xi0, const double& xi1, const double& xi2
+) {
+    const double xi3 = 1 - xi0 - xi1 - xi2;
+    return Eigen::Matrix<double, NODES_IN_3D_ELEM<ElementOrder::O1>, 1>(
+        xi0,
+        xi1,
+        xi2,
+        xi3
+    );
+}
+
+template<>
+Eigen::Matrix<double, NODES_IN_3D_ELEM<ElementOrder::O2>, 1>
+shape_func<ElementOrder::O2>(
+    const double& xi0, const double& xi1, const double& xi2
+) {
+    const double xi3 = 1 - xi0 - xi1 - xi2;
+    return Eigen::Matrix<double, NODES_IN_3D_ELEM<ElementOrder::O2>, 1>(
+        xi0*(2*xi0-1),
+        xi1*(2*xi1-1),
+        xi2*(2*xi2-1),
+        xi3*(2*xi3-1),
+        4*xi0*xi1,
+        4*xi0*xi2,
+        4*xi0*xi3,
+        4*xi1*xi2,
+        4*xi1*xi3,
+        4*xi2*xi3
+    );
+}
+
+template<ElementOrder O>
+Eigen::Matrix<double, DIM, NODES_IN_3D_ELEM<O>> shape_func_gradient(
+    const double&, const double&, const double&
+);
+
+template<>
+Eigen::Matrix<double, DIM, NODES_IN_3D_ELEM<ElementOrder::O1>>
+shape_func_gradient<ElementOrder::O1>(
+    const double& xi0, const double& xi1, const double& xi2
+) {
+    return Eigen::Matrix<double, DIM, NODES_IN_3D_ELEM<ElementOrder::O1>> {
+        {1, 0, 0, -1},
+        {0, 1, 0, -1},
+        {0, 0, 1, -1}
+    };
+}
+
+template<>
+Eigen::Matrix<double, DIM, NODES_IN_3D_ELEM<ElementOrder::O2>>
+shape_func_gradient<ElementOrder::O2>(
+    const double& xi0, const double& xi1, const double& xi2
+) {
+    const double xi3 = 1 - xi0 - xi1 - xi2;
+    return Eigen::Matrix<double, DIM, NODES_IN_3D_ELEM<ElementOrder::O2>> {
+        {4*xi0-1, 0, 0, 1-4*xi3, 4*xi1, 4*xi2, 4*(xi3-xi0), 0, -4*xi1, -4*xi2},
+        {0, 4*xi1-1, 0, 1-4*xi3, 4*xi0, 0, -4*xi0, 4*xi2, 4*(xi3-xi1), -4*xi2},
+        {0, 0, 4*xi2-1, 1-4*xi3, 0, 4*xi0, -4*xi0, 4*xi1, -4*xi1, 4*(xi3-xi2)},
+    };
+}
+
+template<ElementOrder O>
+void SimulationAcFemFreqD3<O>::_solve()
+{
     fz::SafePtr<std::complex<double>> ipg_to_density_value(
         _ipg_to_volprop.size()
     );
@@ -296,16 +433,140 @@ ResultAcFemFreqD3 SimulationAcFemFreqD3<O>::run()
     for (size_t i=0; i!=_freq_vec.size(); ++i)
     {
         const double freq = _freq_vec[i];
-
+        
         for (_ipg_t ipg=0; ipg!=_ipg_to_volprop.size(); ++ipg) {
             ipg_to_density_value[ipg] = 
                 (_ipg_to_volprop[ipg].density)(freq);
             ipg_to_soundspeed_value[ipg] = 
                 (_ipg_to_volprop[ipg].soundspeed)(freq);
         }
+    }
+    ipg_to_density_value.free();
+    ipg_to_soundspeed_value.free();
+}
 
+template<ElementOrder O> constexpr size_t NGP_STIF = [] {
+    if constexpr (O == ElementOrder::O1) { return 1; }
+    if constexpr (O == ElementOrder::O2) { return 4; }
+}();
+
+template<ElementOrder O> constexpr size_t NGP_MASS = [] {
+    if constexpr (O == ElementOrder::O1) { return 4;  }
+    if constexpr (O == ElementOrder::O2) { return 15; }
+}();
+
+template<size_t N>
+constexpr std::array<std::array<double,DIM>,N> GAUSS_POINTS = [] {
+    if constexpr (N == 1) {
+        return std::array<std::array<double,DIM>,N>({ {1/4, 1/4, 1/4} });
+    }
+    if constexpr (N == 4) {
+        constexpr double a = (5 -   std::sqrt(5)) / 20;
+        constexpr double b = (5 + 3*std::sqrt(5)) / 20;
+        return std::array<std::array<double,DIM>,N> {{
+            {a,a,a}, {b,a,a}, {a,b,a}, {a,a,b}
+        }};
+    }
+    if constexpr (N == 15) {
+        constexpr double a = 1/4;
+        constexpr double b = ( 7 +   std::sqrt(15)) / 34;
+        constexpr double c = ( 7 -   std::sqrt(15)) / 34;
+        constexpr double d = (13 - 3*std::sqrt(15)) / 34;
+        constexpr double e = (13 + 3*std::sqrt(15)) / 34;
+        constexpr double f = ( 5 -   std::sqrt(15)) / 20;
+        constexpr double g = ( 5 +   std::sqrt(15)) / 20;
+        return std::array<std::array<double,DIM>,N> {{
+            {a,a,a}, {b,b,b}, {b,b,d}, {b,d,b}, {d,b,b}, 
+            {c,c,c}, {c,c,e}, {c,e,c}, {e,c,c}, {f,f,g},
+            {f,g,f}, {g,f,f}, {f,g,g}, {g,f,g}, {g,g,f}
+        }};
+    }
+}();
+
+template<size_t N>
+constexpr std::array<double,N> GAUSS_WEIGHTS = [] {
+    if constexpr (N == 1) {
+        constexpr double a = 1;
+        return std::array<double,N>({VOLUME_REF_TET * a});
+    }
+    if constexpr (N == 4) {
+        constexpr double a = VOLUME_REF_TET * 1/4;
+        return std::array<double,N>{{a,a,a,a}};
+    }
+    if constexpr (N == 15) {
+        constexpr double a = VOLUME_REF_TET * 8/405;
+        constexpr double b = VOLUME_REF_TET * (2665 - 14*std::sqrt(15))/226800;
+        constexpr double c = VOLUME_REF_TET * (2665 + 14*std::sqrt(15))/226800;
+        constexpr double d = VOLUME_REF_TET * 5/567;
+        return std::array<double,N>{{a,b,b,b,b,c,c,c,c,d,d,d,d,d,d}};
+    }
+}();
+
+template <ElementOrder O>
+ResultAcFemFreqD3 SimulationAcFemFreqD3<O>::run()
+{
+    _check_if_it_can_run();
+    _define_freq_vector();
+    _organize_physical_group_data();
+    _analize_sparsity();
+    
+    // matrices
+    constexpr std::array<
+        std::array<size_t,2>, COMB_REP_SIZE<NODES_IN_3D_ELEM<O>,2>
+    > COMB = COMBINATION_REP<NODES_IN_3D_ELEM<O>>;
+    _btb_detj_w_vals = fz::SafePtr<_idx_t>(_vol_elem_count*COMB.size());
+    _btb_detj_w_vals.fill(0);
+    auto it_btb_detj_w_vals = _btb_detj_w_vals.begin();
+
+    for (_idx_t e=0; e!=_vol_elem_count; ++e)
+    {
+        // coordinates matrix
+        Eigen::Matrix<double,NODES_IN_3D_ELEM<O>,DIM> coords_matrix;
+        for (size_t i=0; i!=NODES_IN_3D_ELEM<O>; ++i) {
+            const _idx_t node_idx = _vol_elem_node_idx[e][i];
+            for (size_t j=0; j!=DIM; ++j) {
+                coords_matrix(i,j) = _node_coords[node_idx][j];
+            }
+        }
+
+        // stiffness matrices
+        constexpr std::array<std::array<double,DIM>,NGP_STIF<O>>
+            gauss_points = GAUSS_POINTS<NGP_STIF<O>>;
+        it_btb_detj_w_vals += COMB_REP_SIZE<NODES_IN_3D_ELEM<O>,2>;
+        for (_idx_t p=0; p!=NGP_STIF<O>; ++p)
+        {
+            Eigen::Matrix<double,DIM,NODES_IN_3D_ELEM<O>> nabla_n =
+                shape_func_gradient<O>(
+                    gauss_points[p][0], gauss_points[p][1], gauss_points[p][2]
+                ); // todo: try putting constexpr here
+
+            const Eigen::Matrix<double,DIM,DIM> jac_matrix =
+                nabla_n * coords_matrix;
+
+            const Eigen::Matrix<double,DIM,DIM> inv_jac = jac_matrix.inverse();
+            
+            const Eigen::Matrix<double,DIM,NODES_IN_3D_ELEM<O>> b_matrix =
+                inv_jac * nabla_n;
+            
+            const Eigen::Matrix<double,NODES_IN_3D_ELEM<O>,NODES_IN_3D_ELEM<O>>
+                btb = b_matrix.transpose() * b_matrix;
+            
+            const double det_jac = jac_matrix.determinant();
+            
+            const Eigen::Matrix<double,NODES_IN_3D_ELEM<O>,NODES_IN_3D_ELEM<O>>
+                btb_detj_w = btb * det_jac * GAUSS_WEIGHTS<NGP_STIF<O>>[p];
+            
+            for (size_t c=0; c!=COMB_REP_SIZE<NODES_IN_3D_ELEM<O>,2>; ++c) {
+                *it_btb_detj_w_vals += btb_detj_w(COMB[c][0], COMB[c][1]);
+                ++it_btb_detj_w_vals;
+            }
+            it_btb_detj_w_vals -= COMB_REP_SIZE<NODES_IN_3D_ELEM<O>,2>;
+        }
     }
     
+    
+
+    _solve();
     return ResultAcFemFreqD3();
 }
 
@@ -335,8 +596,7 @@ void SimulationAcFemFreqD3<O>::_load_bdf(const char* const path_to_mesh)
     line.reserve(MAX_BDF_CHARACTERS_PER_LINE);
     
     if (!file.is_open()) {
-        std::cerr << "Error opening file: " << path_to_mesh << "\n";
-        return;
+        log::error("Could not open file: {}", path_to_mesh);
     }
 
     // first pass: count lines by type
@@ -344,19 +604,18 @@ void SimulationAcFemFreqD3<O>::_load_bdf(const char* const path_to_mesh)
     _sfc_elem_count = 0;
     _vol_elem_count = 0;
     while (std::getline(file, line)) {
-        if      (line.starts_with("GRID"))   { ++_node_count;    }
-        else if (line.starts_with("CTRIA3")) { ++_sfc_elem_count; }
-        else if (line.starts_with("CTETRA")) { ++_vol_elem_count; }
+        if      (line.starts_with("GRID"))    { ++_node_count; }
+        else if (line.starts_with("CTRIA3"))  { ++_sfc_elem_count; }
+        else if (line.starts_with("CTETRA"))  { ++_vol_elem_count; }
+        else if (line.starts_with("ENDDATA")) { break; }
     }
 
     // second pass: parse data
     _node_coords = fz::SafePtr<std::array<double,3>>(_node_count);
-    _sfc_elem_node_idx = fz::SafePtr<std::array<size_t,NODES_IN_2D_ELEM<O>>>(
-        _sfc_elem_count
-    );
-    _vol_elem_node_idx = fz::SafePtr<std::array<size_t,NODES_IN_3D_ELEM<O>>>(
-        _vol_elem_count
-    );
+    _sfc_elem_node_idx =
+        fz::SafePtr<std::array<size_t,NODES_IN_2D_ELEM<O>>>(_sfc_elem_count);
+    _vol_elem_node_idx =
+        fz::SafePtr<std::array<size_t,NODES_IN_3D_ELEM<O>>>(_vol_elem_count);
     _epg_sfc_elem = fz::SafePtr<size_t>(_sfc_elem_count);
     _epg_vol_elem = fz::SafePtr<size_t>(_vol_elem_count);
     auto it_node_coords = _node_coords.begin();
@@ -400,14 +659,16 @@ void SimulationAcFemFreqD3<O>::_load_bdf(const char* const path_to_mesh)
             };
             ++it_3d_elem_vtx_idx;
         }
+        else if (line.starts_with("ENDDATA")) {
+            break;
+        }
     }
     file.close();
-    _generate_extra_nodes(); // call is based on the element order
 }
 
 template<>
 void SimulationAcFemFreqD3<ElementOrder::O1>::_generate_extra_nodes() {
-    // nothing needs to be done for this case
+    // nothing needs to be done in this case (in order 1)
 }
 
 template<typename... T>
@@ -453,7 +714,7 @@ void SimulationAcFemFreqD3<ElementOrder::O2>::_generate_extra_nodes()
             } else {
                 is_extra_node[e][i] = false;          
                 _vol_elem_node_idx[e][NODES_IN_3D_ELEM<ElementOrder::O1> + i] =
-                    idxs_extra_nodes.find(tup)->second;
+                    idxs_extra_nodes.at(tup);
             }     
         }
     }
@@ -486,7 +747,7 @@ void SimulationAcFemFreqD3<ElementOrder::O2>::_generate_extra_nodes()
                 _node_coords[std::get<0>(tup)][2],
                 _node_coords[std::get<1>(tup)][2]
             );
-            const size_t idx_extra_node = idxs_extra_nodes.find(tup)->second;
+            const size_t idx_extra_node = idxs_extra_nodes.at(tup);
             _node_coords[idx_extra_node] = {x, y, z}; // add extra node
         }
     }
@@ -502,7 +763,7 @@ void SimulationAcFemFreqD3<ElementOrder::O2>::_generate_extra_nodes()
                 _sfc_elem_node_idx[e][VTX_PAIRS_2D[i][1]]
             );
             _sfc_elem_node_idx[e][NODES_IN_2D_ELEM<ElementOrder::O1> + i] =
-                idxs_extra_nodes.find(tup)->second;
+                idxs_extra_nodes.at(tup);
         }
     }
 }
