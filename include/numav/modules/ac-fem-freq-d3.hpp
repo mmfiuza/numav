@@ -99,6 +99,9 @@ private:
         _FuncRealToCmplx soundspeed;
     };
 
+    size_t _node_count() const;
+    size_t _sfc_elem_count() const;
+    size_t _vol_elem_count() const;
     void _load_bdf(const char* const);
     void _generate_extra_nodes();
     _idx_t _get_closest_point(const std::array<double,3>&);
@@ -120,11 +123,6 @@ private:
     fz::SafePtr<std::array<double,3>> _node_coords;
     fz::SafePtr<std::array<_idx_t,NODES_IN_2D_ELEM<O>>> _sfc_elem_node_idx;
     fz::SafePtr<std::array<_idx_t,NODES_IN_3D_ELEM<O>>> _vol_elem_node_idx;
-    
-    // todo: these are all redundant (can be turned into functions)
-    size_t _node_count;
-    size_t _sfc_elem_count;
-    size_t _vol_elem_count;
 
     std::vector<std::tuple<_idx_t,_FuncRealToCmplx>> _point_volvel;
     std::vector<std::tuple<_idx_t,_FuncRealToCmplx>> _point_pressure;

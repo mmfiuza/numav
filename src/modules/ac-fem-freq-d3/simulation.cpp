@@ -69,6 +69,21 @@ SimulationAcFemFreqD3<O>::~Simulation() {
 }
 
 template <ElementOrder O>
+size_t SimulationAcFemFreqD3<O>::_node_count() const {
+    return _node_coords.size();
+}
+
+template <ElementOrder O>
+size_t SimulationAcFemFreqD3<O>::_sfc_elem_count() const {
+    return _sfc_elem_node_idx.size();
+}
+
+template <ElementOrder O>
+size_t SimulationAcFemFreqD3<O>::_vol_elem_count() const {
+    return _vol_elem_node_idx.size();
+}
+
+template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::_check_if_mesh_is_defined() {
     if (!_is_mesh_defined){
         log::error("Mesh not defined. Call load_mesh to do so.");
@@ -282,7 +297,7 @@ void SimulationAcFemFreqD3<O>::_organize_physical_group_data()
     }
     
     // generate the contiguous vector with the ipg of each element
-    _ipg_vol_elem = fz::SafePtr<_ipg_t>(_vol_elem_count);
+    _ipg_vol_elem = fz::SafePtr<_ipg_t>(_vol_elem_count());
     for (_idx_t e=0; e!=_ipg_vol_elem.size(); ++e) {
         _ipg_vol_elem[e] = _epg_to_ipg_vol.at(_epg_vol_elem[e]);
     }
@@ -294,11 +309,11 @@ void SimulationAcFemFreqD3<O>::_analize_sparsity()
     constexpr std::array<
         std::array<size_t,2>, COMB_REP_SIZE<NODES_IN_3D_ELEM<O>,2>
     > COMB = COMBINATION_REP<NODES_IN_3D_ELEM<O>>;
-    _nonzero_row_idx = fz::SafePtr<_idx_t>(_vol_elem_count*COMB.size());
-    _nonzero_col_idx = fz::SafePtr<_idx_t>(_vol_elem_count*COMB.size());
+    _nonzero_row_idx = fz::SafePtr<_idx_t>(_vol_elem_count()*COMB.size());
+    _nonzero_col_idx = fz::SafePtr<_idx_t>(_vol_elem_count()*COMB.size());
     auto it_nonzero_row_idx = _nonzero_row_idx.begin();
     auto it_nonzero_col_idx = _nonzero_col_idx.begin();
-    for (_idx_t e=0; e!=_vol_elem_node_idx.size(); ++e) {
+    for (_idx_t e=0; e!=_vol_elem_count(); ++e) {
         for (size_t i=0; i!=COMB.size(); ++i) {
             *it_nonzero_row_idx = _vol_elem_node_idx[e][COMB[i][0]];
             ++it_nonzero_row_idx;
@@ -470,11 +485,11 @@ ResultAcFemFreqD3 SimulationAcFemFreqD3<O>::run()
     constexpr std::array<
         std::array<size_t,2>, COMB_REP_SIZE<NODES_IN_3D_ELEM<O>,2>
     > COMB = COMBINATION_REP<NODES_IN_3D_ELEM<O>>;
-    _btb_detj_w_vals = fz::SafePtr<_idx_t>(_vol_elem_count*COMB.size());
+    _btb_detj_w_vals = fz::SafePtr<_idx_t>(_vol_elem_count()*COMB.size());
     _btb_detj_w_vals.fill(0);
     auto it_btb_detj_w_vals = _btb_detj_w_vals.begin();
 
-    for (_idx_t e=0; e!=_vol_elem_count; ++e)
+    for (_idx_t e=0; e!=_vol_elem_count(); ++e)
     {
         // coordinates matrix
         Eigen::Matrix<double,NODES_IN_3D_ELEM<O>,DIM> coords_matrix;
@@ -556,24 +571,24 @@ void SimulationAcFemFreqD3<O>::_load_bdf(const char* const path_to_mesh)
     }
 
     // first pass: count lines by type
-    _node_count = 0;
-    _sfc_elem_count = 0;
-    _vol_elem_count = 0;
+    size_t node_count = 0;
+    size_t sfc_elem_count = 0;
+    size_t vol_elem_count = 0;
     while (std::getline(file, line)) {
-        if      (line.starts_with("GRID"))    { ++_node_count; }
-        else if (line.starts_with("CTRIA3"))  { ++_sfc_elem_count; }
-        else if (line.starts_with("CTETRA"))  { ++_vol_elem_count; }
+        if      (line.starts_with("GRID"))    { ++node_count; }
+        else if (line.starts_with("CTRIA3"))  { ++sfc_elem_count; }
+        else if (line.starts_with("CTETRA"))  { ++vol_elem_count; }
         else if (line.starts_with("ENDDATA")) { break; }
     }
 
     // second pass: parse data
-    _node_coords = fz::SafePtr<std::array<double,3>>(_node_count);
+    _node_coords = fz::SafePtr<std::array<double,3>>(node_count);
     _sfc_elem_node_idx =
-        fz::SafePtr<std::array<size_t,NODES_IN_2D_ELEM<O>>>(_sfc_elem_count);
+        fz::SafePtr<std::array<size_t,NODES_IN_2D_ELEM<O>>>(sfc_elem_count);
     _vol_elem_node_idx =
-        fz::SafePtr<std::array<size_t,NODES_IN_3D_ELEM<O>>>(_vol_elem_count);
-    _epg_sfc_elem = fz::SafePtr<size_t>(_sfc_elem_count);
-    _epg_vol_elem = fz::SafePtr<size_t>(_vol_elem_count);
+        fz::SafePtr<std::array<size_t,NODES_IN_3D_ELEM<O>>>(vol_elem_count);
+    _epg_sfc_elem = fz::SafePtr<size_t>(sfc_elem_count);
+    _epg_vol_elem = fz::SafePtr<size_t>(vol_elem_count);
     auto it_node_coords = _node_coords.begin();
     auto it_2d_elem_vtx_idx = _sfc_elem_node_idx.begin();
     auto it_3d_elem_vtx_idx = _vol_elem_node_idx.begin();
@@ -641,10 +656,10 @@ void SimulationAcFemFreqD3<ElementOrder::O2>::_generate_extra_nodes()
     std::unordered_map<std::tuple<size_t,size_t>,size_t> idxs_extra_nodes;
     
     // first pass: count extra nodes and save idx tuples
-    fz::SafePtr<std::array<
-        bool, EXTRA_NODES_IN_3D_ELEM<ElementOrder::O2>
-    >> is_extra_node(_vol_elem_count);
-    for (size_t e=0; e!=_vol_elem_count; ++e) {
+    fz::SafePtr<std::array<bool,EXTRA_NODES_IN_3D_ELEM<ElementOrder::O2>>>
+        is_extra_node(_vol_elem_count());
+    size_t count = _node_count();
+    for (size_t e=0; e!=_vol_elem_count(); ++e) {
         for (size_t i=0; i!=VTX_PAIRS_3D.size(); ++i)
         {
             const std::tuple<size_t,size_t> tup = make_ascending_tuple(
@@ -654,9 +669,9 @@ void SimulationAcFemFreqD3<ElementOrder::O2>::_generate_extra_nodes()
             if (!idxs_extra_nodes.contains(tup)) {
                 is_extra_node[e][i] = true;
                 _vol_elem_node_idx[e][NODES_IN_3D_ELEM<ElementOrder::O1> + i] =
-                    _node_count;
-                idxs_extra_nodes.insert({tup, _node_count});
-                ++_node_count;
+                    count;
+                idxs_extra_nodes.insert({tup, count});
+                ++count;
             } else {
                 is_extra_node[e][i] = false;          
                 _vol_elem_node_idx[e][NODES_IN_3D_ELEM<ElementOrder::O1> + i] =
@@ -667,12 +682,12 @@ void SimulationAcFemFreqD3<ElementOrder::O2>::_generate_extra_nodes()
 
     // TODO: grow() here
     auto temp = std::move(_node_coords);
-    _node_coords = fz::SafePtr<std::array<double,3>>(_node_count);
+    _node_coords = fz::SafePtr<std::array<double,3>>(count);
     std::copy(temp.begin(), temp.end(), _node_coords.begin());
     temp.free();
     
     // second pass: create the extra nodes and assign to 3D elements
-    for (size_t e=0; e!=_vol_elem_count; ++e) {
+    for (size_t e=0; e!=_vol_elem_count(); ++e) {
         for (size_t i=0; i!=VTX_PAIRS_3D.size(); ++i)
         {   
             if (!is_extra_node[e][i]) { continue; }
@@ -700,7 +715,7 @@ void SimulationAcFemFreqD3<ElementOrder::O2>::_generate_extra_nodes()
     is_extra_node.free();
 
     // third pass: assign nodes to 2D elements
-    for (size_t e=0; e!=_sfc_elem_count; ++e) {
+    for (size_t e=0; e!=_sfc_elem_count(); ++e) {
         for (size_t i=0; i!=VTX_PAIRS_2D.size(); ++i)
         {
             // create a tuple of the indices in ascending order
