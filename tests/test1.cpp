@@ -19,14 +19,19 @@ int main() {
     s.load_mesh("build/tests_bin/test1.bdf");
 
     // determine simulation frequency range
-    double freq_min = 0;
+    double freq_min = 20;
     double freq_max = 100;
     s.set_frequency_range(freq_min, freq_max);
 
-    s.add_volume_material(1, [](auto f){return 1.2;}, [](auto f){return 343;});
     s.add_volume_material(
-        2, [](auto f) { return 1.0; },
-        [](auto f) { return std::complex<double>(250,30); }
+        1,
+        [](auto f) { return 1.2; },
+        [](auto f) { return 343; }
+    );
+    s.add_volume_material(
+        2,
+        [](auto f) { return 1.2; },
+        [](auto f) { return std::complex<double>(343,0); }
     );
 
     // add volume velocity sources

@@ -28,6 +28,21 @@ std::tuple<T,T> make_ascending_tuple(const T& a, const T& b) {
     return a<b ? std::make_tuple(a,b) : std::make_tuple(b,a);
 }
 
+template<typename T>
+std::pair<T,T> make_ascending_pair(const T& a, const T& b) {
+    return a<b ? std::make_pair(a,b) : std::make_pair(b,a);
+}
+
+template<typename T>
+bool compare_pair(const std::pair<T,T>& a, const std::pair<T,T>& b) {
+    if (a.second != b.second) {
+        return a.second < b.second;
+    }
+    else {
+        return a.first < b.first;
+    }
+}
+
 template<size_t N> constexpr size_t FACTORIAL = [] {
     size_t result = 1;
     for(size_t i = 2; i<=N; ++i) {

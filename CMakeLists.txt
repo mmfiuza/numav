@@ -35,6 +35,7 @@ target_include_directories(numav PUBLIC
 target_link_libraries(numav PRIVATE spdlog::spdlog_header_only)
 target_compile_options(numav
     PRIVATE -g -O0 -fno-inline
+    # PRIVATE -O3
 )
 
 # set install path

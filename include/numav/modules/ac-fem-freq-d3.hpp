@@ -5,6 +5,8 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "Eigen/Eigen"
+
 #define SAFE_PTR_DEBUG
 #include "SafePtr.hpp"
 
@@ -38,10 +40,11 @@ template<> class Result<
 > {
 public:
     Result();
+    Result(const size_t&, const size_t&); // todo: make private
     ~Result();
     // todo: rule of 5
+    Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic> _data;
 private:
-    double _data;
 };
 
 template<ElementOrder O>
@@ -102,6 +105,7 @@ private:
     size_t _node_count() const;
     size_t _sfc_elem_count() const;
     size_t _vol_elem_count() const;
+    size_t _ipg_vol_count() const;
     void _load_bdf(const char* const);
     void _generate_extra_nodes();
     _idx_t _get_closest_point(const std::array<double,3>&);
@@ -109,7 +113,8 @@ private:
     void _check_if_it_can_run();
     void _define_freq_vector();
     void _organize_physical_group_data();
-    void _analize_sparsity();
+    void _analyze_sparsity();
+    void _partially_assemble_matrices();
     void _solve();
 
     bool _is_mesh_defined;
@@ -118,7 +123,7 @@ private:
 
     double _freq_min;
     double _freq_max;
-    fz::SafePtr<double> _freq_vec;
+    fz::SafePtr<double> _freq_steps;
 
     fz::SafePtr<std::array<double,3>> _node_coords;
     fz::SafePtr<std::array<_idx_t,NODES_IN_2D_ELEM<O>>> _sfc_elem_node_idx;
@@ -149,10 +154,20 @@ private:
     fz::SafePtr<_FuncRealToCmplx> _ipg_to_sfc_impedance;
     fz::SafePtr<_VolProp>         _ipg_to_volprop;
 
-    fz::SafePtr<_idx_t> _nonzero_row_idx;
-    fz::SafePtr<_idx_t> _nonzero_col_idx;
-    fz::SafePtr<_idx_t> _btb_detj_w_vals;
-    fz::SafePtr<_idx_t> _nnt_detj_w_vals;
+    fz::SafePtr<std::pair<_idx_t,_idx_t>> _nnz_rowcol_idx_pairs;
+
+    fz::SafePtr<fz::SafePtr<double>> _ipg_to_btb_detj_w_vals;
+    fz::SafePtr<fz::SafePtr<double>> _ipg_to_nnt_detj_w_vals;
+    fz::SafePtr<fz::SafePtr<std::complex<double>*>> _ipg_to_ptr_in_a;
+
+    fz::SafePtr<std::complex<double>> _a_vals;
+
+    Result<
+        Phenomenon::ACOUSTIC,
+        NumericalMethod::FEM,
+        Domain::FREQUENCY,
+        Dimension::D3
+    > _result;
 };
 
 // explicit instantiation declarations
