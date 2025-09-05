@@ -15,7 +15,13 @@ RUN apt-get update && apt-get install -y \
     curl=7.88.1-10+deb12u12 \
     squashfs-tools=1:4.5.1-1 \
     libeigen3-dev=3.4.0-4 \
-    libspdlog-dev=1:1.10.0+ds-0.4
+    libspdlog-dev=1:1.10.0+ds-0.4 \
+    wget=1.21.3-1+deb12u1
+
+# install intel oneMKL
+RUN wget https://registrationcenter-download.intel.com/akdlm/IRC_NAS/47c7d946-fca1-441a-b0df-b094e3f045ea/intel-onemkl-2025.2.0.629_offline.sh
+RUN sh ./intel-onemkl-2025.2.0.629_offline.sh -a --silent --eula accept
+RUN rm intel-onemkl-2025.2.0.629_offline.sh
 
 # install Julia
 RUN curl -fsSL https://install.julialang.org | sh -s -- --yes
