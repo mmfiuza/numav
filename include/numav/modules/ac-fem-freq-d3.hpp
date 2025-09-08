@@ -105,7 +105,7 @@ private:
     size_t _node_count() const;
     size_t _sfc_elem_count() const;
     size_t _vol_elem_count() const;
-    size_t _ipg_vol_count() const;
+    size_t _ivpg_count() const;
     void _load_bdf(const char* const);
     void _generate_extra_nodes();
     _idx_t _get_closest_point(const std::array<double,3>&);
@@ -114,7 +114,7 @@ private:
     void _define_freq_vector();
     void _organize_physical_group_data();
     void _analyze_sparsity();
-    void _partially_assemble_matrices();
+    void _assemble_freq_independent_parts();
     void _solve();
 
     bool _is_mesh_defined;
@@ -132,33 +132,33 @@ private:
     std::vector<std::tuple<_idx_t,_FuncRealToCmplx>> _point_volvel;
     std::vector<std::tuple<_idx_t,_FuncRealToCmplx>> _point_pressure;
 
-    std::unordered_set<_epg_t> _existing_epg_sfc;
-    std::unordered_set<_epg_t> _existing_epg_vol;
+    std::unordered_set<_epg_t> _existing_espg;
+    std::unordered_set<_epg_t> _existing_evpg;
 
-    fz::SafePtr<_epg_t> _epg_sfc_elem;
-    fz::SafePtr<_epg_t> _epg_vol_elem;
+    fz::SafePtr<_epg_t> _elem_idx_to_espg;
+    fz::SafePtr<_epg_t> _elem_idx_to_evpg;
     
-    std::unordered_map<_epg_t,_FuncRealToCmplx> _epg_to_sfc_volvel;
-    std::unordered_map<_epg_t,_FuncRealToCmplx> _epg_to_sfc_pressure;
-    std::unordered_map<_epg_t,_FuncRealToCmplx> _epg_to_sfc_impedance;
-    std::unordered_map<_epg_t,_VolProp>         _epg_to_volprop;
+    std::unordered_map<_epg_t,_FuncRealToCmplx> _espg_to_volvel;
+    std::unordered_map<_epg_t,_FuncRealToCmplx> _espg_to_pressure;
+    std::unordered_map<_epg_t,_FuncRealToCmplx> _espg_to_impedance;
+    std::unordered_map<_epg_t,_VolProp>         _evpg_to_volprop;
 
-    std::unordered_map<_epg_t,_ipg_t> _epg_to_ipg_sfc;
-    std::unordered_map<_epg_t,_ipg_t> _epg_to_ipg_vol;
+    std::unordered_map<_epg_t,_ipg_t> _espg_to_ispg;
+    std::unordered_map<_epg_t,_ipg_t> _evpg_to_ivpg;
 
-    fz::SafePtr<_ipg_t> _ipg_sfc_elem;
-    fz::SafePtr<_ipg_t> _ipg_vol_elem;
+    fz::SafePtr<_ipg_t> _elem_idx_to_ispg;
+    fz::SafePtr<_ipg_t> _elem_idx_to_ivpg;
     
-    fz::SafePtr<_FuncRealToCmplx> _ipg_to_sfc_volvel;
-    fz::SafePtr<_FuncRealToCmplx> _ipg_to_sfc_pressure;
-    fz::SafePtr<_FuncRealToCmplx> _ipg_to_sfc_impedance;
-    fz::SafePtr<_VolProp>         _ipg_to_volprop;
+    fz::SafePtr<_FuncRealToCmplx> _ispg_to_volvel;
+    fz::SafePtr<_FuncRealToCmplx> _ispg_to_pressure;
+    fz::SafePtr<_FuncRealToCmplx> _ispg_to_impedance;
+    fz::SafePtr<_VolProp>         _ivpg_to_volprop;
 
     fz::SafePtr<std::pair<_idx_t,_idx_t>> _nnz_rowcol_idx_pairs;
 
-    fz::SafePtr<fz::SafePtr<double>> _ipg_to_btb_detj_w_vals;
-    fz::SafePtr<fz::SafePtr<double>> _ipg_to_nnt_detj_w_vals;
-    fz::SafePtr<fz::SafePtr<std::complex<double>*>> _ipg_to_ptr_in_a;
+    fz::SafePtr<fz::SafePtr<double>> _ivpg_to_btb_detj_w_vals;
+    fz::SafePtr<fz::SafePtr<double>> _ivpg_to_nnt_detj_w_vals;
+    fz::SafePtr<fz::SafePtr<std::complex<double>*>> _ivpg_to_ptr_in_a;
 
     fz::SafePtr<std::complex<double>> _a_vals;
 

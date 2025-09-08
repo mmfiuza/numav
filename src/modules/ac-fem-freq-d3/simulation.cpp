@@ -60,23 +60,23 @@ SimulationAcFemFreqD3<O>::~Simulation() {
     _node_coords.free();
     _sfc_elem_node_idx.free();
     _vol_elem_node_idx.free();
-    _epg_sfc_elem.free();
-    _epg_vol_elem.free();
+    _elem_idx_to_espg.free();
+    _elem_idx_to_evpg.free();
     _nnz_rowcol_idx_pairs.free();
-    for (_ipg_t ipg=0; ipg!=_ipg_vol_count(); ++ipg) {
-        _ipg_to_btb_detj_w_vals[ipg].free();
-        _ipg_to_nnt_detj_w_vals[ipg].free();
-        _ipg_to_ptr_in_a[ipg].free();
+    for (_ipg_t ivpg=0; ivpg!=_ivpg_count(); ++ivpg) {
+        _ivpg_to_btb_detj_w_vals[ivpg].free();
+        _ivpg_to_nnt_detj_w_vals[ivpg].free();
+        _ivpg_to_ptr_in_a[ivpg].free();
     }
-    // _ipg_sfc_elem.free();
-    _ipg_vol_elem.free();
-    _ipg_to_sfc_volvel.free();
-    _ipg_to_sfc_pressure.free();
-    _ipg_to_sfc_impedance.free();
-    _ipg_to_volprop.free();
-    _ipg_to_btb_detj_w_vals.free();
-    _ipg_to_nnt_detj_w_vals.free();
-    _ipg_to_ptr_in_a.free();
+    // _elem_idx_to_ispg.free();
+    _elem_idx_to_ivpg.free();
+    _ispg_to_volvel.free();
+    _ispg_to_pressure.free();
+    _ispg_to_impedance.free();
+    _ivpg_to_volprop.free();
+    _ivpg_to_btb_detj_w_vals.free();
+    _ivpg_to_nnt_detj_w_vals.free();
+    _ivpg_to_ptr_in_a.free();
     _a_vals.free();
 }
 
@@ -96,8 +96,8 @@ size_t SimulationAcFemFreqD3<O>::_vol_elem_count() const {
 }
 
 template <ElementOrder O>
-size_t SimulationAcFemFreqD3<O>::_ipg_vol_count() const {
-    return _ipg_to_volprop.size();
+size_t SimulationAcFemFreqD3<O>::_ivpg_count() const {
+    return _ivpg_to_volprop.size();
 }
 
 template <ElementOrder O>
@@ -148,20 +148,20 @@ void SimulationAcFemFreqD3<O>::load_mesh(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::add_volume_material(
-    const _epg_t& epg,
+    const _epg_t& evpg,
     const _FuncRealToCmplx& density,
     const _FuncRealToCmplx& soundspeed
 ) {
     _check_if_mesh_is_defined();
-    if (!_existing_epg_vol.contains(epg)) {
-        log::error("Tag {} not found in mesh file.", epg);
+    if (!_existing_evpg.contains(evpg)) {
+        log::error("Tag {} not found in mesh file.", evpg);
     }
-    if (_epg_to_volprop.contains(epg)) {
-        log::error("Tag {} already assigned.", epg);
+    if (_evpg_to_volprop.contains(evpg)) {
+        log::error("Tag {} already assigned.", evpg);
     }
-    _epg_to_volprop.insert({epg, {density, soundspeed}});
-    const _ipg_t ipg = _epg_to_ipg_vol.size();
-    _epg_to_ipg_vol.insert({epg, ipg});
+    _evpg_to_volprop.insert({evpg, {density, soundspeed}});
+    const _ipg_t ivpg = _evpg_to_ivpg.size();
+    _evpg_to_ivpg.insert({evpg, ivpg});
 }
 
 template <ElementOrder O>
@@ -197,7 +197,7 @@ void SimulationAcFemFreqD3<O>::add_sound_source(
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::add_sound_source(
     const TypeOfSource& type_of_source,
-    const _epg_t& epg,
+    const _epg_t& espg,
     const PhysicalQuantity& physical_quantity_type,
     const _FuncRealToCmplx& physical_quantity_value
 ) {
@@ -205,24 +205,24 @@ void SimulationAcFemFreqD3<O>::add_sound_source(
     if (type_of_source != TypeOfSource::SURFACE) {
         log::error("Tried to assign a tag to a point.");
     }
-    if (!_existing_epg_sfc.contains(epg)) {
-        log::error("Tag {} not found in mesh file.", epg);
+    if (!_existing_espg.contains(espg)) {
+        log::error("Tag {} not found in mesh file.", espg);
     }
-    if (_epg_to_sfc_pressure.contains(epg) ||
-        _epg_to_sfc_volvel.contains(epg) ||
-        _epg_to_sfc_impedance.contains(epg)
+    if (_espg_to_pressure.contains(espg) ||
+        _espg_to_volvel.contains(espg) ||
+        _espg_to_impedance.contains(espg)
     ) {
-        log::error("Tag {} already assigned.", epg);
+        log::error("Tag {} already assigned.", espg);
     }
     if (physical_quantity_type == PhysicalQuantity::PRESSURE) {
-        const _ipg_t ipg = _epg_to_sfc_pressure.size();
-        _epg_to_sfc_pressure.insert({epg, physical_quantity_value});
-        _epg_to_ipg_sfc.insert({epg, ipg});
+        const _ipg_t ispg = _espg_to_pressure.size();
+        _espg_to_pressure.insert({espg, physical_quantity_value});
+        _espg_to_ispg.insert({espg, ispg});
     }
     else if (physical_quantity_type == PhysicalQuantity::VOLUME_VELOCITY) {
-        const _ipg_t ipg = _epg_to_sfc_volvel.size();
-        _epg_to_sfc_volvel.insert({epg, physical_quantity_value});
-        _epg_to_ipg_sfc.insert({epg, ipg});
+        const _ipg_t ispg = _espg_to_volvel.size();
+        _espg_to_volvel.insert({espg, physical_quantity_value});
+        _espg_to_ispg.insert({espg, ispg});
     }
     else {
         log::error("Possible physical quantities are volume velocity"
@@ -233,29 +233,29 @@ void SimulationAcFemFreqD3<O>::add_sound_source(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::add_surface_specific_acoustic_impedance(
-    const _epg_t& epg,
+    const _epg_t& espg,
     const _FuncRealToCmplx& impedance
 ) {
     _check_if_mesh_is_defined();
-    if (!_existing_epg_sfc.contains(epg)) {
-        log::error("Tag {} not found in mesh file.", epg);
+    if (!_existing_espg.contains(espg)) {
+        log::error("Tag {} not found in mesh file.", espg);
     }
-    if (_epg_to_sfc_pressure.contains(epg) ||
-        _epg_to_sfc_volvel.contains(epg) ||
-        _epg_to_sfc_impedance.contains(epg)
+    if (_espg_to_pressure.contains(espg) ||
+        _espg_to_volvel.contains(espg) ||
+        _espg_to_impedance.contains(espg)
     ) {
-        log::error("Tag {} already assigned.", epg);
+        log::error("Tag {} already assigned.", espg);
     }
-    const _ipg_t ipg = _epg_to_sfc_impedance.size();
-    _epg_to_sfc_impedance.insert({epg, impedance});
-    _epg_to_ipg_sfc.insert({epg, ipg});
+    const _ipg_t ispg = _espg_to_impedance.size();
+    _espg_to_impedance.insert({espg, impedance});
+    _espg_to_ispg.insert({espg, ispg});
 }
 
 template <ElementOrder O>
 _idx_t SimulationAcFemFreqD3<O>::_get_closest_point(
     const std::array<double,3>&
 ) {
-    return 101; // TODO
+    return 0; // TODO
 }
 
 template <ElementOrder O>
@@ -269,10 +269,10 @@ void SimulationAcFemFreqD3<O>::_check_if_it_can_run() {
         log::error("Simulation frequency range was not defined."
             " Call set_frequency_range to do so.");
     }
-    for (auto& epg : _existing_epg_vol) {
-        if (!_epg_to_volprop.contains(epg)) {
+    for (auto& evpg : _existing_evpg) {
+        if (!_evpg_to_volprop.contains(evpg)) {
             log::error("Volume tag {} was not assigned."
-            " Call add_volume_material to do so.", epg);
+            " Call add_volume_material to do so.", evpg);
         }
     }
 }
@@ -288,35 +288,35 @@ template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::_organize_physical_group_data()
 {
     // generate structures accessed through IPG
-    _ipg_to_sfc_volvel =
-        fz::SafePtr<_FuncRealToCmplx>(_epg_to_sfc_volvel.size());
-    for (const auto& [epg, volvel] : _epg_to_sfc_volvel) {
-        const _ipg_t ipg = _epg_to_ipg_sfc.at(epg);
-        _ipg_to_sfc_volvel[ipg] = volvel;
+    _ispg_to_volvel =
+        fz::SafePtr<_FuncRealToCmplx>(_espg_to_volvel.size());
+    for (const auto& [espg, volvel] : _espg_to_volvel) {
+        const _ipg_t ispg = _espg_to_ispg.at(espg);
+        _ispg_to_volvel[ispg] = volvel;
     }
-    _ipg_to_sfc_pressure =
-        fz::SafePtr<_FuncRealToCmplx>(_epg_to_sfc_pressure.size());
-    for (const auto& [epg, pressure] : _epg_to_sfc_pressure) {
-        const _ipg_t ipg = _epg_to_ipg_sfc.at(epg);
-        _ipg_to_sfc_pressure[ipg] = pressure;
+    _ispg_to_pressure =
+        fz::SafePtr<_FuncRealToCmplx>(_espg_to_pressure.size());
+    for (const auto& [espg, pressure] : _espg_to_pressure) {
+        const _ipg_t ispg = _espg_to_ispg.at(espg);
+        _ispg_to_pressure[ispg] = pressure;
     }
-    _ipg_to_sfc_impedance =
-        fz::SafePtr<_FuncRealToCmplx>(_epg_to_sfc_impedance.size());
-    for (const auto& [epg, impedance] : _epg_to_sfc_impedance) {
-        const _ipg_t ipg = _epg_to_ipg_sfc.at(epg);
-        _ipg_to_sfc_impedance[ipg] = impedance;
+    _ispg_to_impedance =
+        fz::SafePtr<_FuncRealToCmplx>(_espg_to_impedance.size());
+    for (const auto& [espg, impedance] : _espg_to_impedance) {
+        const _ipg_t ispg = _espg_to_ispg.at(espg);
+        _ispg_to_impedance[ispg] = impedance;
     }
-    _ipg_to_volprop =
-        fz::SafePtr<_VolProp>(_epg_to_volprop.size());
-    for (const auto& [epg, volprop] : _epg_to_volprop) {
-        const _ipg_t ipg = _epg_to_ipg_vol.at(epg);
-        _ipg_to_volprop[ipg] = volprop;
+    _ivpg_to_volprop =
+        fz::SafePtr<_VolProp>(_evpg_to_volprop.size());
+    for (const auto& [evpg, volprop] : _evpg_to_volprop) {
+        const _ipg_t ivpg = _evpg_to_ivpg.at(evpg);
+        _ivpg_to_volprop[ivpg] = volprop;
     }
     
-    // generate the contiguous vector with the ipg of each volume element
-    _ipg_vol_elem = fz::SafePtr<_ipg_t>(_vol_elem_count());
-    for (_idx_t e=0; e!=_ipg_vol_elem.size(); ++e) {
-        _ipg_vol_elem[e] = _epg_to_ipg_vol.at(_epg_vol_elem[e]);
+    // generate the contiguous vector with the ivpg of each volume element
+    _elem_idx_to_ivpg = fz::SafePtr<_ipg_t>(_vol_elem_count());
+    for (_idx_t e=0; e!=_elem_idx_to_ivpg.size(); ++e) {
+        _elem_idx_to_ivpg[e] = _evpg_to_ivpg.at(_elem_idx_to_evpg[e]);
     }
 }
 
@@ -352,7 +352,7 @@ void SimulationAcFemFreqD3<O>::_analyze_sparsity()
     );
 }
 
-// general declaration for all orders
+// general shape_func declaration for all orders
 template<ElementOrder O>
 Eigen::Matrix<double, NODES_IN_3D_ELEM<O>, 1> shape_func(
     const double&, const double&, const double&
@@ -392,7 +392,7 @@ shape_func<ElementOrder::O2>(
     );
 }
 
-// general declaration for all Orders
+// general shape_func_gradient declaration for all orders
 template<ElementOrder O>
 Eigen::Matrix<double, DIM, NODES_IN_3D_ELEM<O>> shape_func_gradient(
     const double&, const double&, const double&
@@ -469,7 +469,7 @@ constexpr std::array<double,N> GAUSS_WEIGHTS = [] {
         return std::array<double,N>({VOLUME_REF_TET * a});
     }
     if constexpr (N == 4) {
-        constexpr double a = VOLUME_REF_TET * 1.0 / 4.0;
+        constexpr double a = VOLUME_REF_TET * 1.0/4.0;
         return std::array<double,N>({a,a,a,a});
     }
     if constexpr (N == 15) {
@@ -486,65 +486,62 @@ constexpr std::array<double,N> GAUSS_WEIGHTS = [] {
 }();
 
 template<ElementOrder O>
-void SimulationAcFemFreqD3<O>::_partially_assemble_matrices()
+void SimulationAcFemFreqD3<O>::_assemble_freq_independent_parts()
 {
     constexpr std::array<
         std::array<size_t,2>, COMB_REP_SIZE<NODES_IN_3D_ELEM<O>,2>
     > COMBS = COMBINATION_REP<NODES_IN_3D_ELEM<O>>;
 
-    // count the nnz size for each ipg
+    // count the nnz size for each ivpg
     fz::SafePtr<std::unordered_map<
         std::pair<_idx_t,_idx_t>, _idx_t
-    >> ipg_to_map_to_pair_idx(_ipg_vol_count());
+    >> ivpg_to_map_to_pair_idx(_ivpg_count());
     for (_idx_t e=0; e!=_vol_elem_count(); ++e)
     {
-        const _ipg_t ipg = _ipg_vol_elem[e];
-        for (_idx_t i=0; i!=COMBS.size(); ++i) {
+        const _ipg_t ivpg = _elem_idx_to_ivpg[e];
+        for (auto& c : COMBS) {
             const std::pair<_idx_t,_idx_t> pair = make_ascending_pair(
-                _vol_elem_node_idx[e][COMBS[i][0]],
-                _vol_elem_node_idx[e][COMBS[i][1]]
+                _vol_elem_node_idx[e][c[0]],
+                _vol_elem_node_idx[e][c[1]]
             );
-            if (!ipg_to_map_to_pair_idx[ipg].contains(pair)) {
-                const _idx_t new_idx = ipg_to_map_to_pair_idx[ipg].size();
-                ipg_to_map_to_pair_idx[ipg].insert({pair, new_idx});
+            if (!ivpg_to_map_to_pair_idx[ivpg].contains(pair)) {
+                const _idx_t new_idx = ivpg_to_map_to_pair_idx[ivpg].size();
+                ivpg_to_map_to_pair_idx[ivpg].insert({pair, new_idx});
             }
         }
     }
 
     // allocate memory in the safe pointers
-    _ipg_to_btb_detj_w_vals =
-        fz::SafePtr<fz::SafePtr<double>>(_ipg_vol_count());
-    _ipg_to_nnt_detj_w_vals =
-        fz::SafePtr<fz::SafePtr<double>>(_ipg_vol_count());
-    _ipg_to_ptr_in_a =
-        fz::SafePtr<fz::SafePtr<std::complex<double>*>>(_ipg_vol_count());
-    for (_ipg_t ipg=0; ipg!=_ipg_vol_count(); ++ipg) {
-        _ipg_to_btb_detj_w_vals[ipg] = fz::SafePtr<double>(
-            ipg_to_map_to_pair_idx[ipg].size()
-        );
-        _ipg_to_nnt_detj_w_vals[ipg] = fz::SafePtr<double>(
-            ipg_to_map_to_pair_idx[ipg].size()
-        );
-        _ipg_to_ptr_in_a[ipg] = fz::SafePtr<std::complex<double>*>(
-            ipg_to_map_to_pair_idx[ipg].size()
-        );
-        _ipg_to_btb_detj_w_vals[ipg].fill(0);
-        _ipg_to_nnt_detj_w_vals[ipg].fill(0);
+    _ivpg_to_btb_detj_w_vals =
+        fz::SafePtr<fz::SafePtr<double>>(_ivpg_count());
+    _ivpg_to_nnt_detj_w_vals =
+        fz::SafePtr<fz::SafePtr<double>>(_ivpg_count());
+    _ivpg_to_ptr_in_a =
+        fz::SafePtr<fz::SafePtr<std::complex<double>*>>(_ivpg_count());
+    for (_ipg_t ivpg=0; ivpg!=_ivpg_count(); ++ivpg)
+    {
+        const size_t size = ivpg_to_map_to_pair_idx[ivpg].size();
+        _ivpg_to_btb_detj_w_vals[ivpg] = fz::SafePtr<double>(size);
+        _ivpg_to_btb_detj_w_vals[ivpg].fill(0);
+        _ivpg_to_nnt_detj_w_vals[ivpg] = fz::SafePtr<double>(size);
+        _ivpg_to_nnt_detj_w_vals[ivpg].fill(0);
+        _ivpg_to_ptr_in_a[ivpg] = fz::SafePtr<std::complex<double>*>(size);
     }
     
     _a_vals = fz::SafePtr<std::complex<double>>(_nnz_rowcol_idx_pairs.size());
     std::array<_idx_t, COMBS.size()> idx;
     for (_idx_t e=0; e!=_vol_elem_count(); ++e)
     {
-        const _ipg_t ipg = _ipg_vol_elem[e];
+        const _ipg_t ivpg = _elem_idx_to_ivpg[e];
         
+        // Create _ivpg_to_ptr_in_a
         for (_idx_t i=0; i!=COMBS.size(); ++i)
         {
             const std::pair<_idx_t,_idx_t> pair = make_ascending_pair(
                 _vol_elem_node_idx[e][COMBS[i][0]],
                 _vol_elem_node_idx[e][COMBS[i][1]]
             );
-            idx[i] = ipg_to_map_to_pair_idx[ipg].at(pair);
+            idx[i] = ivpg_to_map_to_pair_idx[ivpg].at(pair);
             
             const std::pair<_idx_t,_idx_t>* const pair_ptr = std::lower_bound(
                 _nnz_rowcol_idx_pairs.begin(),
@@ -553,7 +550,7 @@ void SimulationAcFemFreqD3<O>::_partially_assemble_matrices()
                 compare_pair<_idx_t>
             );
             const ptrdiff_t pair_idx = pair_ptr - _nnz_rowcol_idx_pairs.begin();
-            _ipg_to_ptr_in_a[ipg][idx[i]] = _a_vals.begin() + pair_idx;
+            _ivpg_to_ptr_in_a[ivpg][idx[i]] = _a_vals.begin() + pair_idx;
             assert(pair_idx < _nnz_rowcol_idx_pairs.size());
         }
         
@@ -596,7 +593,7 @@ void SimulationAcFemFreqD3<O>::_partially_assemble_matrices()
                 btb_detj_w = btb * det_jac * GAUSS_WEIGHTS<NGP_STIF<O>>[p];
 
             for (_idx_t i=0; i!=COMBS.size(); ++i) {
-                _ipg_to_btb_detj_w_vals[ipg][idx[i]] += btb_detj_w(
+                _ivpg_to_btb_detj_w_vals[ivpg][idx[i]] += btb_detj_w(
                     COMBS[i][0], COMBS[i][1]
                 );
             }
@@ -620,11 +617,11 @@ void SimulationAcFemFreqD3<O>::_partially_assemble_matrices()
             const double det_jac = jac_matrix.determinant();
 
             const Eigen::Matrix<double,NODES_IN_3D_ELEM<O>,1> n =
-            shape_func<O>(
-                GAUSS_POINTS_MASS[p][0],
-                GAUSS_POINTS_MASS[p][1],
-                GAUSS_POINTS_MASS[p][2]
-            );
+                shape_func<O>(
+                    GAUSS_POINTS_MASS[p][0],
+                    GAUSS_POINTS_MASS[p][1],
+                    GAUSS_POINTS_MASS[p][2]
+                );
 
             const Eigen::Matrix<double,NODES_IN_3D_ELEM<O>,NODES_IN_3D_ELEM<O>>
                 nnt = n * n.transpose();
@@ -634,26 +631,29 @@ void SimulationAcFemFreqD3<O>::_partially_assemble_matrices()
                 nnt_detj_w = nnt * det_jac * GAUSS_WEIGHTS<NGP_MASS<O>>[p];
             
             for (_idx_t i=0; i!=COMBS.size(); ++i) {
-                _ipg_to_nnt_detj_w_vals[ipg][idx[i]] += nnt_detj_w(
+                _ivpg_to_nnt_detj_w_vals[ivpg][idx[i]] += nnt_detj_w(
                     COMBS[i][0], COMBS[i][1]
                 );
             }
         }
     }
-    ipg_to_map_to_pair_idx.free();
+    ivpg_to_map_to_pair_idx.free();
 }
+
 
 template<typename T>
 void write_matrix(const T& matrix, const std::string& filename) {
     std::ofstream file(filename, std::ios::binary);
     if (file.is_open()) {
-        const size_t rows = matrix.rows();
-        const size_t cols = matrix.cols();
+        // Use uint64_t for cross-platform consistency
+        const uint64_t rows = matrix.rows();
+        const uint64_t cols = matrix.cols();
+        
         file.write(reinterpret_cast<const char*>(&rows), sizeof(rows));
         file.write(reinterpret_cast<const char*>(&cols), sizeof(cols));
         file.write(
             reinterpret_cast<const char*>(matrix.data()),
-            rows * cols * sizeof(std::complex<double>)
+            rows * cols * sizeof(typename T::Scalar) // Use matrix's scalar type
         );
     }
 }
@@ -671,21 +671,21 @@ void SimulationAcFemFreqD3<O>::_solve()
         const double omega_squared = std::pow(omega,2);
 
         // add stiffness and mass matrix to a
-        for (_idx_t ipg=0; ipg!=_ipg_vol_count(); ++ipg) {
+        for (_idx_t ivpg=0; ivpg!=_ivpg_count(); ++ivpg) {
             const std::complex<double> density_value =
-                (_ipg_to_volprop[ipg].density)(freq);
+                (_ivpg_to_volprop[ivpg].density)(freq);
             const std::complex<double> soundspeed_value =
-                (_ipg_to_volprop[ipg].soundspeed)(freq);
+                (_ivpg_to_volprop[ivpg].soundspeed)(freq);
 
-            const std::complex<double> stif_matrix_constant =
+            const std::complex<double> stif_freq_dependent =
                 1.0 / density_value;
-            const std::complex<double> mass_matrix_constant =
+            const std::complex<double> mass_freq_dependent =
                 - omega_squared / (density_value*std::pow(soundspeed_value,2));
             
-            for (_idx_t p=0; p!=_ipg_to_ptr_in_a[ipg].size(); ++p) {
-                *_ipg_to_ptr_in_a[ipg][p] +=
-                    _ipg_to_btb_detj_w_vals[ipg][p] * stif_matrix_constant +
-                    _ipg_to_nnt_detj_w_vals[ipg][p] * mass_matrix_constant;
+            for (_idx_t j=0; j!=_ivpg_to_ptr_in_a[ivpg].size(); ++j) {
+                *_ivpg_to_ptr_in_a[ivpg][j] +=
+                    _ivpg_to_btb_detj_w_vals[ivpg][j] * stif_freq_dependent +
+                    _ivpg_to_nnt_detj_w_vals[ivpg][j] * mass_freq_dependent;
             }
         }
 
@@ -751,6 +751,9 @@ void SimulationAcFemFreqD3<O>::_solve()
         for (_idx_t n=0; n!=_node_count(); ++n) {
             _result._data(n,i) = x(n);
         }
+        for (_idx_t n=0; n!=_node_count(); ++n) {
+            assert(_result._data(n,i) == x(n));
+        }
 
         std::cout << "Done step: " << i << "/" << _freq_steps.size() << "\n";
     }
@@ -764,7 +767,7 @@ ResultAcFemFreqD3 SimulationAcFemFreqD3<O>::run()
     _define_freq_vector();
     _organize_physical_group_data();
     _analyze_sparsity();
-    _partially_assemble_matrices();
+    _assemble_freq_independent_parts();
     _solve();
     return ResultAcFemFreqD3();
 }
@@ -815,13 +818,13 @@ void SimulationAcFemFreqD3<O>::_load_bdf(const char* const path_to_mesh)
         fz::SafePtr<std::array<size_t,NODES_IN_2D_ELEM<O>>>(sfc_elem_count);
     _vol_elem_node_idx =
         fz::SafePtr<std::array<size_t,NODES_IN_3D_ELEM<O>>>(vol_elem_count);
-    _epg_sfc_elem = fz::SafePtr<size_t>(sfc_elem_count);
-    _epg_vol_elem = fz::SafePtr<size_t>(vol_elem_count);
+    _elem_idx_to_espg = fz::SafePtr<size_t>(sfc_elem_count);
+    _elem_idx_to_evpg = fz::SafePtr<size_t>(vol_elem_count);
     auto it_node_coords = _node_coords.begin();
-    auto it_2d_elem_vtx_idx = _sfc_elem_node_idx.begin();
-    auto it_3d_elem_vtx_idx = _vol_elem_node_idx.begin();
-    auto it_2d_elem_epg = _epg_sfc_elem.begin();
-    auto it_3d_elem_epg = _epg_vol_elem.begin();
+    auto it_sfc_elem_node_idx = _sfc_elem_node_idx.begin();
+    auto it_vol_elem_node_idx = _vol_elem_node_idx.begin();
+    auto it_elem_idx_to_espg = _elem_idx_to_espg.begin();
+    auto it_elem_idx_to_evpg = _elem_idx_to_evpg.begin();
     file.clear();
     file.seekg(0, std::ios::beg);
     while (std::getline(file, line)) {
@@ -834,29 +837,29 @@ void SimulationAcFemFreqD3<O>::_load_bdf(const char* const path_to_mesh)
             ++it_node_coords;
         }
         else if (line.starts_with("CTRIA3")) {
-            const _epg_t epg = parse<size_t>(line.substr(16,8));
-            _existing_epg_sfc.insert(epg);
-            *it_2d_elem_epg = epg;
-            ++it_2d_elem_epg;
-            *it_2d_elem_vtx_idx = { // minus one for zero base indexing
+            const _epg_t espg = parse<size_t>(line.substr(16,8));
+            _existing_espg.insert(espg);
+            *it_elem_idx_to_espg = espg;
+            ++it_elem_idx_to_espg;
+            *it_sfc_elem_node_idx = { // minus one for zero base indexing
                 parse<size_t>(line.substr(24,8)) - 1,
                 parse<size_t>(line.substr(32,8)) - 1,
                 parse<size_t>(line.substr(40,8)) - 1
             };
-            ++it_2d_elem_vtx_idx;
+            ++it_sfc_elem_node_idx;
         }
         else if (line.starts_with("CTETRA")) {
-            const _epg_t epg = parse<size_t>(line.substr(16,8));
-            _existing_epg_vol.insert(epg);
-            *it_3d_elem_epg = epg;
-            ++it_3d_elem_epg;
-            *it_3d_elem_vtx_idx = { // minus one for zero base indexing
+            const _epg_t evpg = parse<size_t>(line.substr(16,8));
+            _existing_evpg.insert(evpg);
+            *it_elem_idx_to_evpg = evpg;
+            ++it_elem_idx_to_evpg;
+            *it_vol_elem_node_idx = { // minus one for zero base indexing
                 parse<size_t>(line.substr(24,8)) - 1,
                 parse<size_t>(line.substr(32,8)) - 1,
                 parse<size_t>(line.substr(40,8)) - 1,
                 parse<size_t>(line.substr(48,8)) - 1
             };
-            ++it_3d_elem_vtx_idx;
+            ++it_vol_elem_node_idx;
         }
         else if (line.starts_with("ENDDATA")) {
             break;
