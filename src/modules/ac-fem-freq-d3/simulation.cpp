@@ -15,6 +15,9 @@
 #include "common/hash_functions.hpp"
 #include "common/maths.hpp"
 
+#include "mkl_dss.h"
+#include "mkl_types.h"
+
 namespace numav {
 
 static constexpr size_t DIM = DIM_COUNT<Dimension::D3>;
@@ -658,10 +661,170 @@ void write_matrix(const T& matrix, const std::string& filename) {
     }
 }
 
+void solve_using_eigen(
+    const fz::SafePtr<std::complex<double>>& a_vals,
+    const fz::SafePtr<std::pair<_idx_t,_idx_t>>& nnz_rowcol_idx_pairs,
+    const fz::SafePtr<std::complex<double>>& b,
+    fz::SafePtr<std::complex<double>>& x_out
+) {
+    const size_t node_count = b.size();
+    using Triplet = typename Eigen::Triplet<std::complex<double>>;
+
+    // a matrix
+    fz::SafePtr<Triplet> triplets_a(2*a_vals.size() - node_count);
+    Triplet* it_triplets_a = triplets_a.begin();
+    for (size_t j=0; j!=a_vals.size(); ++j) {
+        *it_triplets_a = Triplet(
+            nnz_rowcol_idx_pairs[j].first,
+            nnz_rowcol_idx_pairs[j].second,
+            a_vals[j]
+        );
+        ++it_triplets_a;
+
+        // lower part of a
+        if (nnz_rowcol_idx_pairs[j].first != 
+            nnz_rowcol_idx_pairs[j].second
+        ) {
+            *it_triplets_a = Triplet(
+                nnz_rowcol_idx_pairs[j].second,
+                nnz_rowcol_idx_pairs[j].first,
+                a_vals[j]
+            );
+            ++it_triplets_a;
+        }
+    }
+    
+    Eigen::SparseMatrix<std::complex<double>> a(node_count, node_count);
+    a.setFromTriplets(triplets_a.begin(), triplets_a.end());
+    triplets_a.free();
+
+    // b vector
+    Eigen::Matrix<std::complex<double>, Eigen::Dynamic, 1> b_eig(node_count);
+    std::copy(b.begin(), b.end(), b_eig.data());
+
+    Eigen::SparseLU<Eigen::SparseMatrix<std::complex<double>>> solver;
+    solver.analyzePattern(a);
+    solver.factorize(a);
+    if (solver.info() != Eigen::Success) {
+        std::cerr << "Factorization failed. Matrix may be singular.\n";
+    }
+    const Eigen::VectorXcd x = solver.solve(b_eig);
+    if (solver.info() != Eigen::Success) {
+        std::cerr << "Solving failed.\n";
+    }
+    for (size_t j=0; j!=node_count; ++j) {
+        x_out[j] = x(j);
+    }
+}
+
+void print_dss_error(const _INTEGER_t* const error_id)
+{
+    fprintf(stderr, "MLK code %lli\n", *error_id);
+    exit(1);
+}
+
+void solve_using_onemkl(
+    const fz::SafePtr<std::complex<double>>& a_vals,
+    const fz::SafePtr<std::pair<_idx_t,_idx_t>>& nnz_rowcol_idx_pairs,
+    const fz::SafePtr<std::complex<double>>& b,
+    fz::SafePtr<std::complex<double>>& x
+) {
+    // problem dimensions
+    const MKL_INT node_count = b.size();
+    const MKL_INT nnz_count = a_vals.size();
+
+    // define sparsity patterns
+    fz::SafePtr<std::complex<double>> a_vals_new(nnz_count);
+    fz::SafePtr<MKL_INT> a_col_idx(nnz_count);
+    fz::SafePtr<MKL_INT> a_row_ptr(node_count + 1);
+
+    std::complex<double>* it_a_vals_new = a_vals_new.begin();
+    MKL_INT* it_a_col_idx = a_col_idx.begin();
+    MKL_INT* it_a_row_ptr = a_row_ptr.begin();
+    size_t counter = 0;
+    for (size_t i=0; i!=node_count; ++i)
+    {
+        *it_a_row_ptr = counter;
+        ++it_a_row_ptr;
+        
+        const std::pair<_idx_t,_idx_t>* it_nnz_rowcol_idx_pairs =
+            nnz_rowcol_idx_pairs.begin();
+        const std::complex<double>* it_a_vals = a_vals.begin();
+        
+        while (it_nnz_rowcol_idx_pairs != nnz_rowcol_idx_pairs.end())
+        {
+            if (it_nnz_rowcol_idx_pairs->first == i)
+            {
+                *it_a_vals_new = *it_a_vals;
+                ++it_a_vals_new;
+                
+                *it_a_col_idx = it_nnz_rowcol_idx_pairs->second;
+                ++it_a_col_idx;
+                
+                ++counter;
+            }
+            ++it_nnz_rowcol_idx_pairs;
+            ++it_a_vals;
+        }
+    }
+    *it_a_row_ptr = counter;
+    ++it_a_row_ptr;
+    assert(it_a_vals_new - a_vals_new.begin() == nnz_count);
+    
+    // system properties
+    const MKL_INT symmetry_type = MKL_DSS_SYMMETRIC_COMPLEX;
+    const MKL_INT positive_definiteness = MKL_DSS_INDEFINITE;
+
+    // options
+    const MKL_INT options = 
+        MKL_DSS_MSG_LVL_WARNING +
+        MKL_DSS_TERM_LVL_ERROR +
+        MKL_DSS_ZERO_BASED_INDEXING;
+
+    // allocate memory for the solver handle and error id.
+    _MKL_DSS_HANDLE_t dss_handle;
+    _INTEGER_t error_id;
+    
+    // initialize the solver
+    error_id = dss_create(dss_handle, options);
+    if (error_id != MKL_DSS_SUCCESS) { print_dss_error(&error_id); }
+
+    // define the non-zero structure of the matrix
+    error_id = dss_define_structure(
+        dss_handle, symmetry_type, a_row_ptr.data(),
+        node_count, node_count, a_col_idx.data(), nnz_count
+    );
+    if (error_id != MKL_DSS_SUCCESS) { print_dss_error(&error_id); }
+    
+    // reorder the matrix
+    error_id = dss_reorder(dss_handle, options, 0);
+    if (error_id != MKL_DSS_SUCCESS) { print_dss_error(&error_id); }
+    
+    // factor the matrix
+    error_id = dss_factor_complex(
+        dss_handle, positive_definiteness,
+        reinterpret_cast<const double*>(a_vals_new.data())
+    );
+    if (error_id != MKL_DSS_SUCCESS) { print_dss_error(&error_id); }
+    
+    // solution vector
+    const MKL_INT num_of_b = 1;
+    error_id = dss_solve_complex(
+        dss_handle, options,
+        reinterpret_cast<const double*>(b.data()),
+        num_of_b, reinterpret_cast<double*>(x.data())
+    );
+    if (error_id != MKL_DSS_SUCCESS) { print_dss_error(&error_id); }
+    a_row_ptr.free();
+    a_col_idx.free();
+    a_vals_new.free();
+}
+
 template<ElementOrder O>
 void SimulationAcFemFreqD3<O>::_solve()
 {
     _result = ResultAcFemFreqD3(_node_count(), _freq_steps.size());
+    fz::SafePtr<std::complex<double>> b(_node_count());
 
     for (size_t i=0; i!=_freq_steps.size(); ++i)
     {
@@ -689,74 +852,32 @@ void SimulationAcFemFreqD3<O>::_solve()
             }
         }
 
-        using Triplet = typename Eigen::Triplet<std::complex<double>>;
-
-        // a matrix
-        fz::SafePtr<Triplet> triplets_a(2*_a_vals.size() - _node_count());
-        Triplet* it_triplets_a = triplets_a.begin();
-        for (size_t j=0; j!=_a_vals.size(); ++j) {
-            *it_triplets_a = Triplet(
-                _nnz_rowcol_idx_pairs[j].first,
-                _nnz_rowcol_idx_pairs[j].second,
-                _a_vals[j]
-            );
-            ++it_triplets_a;
-
-            // lower part of a
-            if (_nnz_rowcol_idx_pairs[j].first != 
-                _nnz_rowcol_idx_pairs[j].second
-            ) {
-                *it_triplets_a = Triplet(
-                    _nnz_rowcol_idx_pairs[j].second,
-                    _nnz_rowcol_idx_pairs[j].first,
-                    _a_vals[j]
-                );
-                ++it_triplets_a;
-            }
-        }
-        const size_t nnz = _node_count();
-        Eigen::SparseMatrix<std::complex<double>> a(nnz, nnz);
-        a.setFromTriplets(triplets_a.begin(), triplets_a.end());
-        triplets_a.free();
-
         // b vector
-        fz::SafePtr<Triplet> triplets_b(_point_volvel.size());
+        b.fill(0);
         for (size_t j=0; j!=_point_volvel.size(); ++j)
         {
             const std::complex<double> volvel =
                 std::get<_FuncRealToCmplx>(_point_volvel[j])(freq);
 
-            const std::complex<double> minus_j_omega_volvel =
+            b[std::get<_idx_t>(_point_volvel[j])] =
                 std::complex<double>(0.0,-1.0)*omega*volvel;
-
-            triplets_b[j] = Triplet(
-                std::get<_idx_t>(_point_volvel[j]), 0, minus_j_omega_volvel
-            );
-        }
-        Eigen::SparseMatrix<std::complex<double>> b(_node_count(), 1);
-        b.setFromTriplets(triplets_b.begin(), triplets_b.end());
-        triplets_b.free();
-
-        Eigen::SparseLU<Eigen::SparseMatrix<std::complex<double>>> solver;
-        solver.analyzePattern(a);
-        solver.factorize(a);
-        if (solver.info() != Eigen::Success) {
-            std::cerr << "Factorization failed. Matrix may be singular.\n";
-        }
-        const Eigen::VectorXcd x = solver.solve(b);
-        if (solver.info() != Eigen::Success) {
-            std::cerr << "Solving failed.\n";
         }
 
+        // solve
+        fz::SafePtr<std::complex<double>> x(_node_count());
+        solve_using_eigen(_a_vals, _nnz_rowcol_idx_pairs, b, x);
+        // solve_using_onemkl(_a_vals, _nnz_rowcol_idx_pairs, b, x);
         for (_idx_t n=0; n!=_node_count(); ++n) {
-            _result._data(n,i) = x(n);
+            _result._data(n,i) = x[n];
         }
         for (_idx_t n=0; n!=_node_count(); ++n) {
-            assert(_result._data(n,i) == x(n));
+            assert(_result._data(n,i) == x[n]);
         }
+        x.free();
 
         std::cout << "Done step: " << i << "/" << _freq_steps.size() << "\n";
     }
+    b.free();
     write_matrix(_result._data, "pressure.bin");
 }
 
