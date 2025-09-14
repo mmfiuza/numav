@@ -468,8 +468,8 @@ constexpr std::array<std::array<double,DIM>,N> GAUSS_POINTS = [] {
 template<size_t N>
 constexpr std::array<double,N> GAUSS_WEIGHTS = [] {
     if constexpr (N == 1) {
-        constexpr double a = 1;
-        return std::array<double,N>({VOLUME_REF_TET * a});
+        constexpr double a = VOLUME_REF_TET;
+        return std::array<double,N>({a});
     }
     if constexpr (N == 4) {
         constexpr double a = VOLUME_REF_TET * 1.0/4.0;
@@ -477,13 +477,13 @@ constexpr std::array<double,N> GAUSS_WEIGHTS = [] {
     }
     if constexpr (N == 15) {
         constexpr double a =
-            VOLUME_REF_TET * 8.0 / 405.0;
+            VOLUME_REF_TET * 16.0 / 135.0;
         constexpr double b =
-            VOLUME_REF_TET * (2665.0 - 14.0*std::sqrt(15.0)) / 226800.0;
+            VOLUME_REF_TET * (2665.0 - 14.0*std::sqrt(15.0)) / 37800.0;
         constexpr double c =
-            VOLUME_REF_TET * (2665.0 + 14.0*std::sqrt(15.0)) / 226800.0;
+            VOLUME_REF_TET * (2665.0 + 14.0*std::sqrt(15.0)) / 37800.0;
         constexpr double d =
-            VOLUME_REF_TET * 5.0 / 567.0;
+            VOLUME_REF_TET * 10.0 / 189.0;
         return std::array<double,N>({a,b,b,b,b,c,c,c,c,d,d,d,d,d,d});
     }
 }();
@@ -865,8 +865,8 @@ void SimulationAcFemFreqD3<O>::_solve()
 
         // solve
         fz::SafePtr<std::complex<double>> x(_node_count());
-        solve_using_eigen(_a_vals, _nnz_rowcol_idx_pairs, b, x);
-        // solve_using_onemkl(_a_vals, _nnz_rowcol_idx_pairs, b, x);
+        // solve_using_eigen(_a_vals, _nnz_rowcol_idx_pairs, b, x);
+        solve_using_onemkl(_a_vals, _nnz_rowcol_idx_pairs, b, x);
         for (_idx_t n=0; n!=_node_count(); ++n) {
             _result._data(n,i) = x[n];
         }
