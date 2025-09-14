@@ -1,18 +1,18 @@
 # Copyright (c) 2025 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
 # start from debian:bookworm-slim
-FROM debian:bookworm-slim
+FROM debian@sha256:df52e55e3361a81ac1bead266f3373ee55d29aa50cf0975d440c2be3483d8ed3
 
 # install dependencies
 RUN apt-get update && apt-get install -y \
-    libc6-dev=2.36-9+deb12u10 \
+    libc6-dev=2.36-9+deb12u13 \
     git=1:2.39.5-0+deb12u2 \
     gcc=4:12.2.0-3 \
     g++=4:12.2.0-3 \
     gdb=13.1-3 \
     make=4.3-4.1 \
     cmake=3.25.1-1 \
-    curl=7.88.1-10+deb12u12 \
+    curl=7.88.1-10+deb12u14 \
     squashfs-tools=1:4.5.1-1 \
     libeigen3-dev=3.4.0-4 \
     libspdlog-dev=1:1.10.0+ds-0.4 \
