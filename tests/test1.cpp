@@ -26,7 +26,7 @@ int main() {
     s.add_volume_material(
         1,
         [](auto f) { return 1.2; },
-        [](auto f) { return 343; }
+        [](auto f) { return std::complex<double>(343,0); }
     );
     s.add_volume_material(
         2,
@@ -40,25 +40,25 @@ int main() {
         TypeOfSource::POINT, {1.0, 1.5, 2.0},
         PhysicalQuantity::VOLUME_VELOCITY, q
     );
-    s.add_sound_source(
-        TypeOfSource::SURFACE, 2,
-        PhysicalQuantity::VOLUME_VELOCITY, q
-    );
+    // s.add_sound_source(
+    //     TypeOfSource::SURFACE, 2,
+    //     PhysicalQuantity::VOLUME_VELOCITY, q
+    // );
 
-    // add pressure sources
-    auto p =[](auto f) { return 1/f; };
-    s.add_sound_source(
-        TypeOfSource::POINT, {2.0, 2.5, 1.0},
-        PhysicalQuantity::PRESSURE, p
-    );
-    s.add_sound_source(
-        TypeOfSource::SURFACE, 3,
-        PhysicalQuantity::PRESSURE, p
-    );
+    // // add pressure sources
+    // auto p =[](auto f) { return 1/f; };
+    // s.add_sound_source(
+    //     TypeOfSource::POINT, {2.0, 2.5, 1.0},
+    //     PhysicalQuantity::PRESSURE, p
+    // );
+    // s.add_sound_source(
+    //     TypeOfSource::SURFACE, 3,
+    //     PhysicalQuantity::PRESSURE, p
+    // );
 
     // add specific surface acoustic impedance
-    auto Z = [](auto f) { return std::complex<double>(f,2); };
-    s.add_surface_specific_acoustic_impedance(4, Z);
+    auto Z = [](auto f) { return std::complex<double>(4000, 4000); };
+    s.add_surface_specific_acoustic_impedance(5, Z);
 
     // run the simulation
     auto result = s.run();

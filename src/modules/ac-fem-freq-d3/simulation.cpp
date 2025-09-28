@@ -21,6 +21,7 @@
 namespace numav {
 
 static constexpr size_t DIM = DIM_COUNT<Dimension::D3>;
+static constexpr double AREA_REF_TRIG = 1.0 / 2.0;
 static constexpr double VOLUME_REF_TET = 1.0 / 6.0;
 
 using ResultAcFemFreqD3 = typename numav::Result<
@@ -33,7 +34,7 @@ using ResultAcFemFreqD3 = typename numav::Result<
 ResultAcFemFreqD3::Result() = default;
 ResultAcFemFreqD3::Result(const size_t& node_count, const size_t& freq_count) {
     _data = 
-        Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic>(
+        Eigen::Matrix<_cmplx_t, Eigen::Dynamic, Eigen::Dynamic>(
             node_count, freq_count
         );
 };
@@ -63,24 +64,31 @@ SimulationAcFemFreqD3<O>::~Simulation() {
     _node_coords.free();
     _sfc_elem_node_idx.free();
     _vol_elem_node_idx.free();
-    _elem_idx_to_espg.free();
-    _elem_idx_to_evpg.free();
+    _sei_to_espg.free();
+    _vei_to_evpg.free();
     _nnz_rowcol_idx_pairs.free();
     for (_ipg_t ivpg=0; ivpg!=_ivpg_count(); ++ivpg) {
-        _ivpg_to_btb_detj_w_vals[ivpg].free();
-        _ivpg_to_nnt_detj_w_vals[ivpg].free();
+        _ivpg_to_stif_fi_part[ivpg].free();
+        _ivpg_to_mass_fi_part[ivpg].free();
         _ivpg_to_ptr_in_a[ivpg].free();
     }
-    // _elem_idx_to_ispg.free();
-    _elem_idx_to_ivpg.free();
-    _ispg_to_volvel.free();
-    _ispg_to_pressure.free();
-    _ispg_to_impedance.free();
+    _ivpg_to_stif_fi_part.free();
+    _ivpg_to_mass_fi_part.free();
+    for (_ipg_t ispgi=0; ispgi!=_ispgi_count(); ++ispgi) {
+        _ispgi_to_damp_fi_part[ispgi].free();
+        _ispgi_to_ptr_in_a[ispgi].free();
+    }
+    _ispgi_to_damp_fi_part.free();
+    _ispgi_to_ptr_in_a.free();
+    _isei_to_ispgi.free();
+    _vei_to_ivpg.free();
+    _ispgv_to_volvel.free();
+    _ispgp_to_pressure.free();
+    _ispgi_to_impedance.free();
     _ivpg_to_volprop.free();
-    _ivpg_to_btb_detj_w_vals.free();
-    _ivpg_to_nnt_detj_w_vals.free();
     _ivpg_to_ptr_in_a.free();
     _a_vals.free();
+    _isei_to_sei.free();
 }
 
 template <ElementOrder O>
@@ -96,6 +104,16 @@ size_t SimulationAcFemFreqD3<O>::_sfc_elem_count() const {
 template <ElementOrder O>
 size_t SimulationAcFemFreqD3<O>::_vol_elem_count() const {
     return _vol_elem_node_idx.size();
+}
+
+template <ElementOrder O>
+size_t SimulationAcFemFreqD3<O>::_isei_count() const {
+    return _isei_to_ispgi.size();
+}
+
+template <ElementOrder O>
+size_t SimulationAcFemFreqD3<O>::_ispgi_count() const {
+    return _ispgi_to_impedance.size();
 }
 
 template <ElementOrder O>
@@ -218,14 +236,14 @@ void SimulationAcFemFreqD3<O>::add_sound_source(
         log::error("Tag {} already assigned.", espg);
     }
     if (physical_quantity_type == PhysicalQuantity::PRESSURE) {
-        const _ipg_t ispg = _espg_to_pressure.size();
+        const _ipg_t ispgp = _espg_to_pressure.size();
         _espg_to_pressure.insert({espg, physical_quantity_value});
-        _espg_to_ispg.insert({espg, ispg});
+        _espg_to_ispg.insert({espg, ispgp});
     }
     else if (physical_quantity_type == PhysicalQuantity::VOLUME_VELOCITY) {
-        const _ipg_t ispg = _espg_to_volvel.size();
+        const _ipg_t ispgv = _espg_to_volvel.size();
         _espg_to_volvel.insert({espg, physical_quantity_value});
-        _espg_to_ispg.insert({espg, ispg});
+        _espg_to_ispg.insert({espg, ispgv});
     }
     else {
         log::error("Possible physical quantities are volume velocity"
@@ -249,9 +267,9 @@ void SimulationAcFemFreqD3<O>::add_surface_specific_acoustic_impedance(
     ) {
         log::error("Tag {} already assigned.", espg);
     }
-    const _ipg_t ispg = _espg_to_impedance.size();
+    const _ipg_t ispgi = _espg_to_impedance.size();
     _espg_to_impedance.insert({espg, impedance});
-    _espg_to_ispg.insert({espg, ispg});
+    _espg_to_ispg.insert({espg, ispgi});
 }
 
 template <ElementOrder O>
@@ -291,23 +309,23 @@ template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::_organize_physical_group_data()
 {
     // generate structures accessed through IPG
-    _ispg_to_volvel =
+    _ispgv_to_volvel =
         fz::SafePtr<_FuncRealToCmplx>(_espg_to_volvel.size());
     for (const auto& [espg, volvel] : _espg_to_volvel) {
-        const _ipg_t ispg = _espg_to_ispg.at(espg);
-        _ispg_to_volvel[ispg] = volvel;
+        const _ipg_t ispgv = _espg_to_ispg.at(espg);
+        _ispgv_to_volvel[ispgv] = volvel;
     }
-    _ispg_to_pressure =
+    _ispgp_to_pressure =
         fz::SafePtr<_FuncRealToCmplx>(_espg_to_pressure.size());
     for (const auto& [espg, pressure] : _espg_to_pressure) {
-        const _ipg_t ispg = _espg_to_ispg.at(espg);
-        _ispg_to_pressure[ispg] = pressure;
+        const _ipg_t ispgp = _espg_to_ispg.at(espg);
+        _ispgp_to_pressure[ispgp] = pressure;
     }
-    _ispg_to_impedance =
+    _ispgi_to_impedance =
         fz::SafePtr<_FuncRealToCmplx>(_espg_to_impedance.size());
     for (const auto& [espg, impedance] : _espg_to_impedance) {
-        const _ipg_t ispg = _espg_to_ispg.at(espg);
-        _ispg_to_impedance[ispg] = impedance;
+        const _ipg_t ispgi = _espg_to_ispg.at(espg);
+        _ispgi_to_impedance[ispgi] = impedance;
     }
     _ivpg_to_volprop =
         fz::SafePtr<_VolProp>(_evpg_to_volprop.size());
@@ -316,10 +334,32 @@ void SimulationAcFemFreqD3<O>::_organize_physical_group_data()
         _ivpg_to_volprop[ivpg] = volprop;
     }
     
+    // generate the contiguous vector with the ispgi of each surface element
+    size_t isei_count = 0;
+    for (_idx_t sei=0; sei!=_sfc_elem_count(); ++sei) {
+        if (_espg_to_impedance.contains(_sei_to_espg[sei])) {
+            ++isei_count;
+        }
+    }
+    _isei_to_sei = fz::SafePtr<_idx_t>(isei_count);
+    isei_count = 0;
+    for (_idx_t sei=0; sei!=_sfc_elem_count(); ++sei) {
+        if (_espg_to_impedance.contains(_sei_to_espg[sei])) {
+            const _idx_t new_isei = isei_count;
+            _isei_to_sei[new_isei] = sei;
+            ++isei_count;
+        }
+    }
+    _isei_to_ispgi = fz::SafePtr<_ipg_t>(isei_count);
+    for (_idx_t isei=0; isei!=_isei_to_ispgi.size(); ++isei) {
+        _idx_t sei = _isei_to_sei[isei];
+        _isei_to_ispgi[isei] = _espg_to_ispg.at(_sei_to_espg[sei]);
+    }
+    
     // generate the contiguous vector with the ivpg of each volume element
-    _elem_idx_to_ivpg = fz::SafePtr<_ipg_t>(_vol_elem_count());
-    for (_idx_t e=0; e!=_elem_idx_to_ivpg.size(); ++e) {
-        _elem_idx_to_ivpg[e] = _evpg_to_ivpg.at(_elem_idx_to_evpg[e]);
+    _vei_to_ivpg = fz::SafePtr<_ipg_t>(_vol_elem_count());
+    for (_idx_t vei=0; vei!=_vei_to_ivpg.size(); ++vei) {
+        _vei_to_ivpg[vei] = _evpg_to_ivpg.at(_vei_to_evpg[vei]);
     }
 }
 
@@ -328,11 +368,11 @@ void SimulationAcFemFreqD3<O>::_analyze_sparsity()
 {
     std::unordered_set<std::pair<_idx_t,_idx_t>> existing_pairs;
     constexpr std::array<
-        std::array<size_t,2>, COMB_REP_SIZE<NODES_IN_3D_ELEM<O>,2>
-    > COMBS = COMBINATION_REP<NODES_IN_3D_ELEM<O>>;
+        std::array<size_t,2>, COMB_REP_SIZE<NODES_IN_VOL_ELEM<O>,2>
+    > COMBS_VOL = COMBINATION_REP<NODES_IN_VOL_ELEM<O>>;
 
     for (_idx_t e=0; e!=_vol_elem_count(); ++e) {
-        for (const auto& c : COMBS) {
+        for (const auto& c : COMBS_VOL) {
             existing_pairs.insert( 
                 make_ascending_pair(
                     _vol_elem_node_idx[e][c[0]], _vol_elem_node_idx[e][c[1]]
@@ -355,19 +395,83 @@ void SimulationAcFemFreqD3<O>::_analyze_sparsity()
     );
 }
 
-// general shape_func declaration for all orders
+// general shape_func_sfc declaration for all orders
 template<ElementOrder O>
-Eigen::Matrix<double, NODES_IN_3D_ELEM<O>, 1> shape_func(
+Eigen::Matrix<double, NODES_IN_SFC_ELEM<O>, 1> shape_func_sfc(
+    const double&, const double&
+);
+
+template<>
+Eigen::Matrix<double, NODES_IN_SFC_ELEM<ElementOrder::O1>, 1>
+shape_func_sfc<ElementOrder::O1>(
+    const double& xi0, const double& xi1
+) {
+    const double xi2 = 1 - xi0 - xi1;
+    return Eigen::Matrix<double, NODES_IN_SFC_ELEM<ElementOrder::O1>, 1>(
+        xi0,
+        xi1,
+        xi2
+    );
+}
+
+template<>
+Eigen::Matrix<double, NODES_IN_SFC_ELEM<ElementOrder::O2>, 1>
+shape_func_sfc<ElementOrder::O2>(
+    const double& xi0, const double& xi1
+) {
+    const double xi2 = 1 - xi0 - xi1;
+    return Eigen::Matrix<double, NODES_IN_SFC_ELEM<ElementOrder::O2>, 1>(
+        xi0*(2*xi0-1),
+        xi1*(2*xi1-1),
+        xi2*(2*xi2-1),
+        4*xi0*xi1,
+        4*xi0*xi2,
+        4*xi1*xi2
+    );
+}
+
+// general shape_func_sfc_gradient declaration for all orders
+template<ElementOrder O>
+Eigen::Matrix<double, 2, NODES_IN_SFC_ELEM<O>> shape_func_sfc_gradient(
+    const double&, const double&
+);
+
+template<>
+Eigen::Matrix<double, 2, NODES_IN_SFC_ELEM<ElementOrder::O1>>
+shape_func_sfc_gradient<ElementOrder::O1>(
+    const double& xi0, const double& xi1
+) {
+    return Eigen::Matrix<double, 2, NODES_IN_SFC_ELEM<ElementOrder::O1>> {
+        {1, 0, -1},
+        {0, 1, -1}
+    };
+}
+
+template<>
+Eigen::Matrix<double, 2, NODES_IN_SFC_ELEM<ElementOrder::O2>>
+shape_func_sfc_gradient<ElementOrder::O2>(
+    const double& xi0, const double& xi1
+) {
+    const double xi2 = 1 - xi0 - xi1;
+    return Eigen::Matrix<double, 2, NODES_IN_SFC_ELEM<ElementOrder::O2>> {
+        {4*xi0-1, 0      , 1-4*xi2, 4*xi1, 4*(xi2-xi0), -4*xi1     },
+        {0      , 4*xi1-1, 1-4*xi2, 4*xi0, -4*xi0     , 4*(xi2-xi1)}
+    };
+}
+
+// general shape_func_vol declaration for all orders
+template<ElementOrder O>
+Eigen::Matrix<double, NODES_IN_VOL_ELEM<O>, 1> shape_func_vol(
     const double&, const double&, const double&
 );
 
 template<>
-Eigen::Matrix<double, NODES_IN_3D_ELEM<ElementOrder::O1>, 1>
-shape_func<ElementOrder::O1>(
+Eigen::Matrix<double, NODES_IN_VOL_ELEM<ElementOrder::O1>, 1>
+shape_func_vol<ElementOrder::O1>(
     const double& xi0, const double& xi1, const double& xi2
 ) {
     const double xi3 = 1 - xi0 - xi1 - xi2;
-    return Eigen::Matrix<double, NODES_IN_3D_ELEM<ElementOrder::O1>, 1>(
+    return Eigen::Matrix<double, NODES_IN_VOL_ELEM<ElementOrder::O1>, 1>(
         xi0,
         xi1,
         xi2,
@@ -376,12 +480,12 @@ shape_func<ElementOrder::O1>(
 }
 
 template<>
-Eigen::Matrix<double, NODES_IN_3D_ELEM<ElementOrder::O2>, 1>
-shape_func<ElementOrder::O2>(
+Eigen::Matrix<double, NODES_IN_VOL_ELEM<ElementOrder::O2>, 1>
+shape_func_vol<ElementOrder::O2>(
     const double& xi0, const double& xi1, const double& xi2
 ) {
     const double xi3 = 1 - xi0 - xi1 - xi2;
-    return Eigen::Matrix<double, NODES_IN_3D_ELEM<ElementOrder::O2>, 1>(
+    return Eigen::Matrix<double, NODES_IN_VOL_ELEM<ElementOrder::O2>, 1>(
         xi0*(2*xi0-1),
         xi1*(2*xi1-1),
         xi2*(2*xi2-1),
@@ -395,18 +499,18 @@ shape_func<ElementOrder::O2>(
     );
 }
 
-// general shape_func_gradient declaration for all orders
+// general shape_func_vol_gradient declaration for all orders
 template<ElementOrder O>
-Eigen::Matrix<double, DIM, NODES_IN_3D_ELEM<O>> shape_func_gradient(
+Eigen::Matrix<double, DIM, NODES_IN_VOL_ELEM<O>> shape_func_vol_gradient(
     const double&, const double&, const double&
 );
 
 template<>
-Eigen::Matrix<double, DIM, NODES_IN_3D_ELEM<ElementOrder::O1>>
-shape_func_gradient<ElementOrder::O1>(
+Eigen::Matrix<double, DIM, NODES_IN_VOL_ELEM<ElementOrder::O1>>
+shape_func_vol_gradient<ElementOrder::O1>(
     const double& xi0, const double& xi1, const double& xi2
 ) {
-    return Eigen::Matrix<double, DIM, NODES_IN_3D_ELEM<ElementOrder::O1>> {
+    return Eigen::Matrix<double, DIM, NODES_IN_VOL_ELEM<ElementOrder::O1>> {
         {1, 0, 0, -1},
         {0, 1, 0, -1},
         {0, 0, 1, -1}
@@ -414,17 +518,22 @@ shape_func_gradient<ElementOrder::O1>(
 }
 
 template<>
-Eigen::Matrix<double, DIM, NODES_IN_3D_ELEM<ElementOrder::O2>>
-shape_func_gradient<ElementOrder::O2>(
+Eigen::Matrix<double, DIM, NODES_IN_VOL_ELEM<ElementOrder::O2>>
+shape_func_vol_gradient<ElementOrder::O2>(
     const double& xi0, const double& xi1, const double& xi2
 ) {
     const double xi3 = 1 - xi0 - xi1 - xi2;
-    return Eigen::Matrix<double, DIM, NODES_IN_3D_ELEM<ElementOrder::O2>> {
+    return Eigen::Matrix<double, DIM, NODES_IN_VOL_ELEM<ElementOrder::O2>> {
         {4*xi0-1, 0, 0, 1-4*xi3, 4*xi1, 4*xi2, 4*(xi3-xi0), 0, -4*xi1, -4*xi2},
         {0, 4*xi1-1, 0, 1-4*xi3, 4*xi0, 0, -4*xi0, 4*xi2, 4*(xi3-xi1), -4*xi2},
         {0, 0, 4*xi2-1, 1-4*xi3, 0, 4*xi0, -4*xi0, 4*xi1, -4*xi1, 4*(xi3-xi2)}
     };
 }
+
+template<ElementOrder O> constexpr size_t NGP_DAMP = [] {
+    if constexpr (O == ElementOrder::O1) { return 1; }
+    if constexpr (O == ElementOrder::O2) { return 3; }
+}();
 
 template<ElementOrder O> constexpr size_t NGP_STIF = [] {
     if constexpr (O == ElementOrder::O1) { return 1; }
@@ -437,7 +546,22 @@ template<ElementOrder O> constexpr size_t NGP_MASS = [] {
 }();
 
 template<size_t N>
-constexpr std::array<std::array<double,DIM>,N> GAUSS_POINTS = [] {
+constexpr std::array<std::array<double,2>,N> GAUSS_POINTS_SFC = [] {
+    if constexpr (N == 1) {
+        constexpr double a = 1.0 / 3.0;
+        return std::array<std::array<double,2>,N>({ {a, a} });
+    }
+    if constexpr (N == 3) {
+        constexpr double a = 1.0 / 6.0;
+        constexpr double b = 2.0 / 3.0;
+        return std::array<std::array<double,2>,N>{{
+            {a,a}, {b,a}, {a,b}
+        }};
+    }
+}();
+
+template<size_t N>
+constexpr std::array<std::array<double,DIM>,N> GAUSS_POINTS_VOL = [] {
     if constexpr (N == 1) {
         constexpr double a = 1.0 / 4.0;
         return std::array<std::array<double,DIM>,N>({ {a, a, a} });
@@ -466,13 +590,25 @@ constexpr std::array<std::array<double,DIM>,N> GAUSS_POINTS = [] {
 }();
 
 template<size_t N>
-constexpr std::array<double,N> GAUSS_WEIGHTS = [] {
+constexpr std::array<double,N> GAUSS_WEIGHTS_SFC = [] {
+    if constexpr (N == 1) {
+        constexpr double a = AREA_REF_TRIG;
+        return std::array<double,N>({a});
+    }
+    if constexpr (N == 3) {
+        constexpr double a = AREA_REF_TRIG * 1.0 / 3.0;
+        return std::array<double,N>({a,a,a});
+    }
+}();
+
+template<size_t N>
+constexpr std::array<double,N> GAUSS_WEIGHTS_VOL = [] {
     if constexpr (N == 1) {
         constexpr double a = VOLUME_REF_TET;
         return std::array<double,N>({a});
     }
     if constexpr (N == 4) {
-        constexpr double a = VOLUME_REF_TET * 1.0/4.0;
+        constexpr double a = VOLUME_REF_TET * 1.0 / 4.0;
         return std::array<double,N>({a,a,a,a});
     }
     if constexpr (N == 15) {
@@ -489,62 +625,143 @@ constexpr std::array<double,N> GAUSS_WEIGHTS = [] {
 }();
 
 template<ElementOrder O>
-void SimulationAcFemFreqD3<O>::_assemble_freq_independent_parts()
-{
-    constexpr std::array<
-        std::array<size_t,2>, COMB_REP_SIZE<NODES_IN_3D_ELEM<O>,2>
-    > COMBS = COMBINATION_REP<NODES_IN_3D_ELEM<O>>;
+std::array<Eigen::Vector2d, NODES_IN_SFC_ELEM<O>> project_triangle_to_2d(
+    const std::array<Eigen::Vector3d, NODES_IN_SFC_ELEM<O>>& vertices_3d
+) {
+    std::array<Eigen::Vector3d, NODES_IN_SFC_ELEM<O>> point_minus_origin;
+    for (_idx_t ni = 0; ni!=NODES_IN_SFC_ELEM<O>; ++ni) {
+        point_minus_origin[ni] = vertices_3d[ni] - vertices_3d[0];
+    }
+    const Eigen::Vector3d& u = point_minus_origin[1];
+    const Eigen::Vector3d& v = point_minus_origin[2];
+    const Eigen::Vector3d n = u.cross(v);
+    const Eigen::Vector3d x = u / u.norm();
+    Eigen::Vector3d y = n.cross(u);
+    y /= y.norm();
 
-    // count the nnz size for each ivpg
+    std::array<Eigen::Vector2d, NODES_IN_SFC_ELEM<O>> vertices_2d;
+    for (_idx_t ni = 0; ni!=NODES_IN_SFC_ELEM<O>; ++ni) {
+        vertices_2d[ni] = Eigen::Vector2d(
+            point_minus_origin[ni].dot(x), point_minus_origin[ni].dot(y)
+        );
+    }
+    return vertices_2d;
+}
+
+ double get_triangle_area(const std::array<std::array<double,DIM>,3>& coords)
+ {
+    const double a = std::sqrt(
+        std::pow(coords[0][0] - coords[1][0], 2) +
+        std::pow(coords[0][1] - coords[1][1], 2) +
+        std::pow(coords[0][2] - coords[1][2], 2)
+    );
+    const double b = std::sqrt(
+        std::pow(coords[1][0] - coords[2][0], 2) +
+        std::pow(coords[1][1] - coords[2][1], 2) +
+        std::pow(coords[1][2] - coords[2][2], 2)
+    );
+    const double c = std::sqrt(
+        std::pow(coords[2][0] - coords[0][0], 2) +
+        std::pow(coords[2][1] - coords[0][1], 2) +
+        std::pow(coords[2][2] - coords[0][2], 2)
+    );
+    const double s = (a + b + c) / 2.0;
+    const double area = std::sqrt(s * (s-a) * (s-b) * (s-c));
+    return area;
+ }
+
+template<ElementOrder O>
+void SimulationAcFemFreqD3<O>::_assemble_freq_independent_parts()
+{   
+    constexpr std::array<
+        std::array<size_t,2>, COMB_REP_SIZE<NODES_IN_SFC_ELEM<O>,2>
+    > COMBS_SFC = COMBINATION_REP<NODES_IN_SFC_ELEM<O>>;
+    constexpr std::array<
+        std::array<size_t,2>, COMB_REP_SIZE<NODES_IN_VOL_ELEM<O>,2>
+    > COMBS_VOL = COMBINATION_REP<NODES_IN_VOL_ELEM<O>>;
+
+    // count the nnz size for each ispgi
     fz::SafePtr<std::unordered_map<
         std::pair<_idx_t,_idx_t>, _idx_t
-    >> ivpg_to_map_to_pair_idx(_ivpg_count());
-    for (_idx_t e=0; e!=_vol_elem_count(); ++e)
+    >> ispgi_to_map_to_fipi(_ispgi_count());
+    for (_idx_t isei=0; isei!=_isei_count(); ++isei)
     {
-        const _ipg_t ivpg = _elem_idx_to_ivpg[e];
-        for (auto& c : COMBS) {
+        const _ipg_t ispgi = _isei_to_ispgi[isei];
+        const _idx_t sei = _isei_to_sei[isei];
+        for (const auto& c : COMBS_SFC) {
             const std::pair<_idx_t,_idx_t> pair = make_ascending_pair(
-                _vol_elem_node_idx[e][c[0]],
-                _vol_elem_node_idx[e][c[1]]
+                _sfc_elem_node_idx[sei][c[0]],
+                _sfc_elem_node_idx[sei][c[1]]
             );
-            if (!ivpg_to_map_to_pair_idx[ivpg].contains(pair)) {
-                const _idx_t new_idx = ivpg_to_map_to_pair_idx[ivpg].size();
-                ivpg_to_map_to_pair_idx[ivpg].insert({pair, new_idx});
+            if (!ispgi_to_map_to_fipi[ispgi].contains(pair)) {
+                const _idx_t fipi = ispgi_to_map_to_fipi[ispgi].size();
+                ispgi_to_map_to_fipi[ispgi].insert({pair, fipi});
             }
         }
     }
 
-    // allocate memory in the safe pointers
-    _ivpg_to_btb_detj_w_vals =
-        fz::SafePtr<fz::SafePtr<double>>(_ivpg_count());
-    _ivpg_to_nnt_detj_w_vals =
-        fz::SafePtr<fz::SafePtr<double>>(_ivpg_count());
-    _ivpg_to_ptr_in_a =
-        fz::SafePtr<fz::SafePtr<std::complex<double>*>>(_ivpg_count());
+    // allocate memory in the safe pointers for the surface impedance elements
+    _ispgi_to_damp_fi_part = fz::SafePtr<fz::SafePtr<_cmplx_t>>(_ispgi_count());
+    _ispgi_to_ptr_in_a = fz::SafePtr<fz::SafePtr<_cmplx_t*>>(_ispgi_count());
+    for (_ipg_t ispgi=0; ispgi!=_ispgi_count(); ++ispgi)
+    {
+        const size_t size = ispgi_to_map_to_fipi[ispgi].size();
+        _ispgi_to_damp_fi_part[ispgi] = fz::SafePtr<_cmplx_t>(size);
+        _ispgi_to_damp_fi_part[ispgi].fill(_cmplx_t(0.0, 0.0));
+        _ispgi_to_ptr_in_a[ispgi] = fz::SafePtr<_cmplx_t*>(size);
+    }
+
+    // count the nnz size for each ivpg
+    fz::SafePtr<std::unordered_map<
+        std::pair<_idx_t,_idx_t>, _idx_t
+    >> ivpg_to_map_to_fipi(_ivpg_count());
+    for (_idx_t vei=0; vei!=_vol_elem_count(); ++vei)
+    {
+        const _ipg_t ivpg = _vei_to_ivpg[vei];
+        for (const auto& c : COMBS_VOL) {
+            const std::pair<_idx_t,_idx_t> pair = make_ascending_pair(
+                _vol_elem_node_idx[vei][c[0]],
+                _vol_elem_node_idx[vei][c[1]]
+            );
+            if (!ivpg_to_map_to_fipi[ivpg].contains(pair)) {
+                const _idx_t fipi = ivpg_to_map_to_fipi[ivpg].size();
+                ivpg_to_map_to_fipi[ivpg].insert({pair, fipi});
+            }
+        }
+    }
+
+    // allocate memory in the safe pointers for the volume elements
+    _ivpg_to_stif_fi_part = fz::SafePtr<fz::SafePtr<double>>(_ivpg_count());
+    _ivpg_to_mass_fi_part = fz::SafePtr<fz::SafePtr<double>>(_ivpg_count());
+    _ivpg_to_ptr_in_a = fz::SafePtr<fz::SafePtr<_cmplx_t*>>(_ivpg_count());
     for (_ipg_t ivpg=0; ivpg!=_ivpg_count(); ++ivpg)
     {
-        const size_t size = ivpg_to_map_to_pair_idx[ivpg].size();
-        _ivpg_to_btb_detj_w_vals[ivpg] = fz::SafePtr<double>(size);
-        _ivpg_to_btb_detj_w_vals[ivpg].fill(0);
-        _ivpg_to_nnt_detj_w_vals[ivpg] = fz::SafePtr<double>(size);
-        _ivpg_to_nnt_detj_w_vals[ivpg].fill(0);
-        _ivpg_to_ptr_in_a[ivpg] = fz::SafePtr<std::complex<double>*>(size);
+        const size_t size = ivpg_to_map_to_fipi[ivpg].size();
+        _ivpg_to_stif_fi_part[ivpg] = fz::SafePtr<double>(size);
+        _ivpg_to_stif_fi_part[ivpg].fill(0.0);
+        _ivpg_to_mass_fi_part[ivpg] = fz::SafePtr<double>(size);
+        _ivpg_to_mass_fi_part[ivpg].fill(0.0);
+        _ivpg_to_ptr_in_a[ivpg] = fz::SafePtr<_cmplx_t*>(size);
     }
     
-    _a_vals = fz::SafePtr<std::complex<double>>(_nnz_rowcol_idx_pairs.size());
-    std::array<_idx_t, COMBS.size()> idx;
-    for (_idx_t e=0; e!=_vol_elem_count(); ++e)
+    // allocate the A matrix buffer
+    _a_vals = fz::SafePtr<_cmplx_t>(_nnz_rowcol_idx_pairs.size());
+
+    // loop over the surface impedance elements
+    std::array<_idx_t, COMBS_SFC.size()> fipi_sfc;
+    for (_idx_t isei=0; isei!=_isei_count(); ++isei)
     {
-        const _ipg_t ivpg = _elem_idx_to_ivpg[e];
+        const _ipg_t ispgi = _isei_to_ispgi[isei];
+        const _ipg_t sei = _isei_to_sei[isei];
         
-        // Create _ivpg_to_ptr_in_a
-        for (_idx_t i=0; i!=COMBS.size(); ++i)
+        // Create _ispgi_to_ptr_in_a
+        for (_idx_t nci=0; nci!=COMBS_SFC.size(); ++nci)
         {
             const std::pair<_idx_t,_idx_t> pair = make_ascending_pair(
-                _vol_elem_node_idx[e][COMBS[i][0]],
-                _vol_elem_node_idx[e][COMBS[i][1]]
+                _sfc_elem_node_idx[sei][COMBS_SFC[nci][0]],
+                _sfc_elem_node_idx[sei][COMBS_SFC[nci][1]]
             );
-            idx[i] = ivpg_to_map_to_pair_idx[ivpg].at(pair);
+            fipi_sfc[nci] = ispgi_to_map_to_fipi[ispgi].at(pair);
             
             const std::pair<_idx_t,_idx_t>* const pair_ptr = std::lower_bound(
                 _nnz_rowcol_idx_pairs.begin(),
@@ -552,30 +769,127 @@ void SimulationAcFemFreqD3<O>::_assemble_freq_independent_parts()
                 pair,
                 compare_pair<_idx_t>
             );
-            const ptrdiff_t pair_idx = pair_ptr - _nnz_rowcol_idx_pairs.begin();
-            _ivpg_to_ptr_in_a[ivpg][idx[i]] = _a_vals.begin() + pair_idx;
-            assert(pair_idx < _nnz_rowcol_idx_pairs.size());
+            const ptrdiff_t ptrdiff = pair_ptr - _nnz_rowcol_idx_pairs.begin();
+            _ispgi_to_ptr_in_a[ispgi][fipi_sfc[nci]] =
+                _a_vals.begin() + ptrdiff;
+            assert(ptrdiff < _nnz_rowcol_idx_pairs.size());
+        }
+
+        // coordinates matrix
+        std::array<Eigen::Vector3d, NODES_IN_SFC_ELEM<O>> triangle_3d;
+        for (size_t ni=0; ni!=NODES_IN_SFC_ELEM<O>; ++ni) {
+            const _idx_t node_idx = _sfc_elem_node_idx[sei][ni];
+            triangle_3d[ni] = Eigen::Vector3d(
+                _node_coords[node_idx][0],
+                _node_coords[node_idx][1],
+                _node_coords[node_idx][2]
+            );
+        }
+        std::array<Eigen::Vector2d, NODES_IN_SFC_ELEM<O>> triangle_2d =
+            project_triangle_to_2d<O>(triangle_3d);
+        Eigen::Matrix<double,NODES_IN_SFC_ELEM<O>,2> coords_matrix;
+        for (size_t ni=0; ni!=NODES_IN_SFC_ELEM<O>; ++ni) {
+            const _idx_t node_idx = _sfc_elem_node_idx[sei][ni];
+            coords_matrix(ni,0) = triangle_2d[ni](0);
+            coords_matrix(ni,1) = triangle_2d[ni](1);
+        }
+
+        // damping matrix
+        constexpr std::array<std::array<double,2>,NGP_DAMP<O>>
+            GAUSS_POINTS_DAMP = GAUSS_POINTS_SFC<NGP_DAMP<O>>;
+        for (_idx_t gpi=0; gpi!=NGP_DAMP<O>; ++gpi)
+        {
+            Eigen::Matrix<double,2,NODES_IN_SFC_ELEM<O>> nabla_n =
+                shape_func_sfc_gradient<O>(
+                    GAUSS_POINTS_DAMP[gpi][0],
+                    GAUSS_POINTS_DAMP[gpi][1]
+                ); // todo: try putting constexpr here
+
+            const Eigen::Matrix<double,2,2> jac_matrix =
+                nabla_n * coords_matrix;
+            
+            const double det_jac = jac_matrix.determinant();
+            
+            // std::array<std::array<double,DIM>,3> triangle_coords;
+            // for (size_t ni=0; ni!=3; ++ni) {
+            //     const _idx_t node_idx = _sfc_elem_node_idx[sei][ni];
+            //     triangle_coords[ni] = std::array<double,DIM>({
+            //         _node_coords[node_idx][0],
+            //         _node_coords[node_idx][1],
+            //         _node_coords[node_idx][2]
+            //     });
+            // }
+            // const double det_jac = 2*get_triangle_area(triangle_coords);
+
+            const Eigen::Matrix<double,NODES_IN_SFC_ELEM<O>,1> n =
+                shape_func_sfc<O>(
+                    GAUSS_POINTS_DAMP[gpi][0],
+                    GAUSS_POINTS_DAMP[gpi][1]
+                );
+            
+            const
+            Eigen::Matrix<double,NODES_IN_SFC_ELEM<O>,NODES_IN_SFC_ELEM<O>>
+                nnt = n * n.transpose();
+
+            // todo: multiply detj and w without creating another eigen matrix
+            const
+            Eigen::Matrix<double,NODES_IN_SFC_ELEM<O>,NODES_IN_SFC_ELEM<O>>
+                nnt_detj_w =
+                    nnt * det_jac * GAUSS_WEIGHTS_SFC<NGP_DAMP<O>>[gpi];
+            
+            for (_idx_t nci=0; nci!=COMBS_SFC.size(); ++nci) {
+                _ispgi_to_damp_fi_part[ispgi][fipi_sfc[nci]] += nnt_detj_w(
+                    COMBS_SFC[nci][0], COMBS_SFC[nci][1]
+                );
+            }
+        }
+    }
+
+    // loop over the volume elements
+    std::array<_idx_t, COMBS_VOL.size()> fipi_vol;
+    for (_idx_t vei=0; vei!=_vol_elem_count(); ++vei)
+    {
+        const _ipg_t ivpg = _vei_to_ivpg[vei];
+        
+        // Create _ivpg_to_ptr_in_a
+        for (_idx_t nci=0; nci!=COMBS_VOL.size(); ++nci)
+        {
+            const std::pair<_idx_t,_idx_t> pair = make_ascending_pair(
+                _vol_elem_node_idx[vei][COMBS_VOL[nci][0]],
+                _vol_elem_node_idx[vei][COMBS_VOL[nci][1]]
+            );
+            fipi_vol[nci] = ivpg_to_map_to_fipi[ivpg].at(pair);
+            
+            const std::pair<_idx_t,_idx_t>* const pair_ptr = std::lower_bound(
+                _nnz_rowcol_idx_pairs.begin(),
+                _nnz_rowcol_idx_pairs.end(),
+                pair,
+                compare_pair<_idx_t>
+            );
+            const ptrdiff_t ptrdiff = pair_ptr - _nnz_rowcol_idx_pairs.begin();
+            _ivpg_to_ptr_in_a[ivpg][fipi_vol[nci]] = _a_vals.begin() + ptrdiff;
+            assert(ptrdiff < _nnz_rowcol_idx_pairs.size());
         }
         
         // coordinates matrix
-        Eigen::Matrix<double,NODES_IN_3D_ELEM<O>,DIM> coords_matrix;
-        for (size_t i=0; i!=NODES_IN_3D_ELEM<O>; ++i) {
-            const _idx_t node_idx = _vol_elem_node_idx[e][i];
-            for (size_t j=0; j!=DIM; ++j) {
-                coords_matrix(i,j) = _node_coords[node_idx][j];
+        Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,DIM> coords_matrix;
+        for (size_t ni=0; ni!=NODES_IN_VOL_ELEM<O>; ++ni) {
+            const _idx_t node_idx = _vol_elem_node_idx[vei][ni];
+            for (size_t di=0; di!=DIM; ++di) {
+                coords_matrix(ni,di) = _node_coords[node_idx][di];
             }
         }
 
         // stiffness matrix
         constexpr std::array<std::array<double,DIM>,NGP_STIF<O>>
-            GAUSS_POINTS_STIF = GAUSS_POINTS<NGP_STIF<O>>;
-        for (_idx_t p=0; p!=NGP_STIF<O>; ++p)
+            GAUSS_POINTS_STIF = GAUSS_POINTS_VOL<NGP_STIF<O>>;
+        for (_idx_t gpi=0; gpi!=NGP_STIF<O>; ++gpi)
         {
-            Eigen::Matrix<double,DIM,NODES_IN_3D_ELEM<O>> nabla_n =
-                shape_func_gradient<O>(
-                    GAUSS_POINTS_STIF[p][0],
-                    GAUSS_POINTS_STIF[p][1],
-                    GAUSS_POINTS_STIF[p][2]
+            Eigen::Matrix<double,DIM,NODES_IN_VOL_ELEM<O>> nabla_n =
+                shape_func_vol_gradient<O>(
+                    GAUSS_POINTS_STIF[gpi][0],
+                    GAUSS_POINTS_STIF[gpi][1],
+                    GAUSS_POINTS_STIF[gpi][2]
                 ); // todo: try putting constexpr here
 
             const Eigen::Matrix<double,DIM,DIM> jac_matrix = 
@@ -583,35 +897,38 @@ void SimulationAcFemFreqD3<O>::_assemble_freq_independent_parts()
 
             const Eigen::Matrix<double,DIM,DIM> inv_jac = jac_matrix.inverse();
             
-            const Eigen::Matrix<double,DIM,NODES_IN_3D_ELEM<O>> b_matrix =
+            const Eigen::Matrix<double,DIM,NODES_IN_VOL_ELEM<O>> b_matrix =
                 inv_jac * nabla_n;
             
-            const Eigen::Matrix<double,NODES_IN_3D_ELEM<O>,NODES_IN_3D_ELEM<O>>
+            const
+            Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,NODES_IN_VOL_ELEM<O>>
                 btb = b_matrix.transpose() * b_matrix;
             
             const double det_jac = jac_matrix.determinant();
             
             // todo: multiply detj and w without creating another eigen matrix
-            const Eigen::Matrix<double,NODES_IN_3D_ELEM<O>,NODES_IN_3D_ELEM<O>>
-                btb_detj_w = btb * det_jac * GAUSS_WEIGHTS<NGP_STIF<O>>[p];
+            const
+            Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,NODES_IN_VOL_ELEM<O>>
+                btb_detj_w = 
+                    btb * det_jac * GAUSS_WEIGHTS_VOL<NGP_STIF<O>>[gpi];
 
-            for (_idx_t i=0; i!=COMBS.size(); ++i) {
-                _ivpg_to_btb_detj_w_vals[ivpg][idx[i]] += btb_detj_w(
-                    COMBS[i][0], COMBS[i][1]
+            for (_idx_t nci=0; nci!=COMBS_VOL.size(); ++nci) {
+                _ivpg_to_stif_fi_part[ivpg][fipi_vol[nci]] += btb_detj_w(
+                    COMBS_VOL[nci][0], COMBS_VOL[nci][1]
                 );
             }
         }
 
         // mass matrix
         constexpr std::array<std::array<double,DIM>,NGP_MASS<O>>
-            GAUSS_POINTS_MASS = GAUSS_POINTS<NGP_MASS<O>>;
-        for (_idx_t p=0; p!=NGP_MASS<O>; ++p)
+            GAUSS_POINTS_MASS = GAUSS_POINTS_VOL<NGP_MASS<O>>;
+        for (_idx_t gpi=0; gpi!=NGP_MASS<O>; ++gpi)
         {
-            Eigen::Matrix<double,DIM,NODES_IN_3D_ELEM<O>> nabla_n =
-                shape_func_gradient<O>(
-                    GAUSS_POINTS_MASS[p][0],
-                    GAUSS_POINTS_MASS[p][1],
-                    GAUSS_POINTS_MASS[p][2]
+            Eigen::Matrix<double,DIM,NODES_IN_VOL_ELEM<O>> nabla_n =
+                shape_func_vol_gradient<O>(
+                    GAUSS_POINTS_MASS[gpi][0],
+                    GAUSS_POINTS_MASS[gpi][1],
+                    GAUSS_POINTS_MASS[gpi][2]
                 ); // todo: try putting constexpr here
 
             const Eigen::Matrix<double,DIM,DIM> jac_matrix = 
@@ -619,28 +936,33 @@ void SimulationAcFemFreqD3<O>::_assemble_freq_independent_parts()
             
             const double det_jac = jac_matrix.determinant();
 
-            const Eigen::Matrix<double,NODES_IN_3D_ELEM<O>,1> n =
-                shape_func<O>(
-                    GAUSS_POINTS_MASS[p][0],
-                    GAUSS_POINTS_MASS[p][1],
-                    GAUSS_POINTS_MASS[p][2]
+            const Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,1> n =
+                shape_func_vol<O>(
+                    GAUSS_POINTS_MASS[gpi][0],
+                    GAUSS_POINTS_MASS[gpi][1],
+                    GAUSS_POINTS_MASS[gpi][2]
                 );
 
-            const Eigen::Matrix<double,NODES_IN_3D_ELEM<O>,NODES_IN_3D_ELEM<O>>
+            const
+            Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,NODES_IN_VOL_ELEM<O>>
                 nnt = n * n.transpose();
             
             // todo: multiply detj and w without creating another eigen matrix
-            const Eigen::Matrix<double,NODES_IN_3D_ELEM<O>,NODES_IN_3D_ELEM<O>>
-                nnt_detj_w = nnt * det_jac * GAUSS_WEIGHTS<NGP_MASS<O>>[p];
+            const
+            Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,NODES_IN_VOL_ELEM<O>>
+                nnt_detj_w =
+                    nnt * det_jac * GAUSS_WEIGHTS_VOL<NGP_MASS<O>>[gpi];
             
-            for (_idx_t i=0; i!=COMBS.size(); ++i) {
-                _ivpg_to_nnt_detj_w_vals[ivpg][idx[i]] += nnt_detj_w(
-                    COMBS[i][0], COMBS[i][1]
+            for (_idx_t nci=0; nci!=COMBS_VOL.size(); ++nci) {
+                _ivpg_to_mass_fi_part[ivpg][fipi_vol[nci]] += nnt_detj_w(
+                    COMBS_VOL[nci][0], COMBS_VOL[nci][1]
                 );
             }
         }
     }
-    ivpg_to_map_to_pair_idx.free();
+
+    ispgi_to_map_to_fipi.free();
+    ivpg_to_map_to_fipi.free();
 }
 
 
@@ -648,27 +970,25 @@ template<typename T>
 void write_matrix(const T& matrix, const std::string& filename) {
     std::ofstream file(filename, std::ios::binary);
     if (file.is_open()) {
-        // Use uint64_t for cross-platform consistency
         const uint64_t rows = matrix.rows();
         const uint64_t cols = matrix.cols();
-        
         file.write(reinterpret_cast<const char*>(&rows), sizeof(rows));
         file.write(reinterpret_cast<const char*>(&cols), sizeof(cols));
         file.write(
             reinterpret_cast<const char*>(matrix.data()),
-            rows * cols * sizeof(typename T::Scalar) // Use matrix's scalar type
+            rows * cols * sizeof(typename T::Scalar)
         );
     }
 }
 
 void solve_using_eigen(
-    const fz::SafePtr<std::complex<double>>& a_vals,
+    const fz::SafePtr<_cmplx_t>& a_vals,
     const fz::SafePtr<std::pair<_idx_t,_idx_t>>& nnz_rowcol_idx_pairs,
-    const fz::SafePtr<std::complex<double>>& b,
-    fz::SafePtr<std::complex<double>>& x_out
+    const fz::SafePtr<_cmplx_t>& b,
+    fz::SafePtr<_cmplx_t>& x_out
 ) {
     const size_t node_count = b.size();
-    using Triplet = typename Eigen::Triplet<std::complex<double>>;
+    using Triplet = typename Eigen::Triplet<_cmplx_t>;
 
     // a matrix
     fz::SafePtr<Triplet> triplets_a(2*a_vals.size() - node_count);
@@ -694,15 +1014,15 @@ void solve_using_eigen(
         }
     }
     
-    Eigen::SparseMatrix<std::complex<double>> a(node_count, node_count);
+    Eigen::SparseMatrix<_cmplx_t> a(node_count, node_count);
     a.setFromTriplets(triplets_a.begin(), triplets_a.end());
     triplets_a.free();
 
     // b vector
-    Eigen::Matrix<std::complex<double>, Eigen::Dynamic, 1> b_eig(node_count);
+    Eigen::Matrix<_cmplx_t, Eigen::Dynamic, 1> b_eig(node_count);
     std::copy(b.begin(), b.end(), b_eig.data());
 
-    Eigen::SparseLU<Eigen::SparseMatrix<std::complex<double>>> solver;
+    Eigen::SparseLU<Eigen::SparseMatrix<_cmplx_t>> solver;
     solver.analyzePattern(a);
     solver.factorize(a);
     if (solver.info() != Eigen::Success) {
@@ -724,21 +1044,21 @@ void print_dss_error(const _INTEGER_t* const error_id)
 }
 
 void solve_using_onemkl(
-    const fz::SafePtr<std::complex<double>>& a_vals,
+    const fz::SafePtr<_cmplx_t>& a_vals,
     const fz::SafePtr<std::pair<_idx_t,_idx_t>>& nnz_rowcol_idx_pairs,
-    const fz::SafePtr<std::complex<double>>& b,
-    fz::SafePtr<std::complex<double>>& x
+    const fz::SafePtr<_cmplx_t>& b,
+    fz::SafePtr<_cmplx_t>& x
 ) {
     // problem dimensions
     const MKL_INT node_count = b.size();
     const MKL_INT nnz_count = a_vals.size();
 
     // define sparsity patterns
-    fz::SafePtr<std::complex<double>> a_vals_new(nnz_count);
+    fz::SafePtr<_cmplx_t> a_vals_new(nnz_count);
     fz::SafePtr<MKL_INT> a_col_idx(nnz_count);
     fz::SafePtr<MKL_INT> a_row_ptr(node_count + 1);
 
-    std::complex<double>* it_a_vals_new = a_vals_new.begin();
+    _cmplx_t* it_a_vals_new = a_vals_new.begin();
     MKL_INT* it_a_col_idx = a_col_idx.begin();
     MKL_INT* it_a_row_ptr = a_row_ptr.begin();
     size_t counter = 0;
@@ -749,7 +1069,7 @@ void solve_using_onemkl(
         
         const std::pair<_idx_t,_idx_t>* it_nnz_rowcol_idx_pairs =
             nnz_rowcol_idx_pairs.begin();
-        const std::complex<double>* it_a_vals = a_vals.begin();
+        const _cmplx_t* it_a_vals = a_vals.begin();
         
         while (it_nnz_rowcol_idx_pairs != nnz_rowcol_idx_pairs.end())
         {
@@ -824,31 +1144,44 @@ template<ElementOrder O>
 void SimulationAcFemFreqD3<O>::_solve()
 {
     _result = ResultAcFemFreqD3(_node_count(), _freq_steps.size());
-    fz::SafePtr<std::complex<double>> b(_node_count());
+    fz::SafePtr<_cmplx_t> b(_node_count());
 
     for (size_t i=0; i!=_freq_steps.size(); ++i)
     {
-        _a_vals.fill(std::complex<double>(0,0));
+        _a_vals.fill(_cmplx_t(0.0, 0.0));
         const double freq = _freq_steps[i];
         const double omega = 2*std::numbers::pi*freq;
         const double omega_squared = std::pow(omega,2);
 
+        // add damping matrix to a
+        for (_idx_t ispgi=0; ispgi!=_ispgi_count(); ++ispgi) {
+            const _cmplx_t impedance_value = _ispgi_to_impedance[ispgi](freq);
+            const _cmplx_t damp_fd_part =
+                std::complex<double>(0.0, omega) / impedance_value;
+            
+            for (_idx_t fipi=0; fipi!=_ispgi_to_ptr_in_a[ispgi].size(); ++fipi)
+            {
+                *_ispgi_to_ptr_in_a[ispgi][fipi] +=
+                    _ispgi_to_damp_fi_part[ispgi][fipi] * damp_fd_part;
+            }
+        }
+
         // add stiffness and mass matrix to a
         for (_idx_t ivpg=0; ivpg!=_ivpg_count(); ++ivpg) {
-            const std::complex<double> density_value =
+            const _cmplx_t density_value =
                 (_ivpg_to_volprop[ivpg].density)(freq);
-            const std::complex<double> soundspeed_value =
+            const _cmplx_t soundspeed_value =
                 (_ivpg_to_volprop[ivpg].soundspeed)(freq);
 
-            const std::complex<double> stif_freq_dependent =
+            const _cmplx_t stif_fd_part =
                 1.0 / density_value;
-            const std::complex<double> mass_freq_dependent =
+            const _cmplx_t mass_fd_part =
                 - omega_squared / (density_value*std::pow(soundspeed_value,2));
             
-            for (_idx_t j=0; j!=_ivpg_to_ptr_in_a[ivpg].size(); ++j) {
-                *_ivpg_to_ptr_in_a[ivpg][j] +=
-                    _ivpg_to_btb_detj_w_vals[ivpg][j] * stif_freq_dependent +
-                    _ivpg_to_nnt_detj_w_vals[ivpg][j] * mass_freq_dependent;
+            for (_idx_t fipi=0; fipi!=_ivpg_to_ptr_in_a[ivpg].size(); ++fipi) {
+                *_ivpg_to_ptr_in_a[ivpg][fipi] +=
+                    _ivpg_to_stif_fi_part[ivpg][fipi] * stif_fd_part +
+                    _ivpg_to_mass_fi_part[ivpg][fipi] * mass_fd_part;
             }
         }
 
@@ -856,15 +1189,15 @@ void SimulationAcFemFreqD3<O>::_solve()
         b.fill(0);
         for (size_t j=0; j!=_point_volvel.size(); ++j)
         {
-            const std::complex<double> volvel =
+            const _cmplx_t volvel =
                 std::get<_FuncRealToCmplx>(_point_volvel[j])(freq);
 
             b[std::get<_idx_t>(_point_volvel[j])] =
-                std::complex<double>(0.0,-1.0)*omega*volvel;
+                _cmplx_t(0.0,-1.0)*omega*volvel;
         }
 
         // solve
-        fz::SafePtr<std::complex<double>> x(_node_count());
+        fz::SafePtr<_cmplx_t> x(_node_count());
         // solve_using_eigen(_a_vals, _nnz_rowcol_idx_pairs, b, x);
         solve_using_onemkl(_a_vals, _nnz_rowcol_idx_pairs, b, x);
         for (_idx_t n=0; n!=_node_count(); ++n) {
@@ -875,7 +1208,7 @@ void SimulationAcFemFreqD3<O>::_solve()
         }
         x.free();
 
-        std::cout << "Done step: " << i << "/" << _freq_steps.size() << "\n";
+        std::cout << "Done step: " << i+1 << "/" << _freq_steps.size() << "\n";
     }
     b.free();
     write_matrix(_result._data, "pressure.bin");
@@ -936,16 +1269,16 @@ void SimulationAcFemFreqD3<O>::_load_bdf(const char* const path_to_mesh)
     // second pass: parse data
     _node_coords = fz::SafePtr<std::array<double,3>>(node_count);
     _sfc_elem_node_idx =
-        fz::SafePtr<std::array<size_t,NODES_IN_2D_ELEM<O>>>(sfc_elem_count);
+        fz::SafePtr<std::array<size_t,NODES_IN_SFC_ELEM<O>>>(sfc_elem_count);
     _vol_elem_node_idx =
-        fz::SafePtr<std::array<size_t,NODES_IN_3D_ELEM<O>>>(vol_elem_count);
-    _elem_idx_to_espg = fz::SafePtr<size_t>(sfc_elem_count);
-    _elem_idx_to_evpg = fz::SafePtr<size_t>(vol_elem_count);
+        fz::SafePtr<std::array<size_t,NODES_IN_VOL_ELEM<O>>>(vol_elem_count);
+    _sei_to_espg = fz::SafePtr<size_t>(sfc_elem_count);
+    _vei_to_evpg = fz::SafePtr<size_t>(vol_elem_count);
     auto it_node_coords = _node_coords.begin();
     auto it_sfc_elem_node_idx = _sfc_elem_node_idx.begin();
     auto it_vol_elem_node_idx = _vol_elem_node_idx.begin();
-    auto it_elem_idx_to_espg = _elem_idx_to_espg.begin();
-    auto it_elem_idx_to_evpg = _elem_idx_to_evpg.begin();
+    auto it_elem_idx_to_espg = _sei_to_espg.begin();
+    auto it_elem_idx_to_evpg = _vei_to_evpg.begin();
     file.clear();
     file.seekg(0, std::ios::beg);
     while (std::getline(file, line)) {
@@ -998,35 +1331,35 @@ template<>
 void SimulationAcFemFreqD3<ElementOrder::O2>::_generate_extra_nodes()
 {
     constexpr std::array<
-        std::array<size_t,2>,EXTRA_NODES_IN_3D_ELEM<ElementOrder::O2>
-    > VTX_PAIRS_3D = {{ {0,1}, {0,2}, {0,3}, {1,2}, {1,3}, {2,3} }};
+        std::array<size_t,2>,EXTRA_NODES_IN_VOL_ELEM<ElementOrder::O2>
+    > VTX_PAIRS_VOL = {{ {0,1}, {0,2}, {0,3}, {1,2}, {1,3}, {2,3} }};
 
     constexpr std::array<
-        std::array<size_t,2>,EXTRA_NODES_IN_2D_ELEM<ElementOrder::O2>
-    > VTX_PAIRS_2D = {{ {0,1}, {0,2}, {1,2} }};
+        std::array<size_t,2>,EXTRA_NODES_IN_SFC_ELEM<ElementOrder::O2>
+    > VTX_PAIRS_SFC = {{ {0,1}, {0,2}, {1,2} }};
 
     std::unordered_map<std::tuple<size_t,size_t>,size_t> idxs_extra_nodes;
     
     // first pass: count extra nodes and save idx tuples
-    fz::SafePtr<std::array<bool,EXTRA_NODES_IN_3D_ELEM<ElementOrder::O2>>>
+    fz::SafePtr<std::array<bool,EXTRA_NODES_IN_VOL_ELEM<ElementOrder::O2>>>
         is_extra_node(_vol_elem_count());
     size_t count = _node_count();
     for (size_t e=0; e!=_vol_elem_count(); ++e) {
-        for (size_t i=0; i!=VTX_PAIRS_3D.size(); ++i)
+        for (size_t i=0; i!=VTX_PAIRS_VOL.size(); ++i)
         {
             const std::tuple<size_t,size_t> tup = make_ascending_tuple(
-                _vol_elem_node_idx[e][VTX_PAIRS_3D[i][0]],
-                _vol_elem_node_idx[e][VTX_PAIRS_3D[i][1]]
+                _vol_elem_node_idx[e][VTX_PAIRS_VOL[i][0]],
+                _vol_elem_node_idx[e][VTX_PAIRS_VOL[i][1]]
             );
             if (!idxs_extra_nodes.contains(tup)) {
                 is_extra_node[e][i] = true;
-                _vol_elem_node_idx[e][NODES_IN_3D_ELEM<ElementOrder::O1> + i] =
+                _vol_elem_node_idx[e][NODES_IN_VOL_ELEM<ElementOrder::O1> + i] =
                     count;
                 idxs_extra_nodes.insert({tup, count});
                 ++count;
             } else {
                 is_extra_node[e][i] = false;          
-                _vol_elem_node_idx[e][NODES_IN_3D_ELEM<ElementOrder::O1> + i] =
+                _vol_elem_node_idx[e][NODES_IN_VOL_ELEM<ElementOrder::O1> + i] =
                     idxs_extra_nodes.at(tup);
             }     
         }
@@ -1038,15 +1371,15 @@ void SimulationAcFemFreqD3<ElementOrder::O2>::_generate_extra_nodes()
     std::copy(temp.begin(), temp.end(), _node_coords.begin());
     temp.free();
     
-    // second pass: create the extra nodes and assign to 3D elements
+    // second pass: create the extra nodes and assign to volume elements
     for (size_t e=0; e!=_vol_elem_count(); ++e) {
-        for (size_t i=0; i!=VTX_PAIRS_3D.size(); ++i)
+        for (size_t i=0; i!=VTX_PAIRS_VOL.size(); ++i)
         {   
             if (!is_extra_node[e][i]) { continue; }
 
             const std::tuple<size_t,size_t> tup = make_ascending_tuple(
-                _vol_elem_node_idx[e][VTX_PAIRS_3D[i][0]],
-                _vol_elem_node_idx[e][VTX_PAIRS_3D[i][1]]
+                _vol_elem_node_idx[e][VTX_PAIRS_VOL[i][0]],
+                _vol_elem_node_idx[e][VTX_PAIRS_VOL[i][1]]
             );
             const double x = mean(
                 _node_coords[std::get<0>(tup)][0],
@@ -1066,16 +1399,16 @@ void SimulationAcFemFreqD3<ElementOrder::O2>::_generate_extra_nodes()
     }
     is_extra_node.free();
 
-    // third pass: assign nodes to 2D elements
+    // third pass: assign nodes to surface elements
     for (size_t e=0; e!=_sfc_elem_count(); ++e) {
-        for (size_t i=0; i!=VTX_PAIRS_2D.size(); ++i)
+        for (size_t i=0; i!=VTX_PAIRS_SFC.size(); ++i)
         {
             // create a tuple of the indices in ascending order
             const std::tuple<size_t,size_t> tup = make_ascending_tuple(
-                _sfc_elem_node_idx[e][VTX_PAIRS_2D[i][0]],
-                _sfc_elem_node_idx[e][VTX_PAIRS_2D[i][1]]
+                _sfc_elem_node_idx[e][VTX_PAIRS_SFC[i][0]],
+                _sfc_elem_node_idx[e][VTX_PAIRS_SFC[i][1]]
             );
-            _sfc_elem_node_idx[e][NODES_IN_2D_ELEM<ElementOrder::O1> + i] =
+            _sfc_elem_node_idx[e][NODES_IN_SFC_ELEM<ElementOrder::O1> + i] =
                 idxs_extra_nodes.at(tup);
         }
     }

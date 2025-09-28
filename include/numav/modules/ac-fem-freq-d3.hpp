@@ -12,24 +12,24 @@
 
 namespace numav {
 
-template<ElementOrder O> constexpr size_t NODES_IN_2D_ELEM = [] {
+template<ElementOrder O> constexpr size_t NODES_IN_SFC_ELEM = [] {
     if constexpr (O == ElementOrder::O1) { return 3; }
     if constexpr (O == ElementOrder::O2) { return 6; }
     return 0;
 }();
 
-template<ElementOrder O> constexpr size_t EXTRA_NODES_IN_2D_ELEM = [] {
-    return NODES_IN_2D_ELEM<O> - NODES_IN_2D_ELEM<ElementOrder::O1>;
+template<ElementOrder O> constexpr size_t EXTRA_NODES_IN_SFC_ELEM = [] {
+    return NODES_IN_SFC_ELEM<O> - NODES_IN_SFC_ELEM<ElementOrder::O1>;
 }();
 
-template<ElementOrder O> constexpr size_t NODES_IN_3D_ELEM = [] {
+template<ElementOrder O> constexpr size_t NODES_IN_VOL_ELEM = [] {
     if constexpr (O == ElementOrder::O1) { return 4;  }
     if constexpr (O == ElementOrder::O2) { return 10; }
     return 0;
 }();
 
-template<ElementOrder O> constexpr size_t EXTRA_NODES_IN_3D_ELEM = [] {
-    return NODES_IN_3D_ELEM<O> - NODES_IN_3D_ELEM<ElementOrder::O1>;
+template<ElementOrder O> constexpr size_t EXTRA_NODES_IN_VOL_ELEM = [] {
+    return NODES_IN_VOL_ELEM<O> - NODES_IN_VOL_ELEM<ElementOrder::O1>;
 }();
 
 template<> class Result<
@@ -105,6 +105,8 @@ private:
     size_t _node_count() const;
     size_t _sfc_elem_count() const;
     size_t _vol_elem_count() const;
+    size_t _isei_count() const;
+    size_t _ispgi_count() const;
     size_t _ivpg_count() const;
     void _load_bdf(const char* const);
     void _generate_extra_nodes();
@@ -126,8 +128,8 @@ private:
     fz::SafePtr<double> _freq_steps;
 
     fz::SafePtr<std::array<double,3>> _node_coords;
-    fz::SafePtr<std::array<_idx_t,NODES_IN_2D_ELEM<O>>> _sfc_elem_node_idx;
-    fz::SafePtr<std::array<_idx_t,NODES_IN_3D_ELEM<O>>> _vol_elem_node_idx;
+    fz::SafePtr<std::array<_idx_t,NODES_IN_SFC_ELEM<O>>> _sfc_elem_node_idx;
+    fz::SafePtr<std::array<_idx_t,NODES_IN_VOL_ELEM<O>>> _vol_elem_node_idx;
 
     std::vector<std::tuple<_idx_t,_FuncRealToCmplx>> _point_volvel;
     std::vector<std::tuple<_idx_t,_FuncRealToCmplx>> _point_pressure;
@@ -135,8 +137,8 @@ private:
     std::unordered_set<_epg_t> _existing_espg;
     std::unordered_set<_epg_t> _existing_evpg;
 
-    fz::SafePtr<_epg_t> _elem_idx_to_espg;
-    fz::SafePtr<_epg_t> _elem_idx_to_evpg;
+    fz::SafePtr<_epg_t> _sei_to_espg;
+    fz::SafePtr<_epg_t> _vei_to_evpg;
     
     std::unordered_map<_epg_t,_FuncRealToCmplx> _espg_to_volvel;
     std::unordered_map<_epg_t,_FuncRealToCmplx> _espg_to_pressure;
@@ -146,21 +148,27 @@ private:
     std::unordered_map<_epg_t,_ipg_t> _espg_to_ispg;
     std::unordered_map<_epg_t,_ipg_t> _evpg_to_ivpg;
 
-    fz::SafePtr<_ipg_t> _elem_idx_to_ispg;
-    fz::SafePtr<_ipg_t> _elem_idx_to_ivpg;
+    fz::SafePtr<_idx_t> _isei_to_sei;
+
+    fz::SafePtr<_ipg_t> _isei_to_ispgi;
+    fz::SafePtr<_ipg_t> _vei_to_ivpg;
     
-    fz::SafePtr<_FuncRealToCmplx> _ispg_to_volvel;
-    fz::SafePtr<_FuncRealToCmplx> _ispg_to_pressure;
-    fz::SafePtr<_FuncRealToCmplx> _ispg_to_impedance;
+    fz::SafePtr<_FuncRealToCmplx> _ispgv_to_volvel;
+    fz::SafePtr<_FuncRealToCmplx> _ispgp_to_pressure;
+    fz::SafePtr<_FuncRealToCmplx> _ispgi_to_impedance;
     fz::SafePtr<_VolProp>         _ivpg_to_volprop;
-
+    
     fz::SafePtr<std::pair<_idx_t,_idx_t>> _nnz_rowcol_idx_pairs;
-
-    fz::SafePtr<fz::SafePtr<double>> _ivpg_to_btb_detj_w_vals;
-    fz::SafePtr<fz::SafePtr<double>> _ivpg_to_nnt_detj_w_vals;
-    fz::SafePtr<fz::SafePtr<std::complex<double>*>> _ivpg_to_ptr_in_a;
-
     fz::SafePtr<std::complex<double>> _a_vals;
+
+    fz::SafePtr<fz::SafePtr<double>> _ispg_to_damp_fi_part;
+    fz::SafePtr<fz::SafePtr<std::complex<double>*>> _ispg_to_ptr_in_a;
+
+    fz::SafePtr<fz::SafePtr<std::complex<double>>> _ispgi_to_damp_fi_part;
+    fz::SafePtr<fz::SafePtr<std::complex<double>*>> _ispgi_to_ptr_in_a;
+    fz::SafePtr<fz::SafePtr<double>> _ivpg_to_stif_fi_part;
+    fz::SafePtr<fz::SafePtr<double>> _ivpg_to_mass_fi_part;
+    fz::SafePtr<fz::SafePtr<std::complex<double>*>> _ivpg_to_ptr_in_a;
 
     Result<
         Phenomenon::ACOUSTIC,

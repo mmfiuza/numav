@@ -45,6 +45,6 @@ Physical Surface("face6", 6) = { Surface In
 };
 
 // meshing config
-Mesh.CharacteristicLengthMax = 1;
+Mesh.CharacteristicLengthMax = 0.5;
 Mesh.ElementOrder = 1;
 Mesh.Algorithm3D = 4; // 4 = Netgen algorithm
