@@ -15,17 +15,4 @@ Numav incorporates components from the following third-party projects:
     https://eigen.tuxfamily.org/index.php?title=Main_Page#Contributing_to_Eigen
   - License: MPL2 License
 
-  * CxxWrap.jl - <https://github.com/JuliaInterop/CxxWrap.jl>
-  - Copyright: 2015 Bart Janssens
-  - License: MIT License
-  
-  * libcxxwrap-julia - <https://github.com/JuliaInterop/libcxxwrap-julia>
-  - Copyright: 2015 Bart Janssens
-  - License: MIT License
-  
-  * BinaryBuilder.jl - <https://github.com/JuliaPackaging/BinaryBuilder.jl>
-  - Copyright: 2020 Elliot Saba, Keno Fischer, Mose Giordano, Julia Computing,
-    and contributors
-  - License: MIT License
-
 License texts are in the "license-text/" directory.

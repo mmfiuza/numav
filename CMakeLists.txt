@@ -54,42 +54,9 @@ target_link_libraries(numav PRIVATE
 )
 target_link_libraries(numav PRIVATE spdlog::spdlog_header_only)
 
-# set install path
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;${JlCxx_location}")
-
-if(BIND_JULIA)
-    
-    # find cxxwrap_julia
-    find_package(JlCxx REQUIRED)
-    get_target_property(JlCxx_location JlCxx::cxxwrap_julia LOCATION)
-    get_filename_component(JlCxx_location ${JlCxx_location} DIRECTORY)
-    
-    # add numav_jl
-    add_library(numav_jl 
-        SHARED ${CMAKE_CURRENT_SOURCE_DIR}/bindings/julia/numav_jl.cpp
-    )
-
-    # define link targets of numav_jl
-    target_link_libraries(numav_jl
-        numav
-        JlCxx::cxxwrap_julia
-        JlCxx::cxxwrap_julia_stl
-    )
-
-    # install numav_jl
-    install(TARGETS numav_jl
-        ARCHIVE DESTINATION lib
-        LIBRARY DESTINATION lib
-        RUNTIME DESTINATION bin
-    )
-
-else() # default c++ build
-
-    # install numav
-    install(TARGETS numav
-        ARCHIVE DESTINATION lib
-        LIBRARY DESTINATION lib
-        RUNTIME DESTINATION bin
-    )
-
-endif()
+# install numav
+install(TARGETS numav
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION bin
+)

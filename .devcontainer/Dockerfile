@@ -27,19 +27,9 @@ RUN rm intel-onemkl-2025.2.0.629_offline.sh
 RUN curl -fsSL https://install.julialang.org | sh -s -- --yes
 ENV PATH="/root/.juliaup/bin:$PATH"
 RUN juliaup add 1.11
-RUN juliaup add 1.7
 RUN juliaup default 1.11
 
 # install Julia packages
-RUN julia +1.7 -e 'using Pkg; Pkg.add([ \
-    PackageSpec(name="CxxWrap", version="0.17"), \
-    PackageSpec(name="BinaryBuilder", version="0.6"), \
-    PackageSpec(name="libjulia_jll", version="1.10"), \
-    PackageSpec(name="libcxxwrap_julia_jll", version="0.14") \
+RUN julia +1.11 -e 'using Pkg; Pkg.add([ \
+    PackageSpec(name="Plots", version="1.40") \
 ])'
-
-# set privileged mode environment variable
-ENV BINARYBUILDER_RUNNER=privileged
-
-# agree to the Xcode license terms
-ENV BINARYBUILDER_AUTOMATIC_APPLE=true
