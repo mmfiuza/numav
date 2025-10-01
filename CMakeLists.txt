@@ -40,8 +40,13 @@ target_include_directories(numav PUBLIC
 )
 
 target_compile_definitions(numav PUBLIC MKL_ILP64)
-target_compile_options(numav PRIVATE -O3 -m64) # -g -O0 -fno-inline
-target_link_options(numav PRIVATE -m64)
+if(NOT GDB)
+    target_compile_options(numav PRIVATE -Wall -Wextra -O3 -m64)
+    target_link_options(numav PRIVATE -flto -m64)
+else()
+    target_compile_options(numav PRIVATE -Wall -Wextra -g -O0 -fno-inline -m64)
+    target_link_options(numav PRIVATE -m64)
+endif()
 
 target_link_libraries(numav PRIVATE
     -Wl,--start-group
