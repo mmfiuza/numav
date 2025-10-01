@@ -4,6 +4,7 @@
 
 #include <tuple>
 #include <fstream>
+#include <limits>
 
 #include "common/log.hpp"
 #include "common/hash-functions.hpp"
@@ -14,9 +15,23 @@ namespace numav {
 
 template <ElementOrder O>
 _idx_t SimulationAcFemFreqD3<O>::_get_closest_point(
-    const std::array<double,3>&
+    const std::array<double,3>& point_coords
 ) {
-    return 0; // TODO
+    double minimum_distance_squared = std::numeric_limits<double>::max();
+    _idx_t ni_closest = std::numeric_limits<size_t>::max();
+    for (_idx_t ni=0; ni!=_ni_count(); ++ni) {
+        double distance_squared = 
+            std::pow(_node_coords[ni][0] - point_coords[0], 2) +
+            std::pow(_node_coords[ni][1] - point_coords[1], 2) +
+            std::pow(_node_coords[ni][2] - point_coords[2], 2)
+        ;
+        if (distance_squared < minimum_distance_squared) {
+            minimum_distance_squared = distance_squared;
+            ni_closest = ni;
+        }
+    }
+    std::cout << "ni_closest: " << ni_closest << "\n";
+    return ni_closest;
 }
 
 template <ElementOrder O>
