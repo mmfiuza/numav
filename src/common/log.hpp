@@ -1,19 +1,17 @@
 // Copyright (c) 2025 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
-#include <stdexcept>
+#pragma once
 
 #include "spdlog/spdlog.h"
 #include "fmt/core.h"
 
+#include <stdexcept>
+
 namespace numav::log {
 
-    void set_level() {
-        spdlog::set_level(spdlog::level::level_enum::warn);
-    }
+    void set_level();
 
-    void set_pattern() {
-        spdlog::set_pattern("[%^numav %l%$]: %v");
-    }
+    void set_pattern();
 
     template<typename... T>
     void warn(fmt::format_string<T...> fmt, T&&... args) {
@@ -26,4 +24,4 @@ namespace numav::log {
         throw std::runtime_error("numav error");
     }
 
-} // namespace numav
+} // namespace numav::log

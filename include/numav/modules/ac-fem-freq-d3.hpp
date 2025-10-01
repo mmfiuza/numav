@@ -7,7 +7,6 @@
 
 #include "Eigen/Eigen"
 
-#define SAFE_PTR_DEBUG
 #include "SafePtr.hpp"
 
 namespace numav {
@@ -94,7 +93,6 @@ public:
     > run();
 
 private:
-    #include "numav/typedefs.hpp"
 
     // volume element properties
     struct _VolProp {
@@ -102,12 +100,14 @@ private:
         _FuncRealToCmplx soundspeed;
     };
 
-    size_t _node_count() const;
-    size_t _sfc_elem_count() const;
-    size_t _vol_elem_count() const;
+    size_t _ni_count() const;
+    size_t _sei_count() const;
+    size_t _vei_count() const;
     size_t _isei_count() const;
     size_t _ispgi_count() const;
     size_t _ivpg_count() const;
+    size_t _freq_count() const;
+    
     void _load_bdf(const char* const);
     void _generate_extra_nodes();
     _idx_t _get_closest_point(const std::array<double,3>&);
@@ -192,6 +192,22 @@ template class Simulation<
     Domain::FREQUENCY,
     Dimension::D3,
     ElementOrder::O2
+>;
+
+// nicknames for types
+template<ElementOrder O>
+using SimulationAcFemFreqD3 = typename numav::Simulation<
+    Phenomenon::ACOUSTIC,
+    NumericalMethod::FEM,
+    Domain::FREQUENCY,
+    Dimension::D3,
+    O
+>;
+using ResultAcFemFreqD3 = typename numav::Result<
+    Phenomenon::ACOUSTIC,
+    NumericalMethod::FEM,
+    Domain::FREQUENCY,
+    Dimension::D3
 >;
 
 } // namespace numav

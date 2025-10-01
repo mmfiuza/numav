@@ -1,3 +1,4 @@
+# Copyright (c) 2025 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
 function read_matrix_binary(filename)
     open(filename, "r") do io

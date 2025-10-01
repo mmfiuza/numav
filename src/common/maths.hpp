@@ -2,45 +2,20 @@
 
 #pragma once
 
+#include "numav/typedefs.hpp"
+#include "SafePtr.hpp"
+
+#include <tuple>
+
 fz::SafePtr<double> linspace(
-    const double& start,
-    const double& finish,
-    const size_t& num_points
-) {
-    assert(num_points!=0 && num_points!=1);
-    fz::SafePtr<double> result(num_points);
-    double step = (finish - start) / static_cast<double>(num_points - 1);
-    result.front() = start;
-    for (double* it=result.begin()+1; it!=result.end()-1; ++it) {
-        *it = *(it-1) + step;
-    }
-    result.back() = finish;
-    return result;
-}
+    const double& start, const double& finish, const size_t& num_points
+);
+
+double get_triangle_area(const std::array<std::array<double,3>,3>& coords);
 
 template<typename... T>
 auto mean(const T&... args) {
     return (args + ...) / (sizeof...(args));
-}
-
-template<typename T>
-std::tuple<T,T> make_ascending_tuple(const T& a, const T& b) {
-    return a<b ? std::make_tuple(a,b) : std::make_tuple(b,a);
-}
-
-template<typename T>
-std::pair<T,T> make_ascending_pair(const T& a, const T& b) {
-    return a<b ? std::make_pair(a,b) : std::make_pair(b,a);
-}
-
-template<typename T>
-bool compare_pair(const std::pair<T,T>& a, const std::pair<T,T>& b) {
-    if (a.second != b.second) {
-        return a.second < b.second;
-    }
-    else {
-        return a.first < b.first;
-    }
 }
 
 template<size_t N> constexpr size_t FACTORIAL = [] {

@@ -12,7 +12,7 @@ int main() {
         NumericalMethod::FEM,
         Domain::FREQUENCY,
         Dimension::D3,
-        ElementOrder::O2
+        ElementOrder::O1
     >();
 
     // load the mesh

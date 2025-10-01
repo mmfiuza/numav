@@ -58,10 +58,7 @@ Acronyms:
 
 #pragma once
 
-#include <iostream>
-#include <array>
-#include <complex>
-#include <functional>
+#include "typedefs.hpp"
 
 namespace numav {
 
