@@ -10,6 +10,8 @@
 #include <numbers>
 #include <algorithm>
 #include <limits>
+#include <chrono>
+#include <iomanip>
 
 #include "common/log.hpp"
 #include "common/hash-functions.hpp"
@@ -851,10 +853,17 @@ void SimulationAcFemFreqD3<O>::_solve()
     _result = ResultAcFemFreqD3(_ni_count(), _freq_count());
     fz::SafePtr<_cmplx_t> b(_ni_count());
 
-    for (size_t i=0; i!=_freq_count(); ++i)
+    // start timer
+    auto start_time = std::chrono::system_clock::now();
+    auto time_t_start = std::chrono::system_clock::to_time_t(start_time);
+    std::cout << "Solver started at: "
+        << std::put_time(std::localtime(&time_t_start), "%H:%M:%S") << "\n";
+    std::cout << "Solution progress: 0%\n";
+
+    for (size_t fi=0; fi!=_freq_count(); ++fi)
     {
         _a_vals.fill(_cmplx_t(0.0, 0.0));
-        const double freq = _freq_steps[i];
+        const double freq = _freq_steps[fi];
         const double omega = 2*std::numbers::pi*freq;
         const double omega_squared = std::pow(omega,2);
 
@@ -878,8 +887,7 @@ void SimulationAcFemFreqD3<O>::_solve()
             const _cmplx_t soundspeed_value =
                 (_ivpg_to_volprop[ivpg].soundspeed)(freq);
 
-            const _cmplx_t stif_fd_part =
-                1.0 / density_value;
+            const _cmplx_t stif_fd_part = 1.0 / density_value;
             const _cmplx_t mass_fd_part =
                 - omega_squared / (density_value*std::pow(soundspeed_value,2));
             
@@ -903,26 +911,62 @@ void SimulationAcFemFreqD3<O>::_solve()
 
         // solve
         fz::SafePtr<_cmplx_t> x(_ni_count());
-        // solve_using_eigen(_a_vals, _nnz_rowcol_idx_pairs, b, x);
-        solve_using_onemkl(_a_vals, _nnz_rowcol_idx_pairs, b, x);
+        #if NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
+            solve_using_eigen(_a_vals, _nnz_rowcol_idx_pairs, b, x);
+        #elif NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
+            solve_using_onemkl(_a_vals, _nnz_rowcol_idx_pairs, b, x);
+        #else
+            static_assert(false, "Invalid NUMAV_SYSTEM_SOLVER.");
+        #endif
         for (_idx_t n=0; n!=_ni_count(); ++n) {
-            _result._data(n,i) = x[n];
+            _result._data(n,fi) = x[n];
         }
         for (_idx_t n=0; n!=_ni_count(); ++n) {
-            assert(_result._data(n,i) == x[n]);
+            assert(_result._data(n,fi) == x[n]);
         }
         x.free();
 
-        // std::cout << "Done step: " << i+1 << "/" << _freq_count() << "\n";
+        // print the progress
+        std::cout << "\033[A"; // Moves the cursor up one line
+        std::cout << "\033[2K"; // Clears the entire line
+        double progress_percentage =
+            100.0*static_cast<double>(fi+1)/static_cast<double>(_freq_count());
+        std::cout << "Solution progress: " << std::fixed << 
+            std::setprecision(2) << progress_percentage << "%";
+
+        if (fi > 99) { // print the time left
+            auto current_time = std::chrono::system_clock::now();
+            auto time_taken_until_now =
+                std::chrono::duration_cast<std::chrono::seconds>(
+                    current_time - start_time
+                );
+            auto time_left = 
+                time_taken_until_now.count()/(fi+1)*(_freq_count()-(fi+1));
+            
+            auto hours = time_left / 3600;
+            auto minutes = (time_left % 3600) / 60;
+            std::cout << " - estimated time left: " <<
+                hours << " h and " << minutes << " min\n";
+        }
+        else {
+            std::cout << "\n";
+        }
     }
     b.free();
     write_matrix(_result._data, "pressure.bin");
+
+    // print finish
+    auto end_time = std::chrono::system_clock::now();
+    auto time_t_end = std::chrono::system_clock::to_time_t(end_time);
+    std::cout << "Solver ended at: " << std::put_time(std::localtime(&time_t_end), "%H:%M:%S") << "\n";
 }
 
 template <ElementOrder O>
 ResultAcFemFreqD3 SimulationAcFemFreqD3<O>::run()
 {
     _check_if_it_can_run();
+    log::print_opening();
+    log::print_opening_ac_fem_freq_d3();
     _define_freq_vector();
     _organize_physical_group_data();
     _analyze_sparsity();

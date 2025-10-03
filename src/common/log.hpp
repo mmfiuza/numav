@@ -24,4 +24,8 @@ namespace numav::log {
         throw std::runtime_error("numav error");
     }
 
+    void print_opening();
+
+    void print_opening_ac_fem_freq_d3();
+
 } // namespace numav::log

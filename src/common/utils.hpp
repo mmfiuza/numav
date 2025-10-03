@@ -49,5 +49,4 @@ bool compare_pair(const std::pair<T,T>& a, const std::pair<T,T>& b) {
     #else
         static_assert(false, "Invalid GLOBAL_MATRIX_STORAGE_ORDER.");
     #endif
-    
 }
