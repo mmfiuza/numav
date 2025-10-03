@@ -134,22 +134,22 @@ void SimulationAcFemFreqD3<ElementOrder::O2>::_generate_extra_nodes()
     fz::SafePtr<std::array<bool,EXTRA_NODES_IN_VOL_ELEM<ElementOrder::O2>>>
         is_extra_node(_vei_count());
     size_t count = _ni_count();
-    for (size_t e=0; e!=_vei_count(); ++e) {
+    for (size_t vei=0; vei!=_vei_count(); ++vei) {
         for (size_t i=0; i!=VTX_PAIRS_VOL.size(); ++i)
         {
             const std::tuple<size_t,size_t> tup = make_ascending_tuple(
-                _vei_to_ni[e][VTX_PAIRS_VOL[i][0]],
-                _vei_to_ni[e][VTX_PAIRS_VOL[i][1]]
+                _vei_to_ni[vei][VTX_PAIRS_VOL[i][0]],
+                _vei_to_ni[vei][VTX_PAIRS_VOL[i][1]]
             );
             if (!idxs_extra_nodes.contains(tup)) {
-                is_extra_node[e][i] = true;
-                _vei_to_ni[e][NODES_IN_VOL_ELEM<ElementOrder::O1> + i] =
+                is_extra_node[vei][i] = true;
+                _vei_to_ni[vei][NODES_IN_VOL_ELEM<ElementOrder::O1> + i] =
                     count;
                 idxs_extra_nodes.insert({tup, count});
                 ++count;
             } else {
-                is_extra_node[e][i] = false;          
-                _vei_to_ni[e][NODES_IN_VOL_ELEM<ElementOrder::O1> + i] =
+                is_extra_node[vei][i] = false;          
+                _vei_to_ni[vei][NODES_IN_VOL_ELEM<ElementOrder::O1> + i] =
                     idxs_extra_nodes.at(tup);
             }     
         }
@@ -162,14 +162,14 @@ void SimulationAcFemFreqD3<ElementOrder::O2>::_generate_extra_nodes()
     temp.free();
     
     // second pass: create the extra nodes and assign to volume elements
-    for (size_t e=0; e!=_vei_count(); ++e) {
+    for (size_t vei=0; vei!=_vei_count(); ++vei) {
         for (size_t i=0; i!=VTX_PAIRS_VOL.size(); ++i)
         {   
-            if (!is_extra_node[e][i]) { continue; }
+            if (!is_extra_node[vei][i]) { continue; }
 
             const std::tuple<size_t,size_t> tup = make_ascending_tuple(
-                _vei_to_ni[e][VTX_PAIRS_VOL[i][0]],
-                _vei_to_ni[e][VTX_PAIRS_VOL[i][1]]
+                _vei_to_ni[vei][VTX_PAIRS_VOL[i][0]],
+                _vei_to_ni[vei][VTX_PAIRS_VOL[i][1]]
             );
             const double x = mean(
                 _node_coords[std::get<0>(tup)][0],
@@ -190,15 +190,15 @@ void SimulationAcFemFreqD3<ElementOrder::O2>::_generate_extra_nodes()
     is_extra_node.free();
 
     // third pass: assign nodes to surface elements
-    for (size_t e=0; e!=_sei_count(); ++e) {
+    for (size_t sei=0; sei!=_sei_count(); ++sei) {
         for (size_t i=0; i!=VTX_PAIRS_SFC.size(); ++i)
         {
             // create a tuple of the indices in ascending order
             const std::tuple<size_t,size_t> tup = make_ascending_tuple(
-                _sei_to_ni[e][VTX_PAIRS_SFC[i][0]],
-                _sei_to_ni[e][VTX_PAIRS_SFC[i][1]]
+                _sei_to_ni[sei][VTX_PAIRS_SFC[i][0]],
+                _sei_to_ni[sei][VTX_PAIRS_SFC[i][1]]
             );
-            _sei_to_ni[e][NODES_IN_SFC_ELEM<ElementOrder::O1> + i] =
+            _sei_to_ni[sei][NODES_IN_SFC_ELEM<ElementOrder::O1> + i] =
                 idxs_extra_nodes.at(tup);
         }
     }

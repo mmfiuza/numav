@@ -7,6 +7,11 @@
 
 #include "Eigen/Eigen"
 
+#if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
+    #include "mkl_dss.h"
+    #include "mkl_types.h"
+#endif
+
 #include "SafePtr.hpp"
 
 namespace numav {
@@ -160,6 +165,8 @@ private:
     
     fz::SafePtr<std::pair<_idx_t,_idx_t>> _nnz_rowcol_idx_pairs;
     fz::SafePtr<std::complex<double>> _a_vals;
+    fz::SafePtr<_idx_t> _b_row_idx;
+    fz::SafePtr<std::complex<double>> _b_vals;
 
     fz::SafePtr<fz::SafePtr<double>> _ispg_to_damp_fi_part;
     fz::SafePtr<fz::SafePtr<std::complex<double>*>> _ispg_to_ptr_in_a;
@@ -169,6 +176,11 @@ private:
     fz::SafePtr<fz::SafePtr<double>> _ivpg_to_stif_fi_part;
     fz::SafePtr<fz::SafePtr<double>> _ivpg_to_mass_fi_part;
     fz::SafePtr<fz::SafePtr<std::complex<double>*>> _ivpg_to_ptr_in_a;
+
+    #if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
+        _MKL_DSS_HANDLE_t _dss_handle;
+        fz::SafePtr<std::complex<double>> _b_dense;
+    #endif
 
     Result<
         Phenomenon::ACOUSTIC,

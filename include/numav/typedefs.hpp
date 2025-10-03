@@ -25,6 +25,11 @@
     static_assert(false, "Invalid NUMAV_SYSTEM_SOLVER.");
 #endif
 
+#define NUMAV_MKL_OPTIONS \
+    MKL_DSS_MSG_LVL_WARNING + \
+    MKL_DSS_TERM_LVL_ERROR + \
+    MKL_DSS_ZERO_BASED_INDEXING
+
 namespace numav {
 
     using _idx_t = size_t;

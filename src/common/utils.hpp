@@ -6,6 +6,7 @@
 #include <charconv>
 #include <stdexcept>
 #include <tuple>
+#include <fstream>
 
 void trim_right_whitespace(std::string_view& sv);
 
@@ -49,4 +50,19 @@ bool compare_pair(const std::pair<T,T>& a, const std::pair<T,T>& b) {
     #else
         static_assert(false, "Invalid GLOBAL_MATRIX_STORAGE_ORDER.");
     #endif
+}
+
+template<typename T>
+void write_matrix(const T& matrix, const std::string& filename) {
+    std::ofstream file(filename, std::ios::binary);
+    if (file.is_open()) {
+        const uint64_t rows = matrix.rows();
+        const uint64_t cols = matrix.cols();
+        file.write(reinterpret_cast<const char*>(&rows), sizeof(rows));
+        file.write(reinterpret_cast<const char*>(&cols), sizeof(cols));
+        file.write(
+            reinterpret_cast<const char*>(matrix.data()),
+            rows * cols * sizeof(typename T::Scalar)
+        );
+    }
 }

@@ -5,7 +5,6 @@
 #include <tuple>
 #include <cmath>
 #include <charconv>
-#include <fstream>
 #include <cassert>
 #include <numbers>
 #include <algorithm>
@@ -17,9 +16,6 @@
 #include "common/hash-functions.hpp"
 #include "common/maths.hpp"
 #include "common/utils.hpp"
-
-#include "mkl_dss.h"
-#include "mkl_types.h"
 
 namespace numav {
 
@@ -261,21 +257,6 @@ shape_func_vol_gradient<ElementOrder::O2>(
     };
 }
 
-template<typename T>
-void write_matrix(const T& matrix, const std::string& filename) {
-    std::ofstream file(filename, std::ios::binary);
-    if (file.is_open()) {
-        const uint64_t rows = matrix.rows();
-        const uint64_t cols = matrix.cols();
-        file.write(reinterpret_cast<const char*>(&rows), sizeof(rows));
-        file.write(reinterpret_cast<const char*>(&cols), sizeof(cols));
-        file.write(
-            reinterpret_cast<const char*>(matrix.data()),
-            rows * cols * sizeof(typename T::Scalar)
-        );
-    }
-}
-
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::_check_if_it_can_run() {
     _check_if_mesh_is_defined();
@@ -358,6 +339,73 @@ void SimulationAcFemFreqD3<O>::_organize_physical_group_data()
     }
 }
 
+#if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
+void define_onemkl_sparsity_pattern(
+    _MKL_DSS_HANDLE_t& dss_handle,
+    const fz::SafePtr<std::pair<_idx_t,_idx_t>>& nnz_rowcol_idx_pairs,
+    const size_t ni_count,
+    fz::SafePtr<_cmplx_t>& b_dense
+) {
+    // problem dimensions
+    const MKL_INT node_count = ni_count;
+    const MKL_INT nnz_count = nnz_rowcol_idx_pairs.size();
+    
+    // create a_col_idx and a_row_ptr
+    fz::SafePtr<MKL_INT> a_col_idx(nnz_count);
+    fz::SafePtr<MKL_INT> a_row_ptr(node_count + 1);
+    MKL_INT* it_a_col_idx = a_col_idx.begin();
+    MKL_INT* it_a_row_ptr = a_row_ptr.begin();
+    const std::pair<_idx_t,_idx_t>* it_nnz_rowcol_idx_pairs =
+        nnz_rowcol_idx_pairs.begin();
+    size_t current_row = std::numeric_limits<size_t>::max();
+    for (MKL_INT i=0; i!=nnz_count; ++i) {
+        *it_a_col_idx = it_nnz_rowcol_idx_pairs->second;
+        ++it_a_col_idx;
+        if (it_nnz_rowcol_idx_pairs->first != current_row) {
+            current_row = it_nnz_rowcol_idx_pairs->first;
+            *it_a_row_ptr = i; 
+            ++it_a_row_ptr;
+        }
+        ++it_nnz_rowcol_idx_pairs;
+    }
+    *it_a_row_ptr = nnz_count;
+    ++it_a_row_ptr;
+    
+    constexpr MKL_INT options = NUMAV_MKL_OPTIONS;
+    
+    // error code stuff
+    _INTEGER_t error_id;
+    auto print_dss_error = [](const _INTEGER_t* const error_id) {
+        fprintf(stderr, "MLK code %lli\n", *error_id);
+        exit(1);
+        return;
+    };
+    
+    // initialize the solver
+    error_id = dss_create(dss_handle, options);
+    if (error_id != MKL_DSS_SUCCESS) { print_dss_error(&error_id); }
+    
+    // define the non-zero structure of the matrix
+    const MKL_INT symmetry_type = MKL_DSS_SYMMETRIC_COMPLEX;
+    error_id = dss_define_structure(
+        dss_handle, symmetry_type, a_row_ptr.data(),
+        node_count, node_count, a_col_idx.data(), nnz_count
+    );
+    if (error_id != MKL_DSS_SUCCESS) { print_dss_error(&error_id); }
+    
+    // reorder the matrix
+    error_id = dss_reorder(dss_handle, options, 0);
+    if (error_id != MKL_DSS_SUCCESS) { print_dss_error(&error_id); }
+
+    a_row_ptr.free();
+    a_col_idx.free();
+
+    // allocate the null dense b vector
+    b_dense = fz::SafePtr<_cmplx_t>(ni_count);
+    b_dense.fill(0);
+}
+#endif
+
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::_analyze_sparsity()
 {
@@ -388,6 +436,23 @@ void SimulationAcFemFreqD3<O>::_analyze_sparsity()
         _nnz_rowcol_idx_pairs.end(),
         compare_pair<_idx_t>
     );
+
+    // allocate the A and b buffer
+    _a_vals = fz::SafePtr<_cmplx_t>(_nnz_rowcol_idx_pairs.size());
+    _b_vals = fz::SafePtr<_cmplx_t>(_point_volvel.size());
+
+    // b vector
+    _b_row_idx = fz::SafePtr<_idx_t>(_point_volvel.size());
+    for (size_t j=0; j!=_point_volvel.size(); ++j)
+    {
+        _b_row_idx[j] = std::get<_idx_t>(_point_volvel[j]);
+    }
+
+    #if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
+        define_onemkl_sparsity_pattern(
+            _dss_handle, _nnz_rowcol_idx_pairs, _ni_count(), _b_dense
+        );
+    #endif
 }
 
 template<ElementOrder O>
@@ -487,9 +552,6 @@ void SimulationAcFemFreqD3<O>::_assemble_freq_independent_parts()
         _ivpg_to_mass_fi_part[ivpg].fill(0.0);
         _ivpg_to_ptr_in_a[ivpg] = fz::SafePtr<_cmplx_t*>(size);
     }
-    
-    // allocate the A matrix buffer
-    _a_vals = fz::SafePtr<_cmplx_t>(_nnz_rowcol_idx_pairs.size());
 
     // loop over the surface impedance elements
     std::array<_idx_t, COMBS_SFC.size()> fipi_sfc;
@@ -706,98 +768,55 @@ void SimulationAcFemFreqD3<O>::_assemble_freq_independent_parts()
     ivpg_to_map_to_fipi.free();
 }
 
+#if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
 void solve_using_onemkl(
+    _MKL_DSS_HANDLE_t& dss_handle,
     const fz::SafePtr<_cmplx_t>& a_vals,
-    const fz::SafePtr<std::pair<_idx_t,_idx_t>>& nnz_rowcol_idx_pairs,
-    const fz::SafePtr<_cmplx_t>& b,
+    const fz::SafePtr<_cmplx_t>& b_vals,
+    const fz::SafePtr<size_t>& b_row_idx,
+    fz::SafePtr<_cmplx_t>& b_dense,
     fz::SafePtr<_cmplx_t>& x
 ) {
+    // error code stuff
+    _INTEGER_t error_id;
     auto print_dss_error = [](const _INTEGER_t* const error_id) {
         fprintf(stderr, "MLK code %lli\n", *error_id);
         exit(1);
         return;
     };
-
-    // problem dimensions
-    const MKL_INT node_count = b.size();
-    const MKL_INT nnz_count = a_vals.size();
-
-    // define sparsity patterns
-    fz::SafePtr<MKL_INT> a_col_idx(nnz_count);
-    fz::SafePtr<MKL_INT> a_row_ptr(node_count + 1);
-    MKL_INT* it_a_col_idx = a_col_idx.begin();
-    MKL_INT* it_a_row_ptr = a_row_ptr.begin();
-    const std::pair<_idx_t,_idx_t>* it_nnz_rowcol_idx_pairs =
-        nnz_rowcol_idx_pairs.begin();
-    size_t current_row = std::numeric_limits<size_t>::max();
-    for (MKL_INT i=0; i!=nnz_count; ++i) {
-        *it_a_col_idx = it_nnz_rowcol_idx_pairs->second;
-        ++it_a_col_idx;
-        if (it_nnz_rowcol_idx_pairs->first != current_row) {
-            current_row = it_nnz_rowcol_idx_pairs->first;
-            *it_a_row_ptr = i; 
-            ++it_a_row_ptr;
-        }
-        ++it_nnz_rowcol_idx_pairs;
-    }
-    *it_a_row_ptr = nnz_count;
-    ++it_a_row_ptr;
-    
-    // system properties
-    const MKL_INT symmetry_type = MKL_DSS_SYMMETRIC_COMPLEX;
-    const MKL_INT positive_definiteness = MKL_DSS_INDEFINITE;
-
-    // options
-    const MKL_INT options = 
-        MKL_DSS_MSG_LVL_WARNING +
-        MKL_DSS_TERM_LVL_ERROR +
-        MKL_DSS_ZERO_BASED_INDEXING;
-
-    // allocate memory for the solver handle and error id.
-    _MKL_DSS_HANDLE_t dss_handle;
-    _INTEGER_t error_id;
-    
-    // initialize the solver
-    error_id = dss_create(dss_handle, options);
-    if (error_id != MKL_DSS_SUCCESS) { print_dss_error(&error_id); }
-
-    // define the non-zero structure of the matrix
-    error_id = dss_define_structure(
-        dss_handle, symmetry_type, a_row_ptr.data(),
-        node_count, node_count, a_col_idx.data(), nnz_count
-    );
-    if (error_id != MKL_DSS_SUCCESS) { print_dss_error(&error_id); }
-    
-    // reorder the matrix
-    error_id = dss_reorder(dss_handle, options, 0);
-    if (error_id != MKL_DSS_SUCCESS) { print_dss_error(&error_id); }
     
     // factor the matrix
+    constexpr MKL_INT positive_definiteness = MKL_DSS_INDEFINITE;
     error_id = dss_factor_complex(
         dss_handle, positive_definiteness,
         reinterpret_cast<const double*>(a_vals.data())
     );
     if (error_id != MKL_DSS_SUCCESS) { print_dss_error(&error_id); }
+
+    // dense b vector
+    for (size_t i=0; i!=b_vals.size(); ++i) {
+        b_dense[b_row_idx[i]] = b_vals[i];
+    }
     
-    // solution vector
-    const MKL_INT num_of_b = 1;
+    // solve
+    constexpr MKL_INT options = NUMAV_MKL_OPTIONS;
+    constexpr MKL_INT num_of_b = 1;
     error_id = dss_solve_complex(
-        dss_handle, options,
-        reinterpret_cast<const double*>(b.data()),
+        dss_handle, options, reinterpret_cast<const double*>(b_dense.data()),
         num_of_b, reinterpret_cast<double*>(x.data())
     );
     if (error_id != MKL_DSS_SUCCESS) { print_dss_error(&error_id); }
-    a_row_ptr.free();
-    a_col_idx.free();
 }
+#endif
 
 void solve_using_eigen(
     const fz::SafePtr<_cmplx_t>& a_vals,
     const fz::SafePtr<std::pair<_idx_t,_idx_t>>& nnz_rowcol_idx_pairs,
-    const fz::SafePtr<_cmplx_t>& b,
+    const fz::SafePtr<_cmplx_t>& b_vals,
+    const fz::SafePtr<size_t>& b_row_idx,
     fz::SafePtr<_cmplx_t>& x_out
 ) {
-    const size_t node_count = b.size();
+    const size_t node_count = x_out.size();
     using Triplet = typename Eigen::Triplet<_cmplx_t>;
 
     // a matrix
@@ -829,8 +848,15 @@ void solve_using_eigen(
     triplets_a.free();
 
     // b vector
-    Eigen::Matrix<_cmplx_t, Eigen::Dynamic, 1> b_eig(node_count);
-    std::copy(b.begin(), b.end(), b_eig.data());
+    fz::SafePtr<Triplet> triplets_b(node_count);
+    Triplet* it_triplets_b = triplets_b.begin();
+    for (size_t j=0; j!=b_vals.size(); ++j) {
+        *it_triplets_b = Triplet(b_row_idx[j], 0, b_vals[j]);
+        ++it_triplets_b;
+    }
+    Eigen::SparseMatrix<_cmplx_t> b(node_count, 1);
+    b.setFromTriplets(triplets_b.begin(), triplets_b.end());
+    triplets_b.free();
 
     Eigen::SparseLU<Eigen::SparseMatrix<_cmplx_t>> solver;
     solver.analyzePattern(a);
@@ -838,7 +864,7 @@ void solve_using_eigen(
     if (solver.info() != Eigen::Success) {
         std::cerr << "Factorization failed. Matrix may be singular.\n";
     }
-    const Eigen::VectorXcd x = solver.solve(b_eig);
+    const Eigen::VectorXcd x = solver.solve(b);
     if (solver.info() != Eigen::Success) {
         std::cerr << "Solving failed.\n";
     }
@@ -851,7 +877,6 @@ template<ElementOrder O>
 void SimulationAcFemFreqD3<O>::_solve()
 {
     _result = ResultAcFemFreqD3(_ni_count(), _freq_count());
-    fz::SafePtr<_cmplx_t> b(_ni_count());
 
     // start timer
     auto start_time = std::chrono::system_clock::now();
@@ -899,25 +924,27 @@ void SimulationAcFemFreqD3<O>::_solve()
         }
 
         // b vector
-        b.fill(0);
         for (size_t j=0; j!=_point_volvel.size(); ++j)
         {
             const _cmplx_t volvel =
                 std::get<_FuncRealToCmplx>(_point_volvel[j])(freq);
-
-            b[std::get<_idx_t>(_point_volvel[j])] =
-                _cmplx_t(0.0,-1.0)*omega*volvel;
+            _b_vals[j] = _cmplx_t(0.0,-1.0) * omega * volvel;
         }
 
         // solve
         fz::SafePtr<_cmplx_t> x(_ni_count());
         #if NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
-            solve_using_eigen(_a_vals, _nnz_rowcol_idx_pairs, b, x);
+            solve_using_eigen(
+                _a_vals, _nnz_rowcol_idx_pairs, _b_vals, _b_row_idx, x
+            );
         #elif NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
-            solve_using_onemkl(_a_vals, _nnz_rowcol_idx_pairs, b, x);
+            solve_using_onemkl(
+                _dss_handle, _a_vals, _b_vals, _b_row_idx, _b_dense, x
+            );
         #else
             static_assert(false, "Invalid NUMAV_SYSTEM_SOLVER.");
         #endif
+
         for (_idx_t n=0; n!=_ni_count(); ++n) {
             _result._data(n,fi) = x[n];
         }
@@ -952,7 +979,9 @@ void SimulationAcFemFreqD3<O>::_solve()
             std::cout << "\n";
         }
     }
-    b.free();
+    #if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
+        _b_dense.free();
+    #endif
     write_matrix(_result._data, "pressure.bin");
 
     // print finish

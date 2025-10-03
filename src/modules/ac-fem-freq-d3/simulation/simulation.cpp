@@ -45,6 +45,8 @@ SimulationAcFemFreqD3<O>::~Simulation() {
     _ivpg_to_volprop.free();
     _ivpg_to_ptr_in_a.free();
     _a_vals.free();
+    _b_row_idx.free();
+    _b_vals.free();
     _isei_to_sei.free();
 }
 
