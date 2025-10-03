@@ -782,7 +782,7 @@ void solve_using_onemkl(
     const fz::SafePtr<_cmplx_t>& b_vals,
     const fz::SafePtr<size_t>& b_row_idx,
     fz::SafePtr<_cmplx_t>& b_dense,
-    fz::SafePtr<_cmplx_t>& x
+    _cmplx_t* const x_out
 ) {
     // error code stuff
     _INTEGER_t error_id;
@@ -810,7 +810,7 @@ void solve_using_onemkl(
     constexpr MKL_INT num_of_b = 1;
     error_id = dss_solve_complex(
         dss_handle, options, reinterpret_cast<const double*>(b_dense.data()),
-        num_of_b, reinterpret_cast<double*>(x.data())
+        num_of_b, reinterpret_cast<double*>(x_out)
     );
     if (error_id != MKL_DSS_SUCCESS) { print_dss_error(&error_id); }
 }
@@ -821,9 +821,9 @@ void solve_using_eigen(
     const fz::SafePtr<std::pair<_idx_t,_idx_t>>& nnz_rowcol_idx_pairs,
     const fz::SafePtr<_cmplx_t>& b_vals,
     const fz::SafePtr<size_t>& b_row_idx,
-    fz::SafePtr<_cmplx_t>& x_out
+    const size_t& node_count,
+    _cmplx_t* const x_out
 ) {
-    const size_t node_count = x_out.size();
     using Triplet = typename Eigen::Triplet<_cmplx_t>;
 
     // a matrix
@@ -939,26 +939,19 @@ void SimulationAcFemFreqD3<O>::_solve()
         }
 
         // solve
-        fz::SafePtr<_cmplx_t> x(_ni_count());
         #if NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
             solve_using_eigen(
-                _a_vals, _nnz_rowcol_idx_pairs, _b_vals, _b_row_idx, x
+                _a_vals, _nnz_rowcol_idx_pairs, _b_vals, _b_row_idx,
+                _ni_count(), _result._data.data() + fi*_ni_count()
             );
         #elif NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
             solve_using_onemkl(
-                _dss_handle, _a_vals, _b_vals, _b_row_idx, _b_dense, x
+                _dss_handle, _a_vals, _b_vals, _b_row_idx, _b_dense,
+                _result._data.data() + fi*_ni_count()
             );
         #else
             static_assert(false, "Invalid NUMAV_SYSTEM_SOLVER.");
         #endif
-
-        for (_idx_t n=0; n!=_ni_count(); ++n) {
-            _result._data(n,fi) = x[n];
-        }
-        for (_idx_t n=0; n!=_ni_count(); ++n) {
-            assert(_result._data(n,fi) == x[n]);
-        }
-        x.free();
 
         // print the progress
         std::cout << "\033[A"; // Moves the cursor up one line
