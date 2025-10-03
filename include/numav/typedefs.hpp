@@ -2,6 +2,7 @@
 
 #pragma once
 
+// debug flags
 #define SAFE_PTR_DEBUG
 #undef NDEBUG
 
@@ -24,6 +25,11 @@
 #else
     static_assert(false, "Invalid NUMAV_SYSTEM_SOLVER.");
 #endif
+
+// define the integration method for trianglar elements
+#define NUMAV_JACOBIAN_DETERMINANT 21
+#define NUMAV_TRIANGLE_AREA 22
+#define NUMAV_TRIANGLE_INTEGRATION_METHOD NUMAV_JACOBIAN_DETERMINANT
 
 #define NUMAV_MKL_OPTIONS \
     MKL_DSS_MSG_LVL_WARNING + \

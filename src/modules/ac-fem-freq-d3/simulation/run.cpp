@@ -580,50 +580,57 @@ void SimulationAcFemFreqD3<O>::_assemble_freq_independent_parts()
                 _a_vals.begin() + ptrdiff;
         }
 
-        // coordinates matrix
-        std::array<Eigen::Vector3d, NODES_IN_SFC_ELEM<O>> triangle_3d;
-        for (size_t ni=0; ni!=NODES_IN_SFC_ELEM<O>; ++ni) {
-            const _idx_t node_idx = _sei_to_ni[sei][ni];
-            triangle_3d[ni] = Eigen::Vector3d(
-                _node_coords[node_idx][0],
-                _node_coords[node_idx][1],
-                _node_coords[node_idx][2]
+        #if NUMAV_TRIANGLE_INTEGRATION_METHOD == NUMAV_JACOBIAN_DETERMINANT
+            // coordinates matrix
+            std::array<Eigen::Vector3d, NODES_IN_SFC_ELEM<O>> triangle_3d;
+            for (size_t ni=0; ni!=NODES_IN_SFC_ELEM<O>; ++ni) {
+                const _idx_t node_idx = _sei_to_ni[sei][ni];
+                triangle_3d[ni] = Eigen::Vector3d(
+                    _node_coords[node_idx][0],
+                    _node_coords[node_idx][1],
+                    _node_coords[node_idx][2]
+                );
+            }
+            std::array<Eigen::Vector2d, NODES_IN_SFC_ELEM<O>> triangle_2d =
+                project_triangle_to_2d<O>(triangle_3d);
+            Eigen::Matrix<double,NODES_IN_SFC_ELEM<O>,2> coords_matrix;
+            for (size_t ni=0; ni!=NODES_IN_SFC_ELEM<O>; ++ni) {
+                coords_matrix(ni,0) = triangle_2d[ni](0);
+                coords_matrix(ni,1) = triangle_2d[ni](1);
+            }
+        #elif NUMAV_TRIANGLE_INTEGRATION_METHOD == NUMAV_TRIANGLE_AREA
+            // Calculate triangle area
+            std::array<std::array<double,DIM>,3> triangle_coords;
+            for (size_t ni=0; ni!=3; ++ni) {
+                const _idx_t node_idx = _sei_to_ni[sei][ni];
+                triangle_coords[ni] = std::array<double,DIM>({
+                    _node_coords[node_idx][0],
+                    _node_coords[node_idx][1],
+                    _node_coords[node_idx][2]
+                });
+            }
+            const double det_jac = 2*get_triangle_area(triangle_coords);
+        #else
+            static_assert(
+                false, "Invalid NUMAV_TRIANGLE_INTEGRATION_METHOD."
             );
-        }
-        std::array<Eigen::Vector2d, NODES_IN_SFC_ELEM<O>> triangle_2d =
-            project_triangle_to_2d<O>(triangle_3d);
-        Eigen::Matrix<double,NODES_IN_SFC_ELEM<O>,2> coords_matrix;
-        for (size_t ni=0; ni!=NODES_IN_SFC_ELEM<O>; ++ni) {
-            coords_matrix(ni,0) = triangle_2d[ni](0);
-            coords_matrix(ni,1) = triangle_2d[ni](1);
-        }
+        #endif
 
         // damping matrix
         constexpr std::array<std::array<double,2>,NGP_DAMP<O>>
             GAUSS_POINTS_DAMP = GAUSS_POINTS_SFC<NGP_DAMP<O>>;
         for (_idx_t gpi=0; gpi!=NGP_DAMP<O>; ++gpi)
         {
-            Eigen::Matrix<double,2,NODES_IN_SFC_ELEM<O>> nabla_n =
-                shape_func_sfc_gradient<O>(
-                    GAUSS_POINTS_DAMP[gpi][0],
-                    GAUSS_POINTS_DAMP[gpi][1]
-                ); // todo: try putting constexpr here
-
-            const Eigen::Matrix<double,2,2> jac_matrix =
-                nabla_n * coords_matrix;
-            
-            const double det_jac = jac_matrix.determinant();
-            
-            // std::array<std::array<double,DIM>,3> triangle_coords;
-            // for (size_t ni=0; ni!=3; ++ni) {
-            //     const _idx_t node_idx = _sei_to_ni[sei][ni];
-            //     triangle_coords[ni] = std::array<double,DIM>({
-            //         _node_coords[node_idx][0],
-            //         _node_coords[node_idx][1],
-            //         _node_coords[node_idx][2]
-            //     });
-            // }
-            // const double det_jac = 2*get_triangle_area(triangle_coords);
+            #if NUMAV_TRIANGLE_INTEGRATION_METHOD == NUMAV_JACOBIAN_DETERMINANT
+                Eigen::Matrix<double,2,NODES_IN_SFC_ELEM<O>> nabla_n =
+                    shape_func_sfc_gradient<O>(
+                        GAUSS_POINTS_DAMP[gpi][0],
+                        GAUSS_POINTS_DAMP[gpi][1]
+                    ); // todo: try putting constexpr here
+                const Eigen::Matrix<double,2,2> jac_matrix =
+                    nabla_n * coords_matrix;
+                const double det_jac = jac_matrix.determinant();
+            #endif
 
             const Eigen::Matrix<double,NODES_IN_SFC_ELEM<O>,1> n =
                 shape_func_sfc<O>(
