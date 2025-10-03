@@ -4,6 +4,8 @@
 
 #include <cassert>
 
+namespace numav {
+
 fz::SafePtr<double> linspace(
     const double& start, const double& finish, const size_t& num_points
 ) {
@@ -39,3 +41,5 @@ double get_triangle_area(const std::array<std::array<double,3>,3>& coords)
     const double area = std::sqrt(s * (s-a) * (s-b) * (s-c));
     return area;
 }
+
+} // namespace numav

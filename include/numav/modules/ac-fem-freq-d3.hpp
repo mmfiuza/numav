@@ -128,8 +128,8 @@ private:
     fz::SafePtr<double> _freq_steps;
 
     fz::SafePtr<std::array<double,3>> _node_coords;
-    fz::SafePtr<std::array<_idx_t,NODES_IN_SFC_ELEM<O>>> _sfc_elem_node_idx;
-    fz::SafePtr<std::array<_idx_t,NODES_IN_VOL_ELEM<O>>> _vol_elem_node_idx;
+    fz::SafePtr<std::array<_idx_t,NODES_IN_SFC_ELEM<O>>> _sei_to_ni;
+    fz::SafePtr<std::array<_idx_t,NODES_IN_VOL_ELEM<O>>> _vei_to_ni;
 
     std::vector<std::tuple<_idx_t,_FuncRealToCmplx>> _point_volvel;
     std::vector<std::tuple<_idx_t,_FuncRealToCmplx>> _point_pressure;

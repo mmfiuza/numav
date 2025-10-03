@@ -32,10 +32,22 @@ std::pair<T,T> make_ascending_pair(const T& a, const T& b) {
 
 template<typename T>
 bool compare_pair(const std::pair<T,T>& a, const std::pair<T,T>& b) {
-    if (a.second != b.second) {
-        return a.second < b.second;
-    }
-    else {
-        return a.first < b.first;
-    }
+    #if NUMAV_GLOBAL_MATRIX_STORAGE_ORDER == NUMAV_UPPER_COL_MAJOR
+        if (a.second != b.second) {
+            return a.second < b.second;
+        }
+        else {
+            return a.first < b.first;
+        }
+    #elif NUMAV_GLOBAL_MATRIX_STORAGE_ORDER == NUMAV_UPPER_ROW_MAJOR
+        if (a.first != b.first) {
+            return a.first < b.first;
+        }
+        else {
+            return a.second < b.second;
+        }
+    #else
+        static_assert(false, "Invalid GLOBAL_MATRIX_STORAGE_ORDER.");
+    #endif
+    
 }

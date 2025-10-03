@@ -7,6 +7,8 @@
 
 #include <tuple>
 
+namespace numav {
+
 fz::SafePtr<double> linspace(
     const double& start, const double& finish, const size_t& num_points
 );
@@ -35,7 +37,7 @@ template<size_t N>
 constexpr std::array<std::array<size_t,2>, COMB_REP_SIZE<N,2>> 
 COMBINATION_REP = [] { // todo: generalize for K!=2 (maybe)
     constexpr size_t K = 2;
-    // combination with repetition
+    // combination with repetition in upper column major order
     std::array<std::array<size_t,K>, COMB_REP_SIZE<N,K>> result;
     auto it_result = result.begin();
     for (size_t j=0; j!=N; ++j) {
@@ -46,3 +48,5 @@ COMBINATION_REP = [] { // todo: generalize for K!=2 (maybe)
     }
     return result;
 }();
+
+} // namespace numav

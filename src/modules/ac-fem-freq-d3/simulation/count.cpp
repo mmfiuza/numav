@@ -11,12 +11,12 @@ size_t SimulationAcFemFreqD3<O>::_ni_count() const {
 
 template <ElementOrder O>
 size_t SimulationAcFemFreqD3<O>::_sei_count() const {
-    return _sfc_elem_node_idx.size();
+    return _sei_to_ni.size();
 }
 
 template <ElementOrder O>
 size_t SimulationAcFemFreqD3<O>::_vei_count() const {
-    return _vol_elem_node_idx.size();
+    return _vei_to_ni.size();
 }
 
 template <ElementOrder O>

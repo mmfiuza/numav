@@ -19,8 +19,8 @@ template<ElementOrder O>
 SimulationAcFemFreqD3<O>::~Simulation() {
     _freq_steps.free();
     _node_coords.free();
-    _sfc_elem_node_idx.free();
-    _vol_elem_node_idx.free();
+    _sei_to_ni.free();
+    _vei_to_ni.free();
     _sei_to_espg.free();
     _vei_to_evpg.free();
     _nnz_rowcol_idx_pairs.free();

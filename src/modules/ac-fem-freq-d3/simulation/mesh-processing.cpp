@@ -30,7 +30,6 @@ _idx_t SimulationAcFemFreqD3<O>::_get_closest_point(
             ni_closest = ni;
         }
     }
-    std::cout << "ni_closest: " << ni_closest << "\n";
     return ni_closest;
 }
 
@@ -59,15 +58,15 @@ void SimulationAcFemFreqD3<O>::_load_bdf(const char* const path_to_mesh)
 
     // second pass: parse data
     _node_coords = fz::SafePtr<std::array<double,3>>(node_count);
-    _sfc_elem_node_idx =
+    _sei_to_ni =
         fz::SafePtr<std::array<size_t,NODES_IN_SFC_ELEM<O>>>(sfc_elem_count);
-    _vol_elem_node_idx =
+    _vei_to_ni =
         fz::SafePtr<std::array<size_t,NODES_IN_VOL_ELEM<O>>>(vol_elem_count);
     _sei_to_espg = fz::SafePtr<size_t>(sfc_elem_count);
     _vei_to_evpg = fz::SafePtr<size_t>(vol_elem_count);
     auto it_node_coords = _node_coords.begin();
-    auto it_sfc_elem_node_idx = _sfc_elem_node_idx.begin();
-    auto it_vol_elem_node_idx = _vol_elem_node_idx.begin();
+    auto it_sfc_elem_node_idx = _sei_to_ni.begin();
+    auto it_vol_elem_node_idx = _vei_to_ni.begin();
     auto it_elem_idx_to_espg = _sei_to_espg.begin();
     auto it_elem_idx_to_evpg = _vei_to_evpg.begin();
     file.clear();
@@ -139,18 +138,18 @@ void SimulationAcFemFreqD3<ElementOrder::O2>::_generate_extra_nodes()
         for (size_t i=0; i!=VTX_PAIRS_VOL.size(); ++i)
         {
             const std::tuple<size_t,size_t> tup = make_ascending_tuple(
-                _vol_elem_node_idx[e][VTX_PAIRS_VOL[i][0]],
-                _vol_elem_node_idx[e][VTX_PAIRS_VOL[i][1]]
+                _vei_to_ni[e][VTX_PAIRS_VOL[i][0]],
+                _vei_to_ni[e][VTX_PAIRS_VOL[i][1]]
             );
             if (!idxs_extra_nodes.contains(tup)) {
                 is_extra_node[e][i] = true;
-                _vol_elem_node_idx[e][NODES_IN_VOL_ELEM<ElementOrder::O1> + i] =
+                _vei_to_ni[e][NODES_IN_VOL_ELEM<ElementOrder::O1> + i] =
                     count;
                 idxs_extra_nodes.insert({tup, count});
                 ++count;
             } else {
                 is_extra_node[e][i] = false;          
-                _vol_elem_node_idx[e][NODES_IN_VOL_ELEM<ElementOrder::O1> + i] =
+                _vei_to_ni[e][NODES_IN_VOL_ELEM<ElementOrder::O1> + i] =
                     idxs_extra_nodes.at(tup);
             }     
         }
@@ -169,8 +168,8 @@ void SimulationAcFemFreqD3<ElementOrder::O2>::_generate_extra_nodes()
             if (!is_extra_node[e][i]) { continue; }
 
             const std::tuple<size_t,size_t> tup = make_ascending_tuple(
-                _vol_elem_node_idx[e][VTX_PAIRS_VOL[i][0]],
-                _vol_elem_node_idx[e][VTX_PAIRS_VOL[i][1]]
+                _vei_to_ni[e][VTX_PAIRS_VOL[i][0]],
+                _vei_to_ni[e][VTX_PAIRS_VOL[i][1]]
             );
             const double x = mean(
                 _node_coords[std::get<0>(tup)][0],
@@ -196,10 +195,10 @@ void SimulationAcFemFreqD3<ElementOrder::O2>::_generate_extra_nodes()
         {
             // create a tuple of the indices in ascending order
             const std::tuple<size_t,size_t> tup = make_ascending_tuple(
-                _sfc_elem_node_idx[e][VTX_PAIRS_SFC[i][0]],
-                _sfc_elem_node_idx[e][VTX_PAIRS_SFC[i][1]]
+                _sei_to_ni[e][VTX_PAIRS_SFC[i][0]],
+                _sei_to_ni[e][VTX_PAIRS_SFC[i][1]]
             );
-            _sfc_elem_node_idx[e][NODES_IN_SFC_ELEM<ElementOrder::O1> + i] =
+            _sei_to_ni[e][NODES_IN_SFC_ELEM<ElementOrder::O1> + i] =
                 idxs_extra_nodes.at(tup);
         }
     }
