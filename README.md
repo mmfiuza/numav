@@ -1,8 +1,16 @@
-# Numav (work in progress)
+# Numav Solver
 
-Numav (Numerical Acoustics and Vibrations) is a C++ library for acoustics and vibrations simulations.
+The Numav Solver is a C++ library to perform acoustics and vibrations simulations.
+
+## How to start the development container
+Run:
+```
+./start_container.sh <path-to-github-ssh-keys>
+```
+`<path-to-github-ssh-keys>` is an optional argument. Its default value is `~/.ssh`.
 
 ## How to build libnumav (static)
+Run:
 ```
 rm -rf build &&
 rm -rf install &&
@@ -14,6 +22,7 @@ cmake --install build
 ```
 
 ## How to build libnumav (dynamic)
+Run:
 ```
 rm -rf build &&
 rm -rf install &&
@@ -26,6 +35,7 @@ cmake --install build
 ```
 
 ## How to build and run tests
+Run:
 ```
 rm -rf build &&
 rm -rf install &&
@@ -39,6 +49,7 @@ cmake --install build &&
 ```
 
 ## How to build examples
+Run:
 ```
 rm -rf build &&
 rm -rf install &&
