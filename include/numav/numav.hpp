@@ -54,6 +54,10 @@ Acronyms:
     NI (Node Index)
 
     NCI (Node Combination Index)
+
+    ENI (Elementary Node Index)
+
+    PVNI (Point Velocity Node Index)
 */
 
 #pragma once
@@ -94,6 +98,7 @@ namespace numav {
     enum class PhysicalQuantity {
         PRESSURE,
         VOLUME_VELOCITY,
+        PARTICLE_VELOCITY,
     };
     
     template<Dimension D> constexpr size_t DIM_COUNT = [] {

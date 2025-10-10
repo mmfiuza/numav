@@ -20,7 +20,6 @@ namespace numav::log {
         std::cout << "Copyright (c) 2025 Numav\n";
         std::cout << "All rights reserved.\n";
         std::cout << "----------------------------------------\n";
-        std::cout << "\n";
     }
 
     void print_opening_ac_fem_freq_d3() {

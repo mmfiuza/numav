@@ -105,11 +105,14 @@ private:
         _FuncRealToCmplx soundspeed;
     };
 
-    size_t _ni_count() const;
+    size_t _ni_count()  const;
     size_t _sei_count() const;
     size_t _vei_count() const;
     size_t _isei_count() const;
+    size_t _vsei_count() const;
+    size_t _pvni_count() const;
     size_t _ispgi_count() const;
+    size_t _ispgv_count() const;
     size_t _ivpg_count() const;
     size_t _freq_count() const;
     
@@ -145,7 +148,7 @@ private:
     fz::SafePtr<_epg_t> _sei_to_espg;
     fz::SafePtr<_epg_t> _vei_to_evpg;
     
-    std::unordered_map<_epg_t,_FuncRealToCmplx> _espg_to_volvel;
+    std::unordered_map<_epg_t,_FuncRealToCmplx> _espg_to_velocity;
     std::unordered_map<_epg_t,_FuncRealToCmplx> _espg_to_pressure;
     std::unordered_map<_epg_t,_FuncRealToCmplx> _espg_to_impedance;
     std::unordered_map<_epg_t,_VolProp>         _evpg_to_volprop;
@@ -154,11 +157,13 @@ private:
     std::unordered_map<_epg_t,_ipg_t> _evpg_to_ivpg;
 
     fz::SafePtr<_idx_t> _isei_to_sei;
+    fz::SafePtr<_idx_t> _vsei_to_sei;
 
     fz::SafePtr<_ipg_t> _isei_to_ispgi;
+    fz::SafePtr<_ipg_t> _vsei_to_ispgv;
     fz::SafePtr<_ipg_t> _vei_to_ivpg;
     
-    fz::SafePtr<_FuncRealToCmplx> _ispgv_to_volvel;
+    fz::SafePtr<_FuncRealToCmplx> _ispgv_to_velocity;
     fz::SafePtr<_FuncRealToCmplx> _ispgp_to_pressure;
     fz::SafePtr<_FuncRealToCmplx> _ispgi_to_impedance;
     fz::SafePtr<_VolProp>         _ivpg_to_volprop;
@@ -171,6 +176,11 @@ private:
     fz::SafePtr<fz::SafePtr<double>> _ispg_to_damp_fi_part;
     fz::SafePtr<fz::SafePtr<std::complex<double>*>> _ispg_to_ptr_in_a;
 
+    // todo: evaluate if these are all necessary to be complex
+    fz::SafePtr<_FuncRealToCmplx> _pvni_to_forc_fi_part;
+    fz::SafePtr<std::complex<double>*> _pvni_to_ptr_in_b;
+    fz::SafePtr<fz::SafePtr<std::complex<double>>> _ispgv_to_forc_fi_part;
+    fz::SafePtr<fz::SafePtr<std::complex<double>*>> _ispgv_to_ptr_in_b;
     fz::SafePtr<fz::SafePtr<std::complex<double>>> _ispgi_to_damp_fi_part;
     fz::SafePtr<fz::SafePtr<std::complex<double>*>> _ispgi_to_ptr_in_a;
     fz::SafePtr<fz::SafePtr<double>> _ivpg_to_stif_fi_part;

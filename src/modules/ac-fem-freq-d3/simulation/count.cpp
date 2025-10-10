@@ -25,8 +25,23 @@ size_t SimulationAcFemFreqD3<O>::_isei_count() const {
 }
 
 template <ElementOrder O>
+size_t SimulationAcFemFreqD3<O>::_vsei_count() const {
+    return _vsei_to_ispgv.size();
+}
+
+template <ElementOrder O>
+size_t SimulationAcFemFreqD3<O>::_pvni_count() const {
+    return _point_volvel.size();
+}
+
+template <ElementOrder O>
 size_t SimulationAcFemFreqD3<O>::_ispgi_count() const {
     return _espg_to_impedance.size();
+}
+
+template <ElementOrder O>
+size_t SimulationAcFemFreqD3<O>::_ispgv_count() const {
+    return _espg_to_velocity.size();
 }
 
 template <ElementOrder O>

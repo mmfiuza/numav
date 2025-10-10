@@ -42,7 +42,7 @@ SimulationAcFemFreqD3<O>::~Simulation() {
     _ispgi_to_ptr_in_a.free();
     _isei_to_ispgi.free();
     _vei_to_ivpg.free();
-    _ispgv_to_volvel.free();
+    _ispgv_to_velocity.free();
     _ispgp_to_pressure.free();
     _ispgi_to_impedance.free();
     _ivpg_to_volprop.free();
@@ -126,16 +126,16 @@ void SimulationAcFemFreqD3<O>::add_sound_source(
     if (type_of_source != TypeOfSource::POINT) {
         log::error("Tried to assign coordinates to a surface sound source.");
     }
-    const _idx_t closest_point_idx = _get_closest_point(point_coordinates);
+    const _idx_t closest_ni = _get_closest_point(point_coordinates);
     
     if (physical_quantity_type == PhysicalQuantity::VOLUME_VELOCITY) {
         _point_volvel.push_back(
-            std::make_tuple(closest_point_idx, physical_quantity_value)
+            std::make_tuple(closest_ni, physical_quantity_value)
         );
     }
     else if (physical_quantity_type == PhysicalQuantity::PRESSURE) {
         _point_pressure.push_back(
-            std::make_tuple(closest_point_idx, physical_quantity_value)
+            std::make_tuple(closest_ni, physical_quantity_value)
         );
     }
     else {
@@ -160,23 +160,23 @@ void SimulationAcFemFreqD3<O>::add_sound_source(
         log::error("Tag {} not found in mesh file.", espg);
     }
     if (_espg_to_pressure.contains(espg) ||
-        _espg_to_volvel.contains(espg) ||
+        _espg_to_velocity.contains(espg) ||
         _espg_to_impedance.contains(espg)
     ) {
         log::error("Tag {} already assigned.", espg);
     }
-    if (physical_quantity_type == PhysicalQuantity::PRESSURE) {
+    if (physical_quantity_type == PhysicalQuantity::PARTICLE_VELOCITY) {
+        const _ipg_t ispgv = _espg_to_velocity.size();
+        _espg_to_velocity.insert({espg, physical_quantity_value});
+        _espg_to_ispg.insert({espg, ispgv});
+    }
+    else if (physical_quantity_type == PhysicalQuantity::PRESSURE) {
         const _ipg_t ispgp = _espg_to_pressure.size();
         _espg_to_pressure.insert({espg, physical_quantity_value});
         _espg_to_ispg.insert({espg, ispgp});
     }
-    else if (physical_quantity_type == PhysicalQuantity::VOLUME_VELOCITY) {
-        const _ipg_t ispgv = _espg_to_volvel.size();
-        _espg_to_volvel.insert({espg, physical_quantity_value});
-        _espg_to_ispg.insert({espg, ispgv});
-    }
     else {
-        log::error("Possible physical quantities are volume velocity"
+        log::error("Possible physical quantities are particle velocity"
             " or pressure.");
     }
     _is_any_source_defined = true;
@@ -192,7 +192,7 @@ void SimulationAcFemFreqD3<O>::add_surface_specific_acoustic_impedance(
         log::error("Tag {} not found in mesh file.", espg);
     }
     if (_espg_to_pressure.contains(espg) ||
-        _espg_to_volvel.contains(espg) ||
+        _espg_to_velocity.contains(espg) ||
         _espg_to_impedance.contains(espg)
     ) {
         log::error("Tag {} already assigned.", espg);
