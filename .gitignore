@@ -47,8 +47,5 @@
 # julia
 Manifest.toml
 
-# vs code
-.vscode/settings.json
-
 # simulation results
 *.bin
