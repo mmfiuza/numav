@@ -1,9 +1,11 @@
 {
     "configurations": [
         {
-            "name": "Container",
+            "name": "Numav",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "/usr/include/eigen3",
+                "/opt/intel/oneapi/mkl/latest/include"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/g++",
