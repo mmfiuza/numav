@@ -1,6 +1,7 @@
 // Copyright (c) 2025 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
 #include "numav/numav.hpp"
+#include "modules/ac-fem-freq-d3/simulation/implementation.hpp"
 
 #include "common/log.hpp"
 
@@ -9,57 +10,8 @@
 
 namespace numav {
 
-template<ElementOrder O>
-SimulationAcFemFreqD3<O>::Simulation() {
-    log::set_level();
-    log::set_pattern();
-    _is_mesh_defined = false;
-    _is_freq_range_defined = false;
-    _is_any_source_defined = false;
-}
-
-template<ElementOrder O>
-SimulationAcFemFreqD3<O>::~Simulation() {
-    _freq_steps.free();
-    _node_coords.free();
-    _sei_to_ni.free();
-    _vei_to_ni.free();
-    _sei_to_espg.free();
-    _vei_to_evpg.free();
-    _nnz_rowcol_idx_pairs.free();
-    for (_ipg_t ivpg=0; ivpg!=_ivpg_count(); ++ivpg) {
-        _ivpg_to_stif_fi_part[ivpg].free();
-        _ivpg_to_mass_fi_part[ivpg].free();
-        _ivpg_to_ptr_in_a[ivpg].free();
-    }
-    _ivpg_to_stif_fi_part.free();
-    _ivpg_to_mass_fi_part.free();
-    for (_ipg_t ispgi=0; ispgi!=_ispgi_count(); ++ispgi) {
-        _ispgi_to_damp_fi_part[ispgi].free();
-        _ispgi_to_ptr_in_a[ispgi].free();
-    }
-    _ispgi_to_damp_fi_part.free();
-    _ispgi_to_ptr_in_a.free();
-    _isei_to_ispgi.free();
-    _vei_to_ivpg.free();
-    _ispgv_to_velocity.free();
-    _ispgp_to_pressure.free();
-    _ispgi_to_impedance.free();
-    _ivpg_to_volprop.free();
-    _ivpg_to_ptr_in_a.free();
-    _a_vals.free();
-    _isei_to_sei.free();
-}
-
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::_check_if_mesh_is_defined() {
-    if (!_is_mesh_defined){
-        log::error("Mesh not defined. Call load_mesh to do so.");
-    }
-}
-
-template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::set_frequency_range(
+void SimulationAcFemFreqD3<O>::Impl::set_frequency_range(
     const double& freq_min,
     const double& freq_max
 ) {
@@ -75,7 +27,7 @@ void SimulationAcFemFreqD3<O>::set_frequency_range(
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::load_mesh(
+void SimulationAcFemFreqD3<O>::Impl::load_mesh(
     const char* const path_to_mesh
 ) {
     if (_is_mesh_defined) {
@@ -98,7 +50,7 @@ void SimulationAcFemFreqD3<O>::load_mesh(
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::add_volume_material(
+void SimulationAcFemFreqD3<O>::Impl::add_volume_material(
     const _epg_t& evpg,
     const _FuncRealToCmplx& density,
     const _FuncRealToCmplx& soundspeed
@@ -116,7 +68,7 @@ void SimulationAcFemFreqD3<O>::add_volume_material(
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::add_sound_source(
+void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
     const TypeOfSource& type_of_source,
     const std::array<double,3>& point_coordinates,
     const PhysicalQuantity& physical_quantity_type,
@@ -146,7 +98,7 @@ void SimulationAcFemFreqD3<O>::add_sound_source(
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::add_sound_source(
+void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
     const TypeOfSource& type_of_source,
     const _epg_t& espg,
     const PhysicalQuantity& physical_quantity_type,
@@ -183,7 +135,7 @@ void SimulationAcFemFreqD3<O>::add_sound_source(
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::add_surface_specific_acoustic_impedance(
+void SimulationAcFemFreqD3<O>::Impl::add_surface_specific_acoustic_impedance(
     const _epg_t& espg,
     const _FuncRealToCmplx& impedance
 ) {
@@ -201,5 +153,79 @@ void SimulationAcFemFreqD3<O>::add_surface_specific_acoustic_impedance(
     _espg_to_impedance.insert({espg, impedance});
     _espg_to_ispg.insert({espg, ispgi});
 }
+
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::set_frequency_range(
+    const double& freq_min,
+    const double& freq_max
+) {
+    pimpl->set_frequency_range(freq_min, freq_max);
+}
+
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::load_mesh(
+    const char* const path_to_mesh
+) {
+    pimpl->load_mesh(path_to_mesh);
+}
+
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::add_volume_material(
+    const _epg_t& evpg,
+    const _FuncRealToCmplx& density,
+    const _FuncRealToCmplx& soundspeed
+) {
+    pimpl->add_volume_material(evpg, density, soundspeed);
+}
+
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::add_sound_source(
+    const TypeOfSource& type_of_source,
+    const std::array<double,3>& point_coordinates,
+    const PhysicalQuantity& physical_quantity_type,
+    const _FuncRealToCmplx& physical_quantity_value
+) {
+    pimpl->add_sound_source(
+        type_of_source, point_coordinates,
+        physical_quantity_type, physical_quantity_value
+    );
+}
+
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::add_sound_source(
+    const TypeOfSource& type_of_source,
+    const _epg_t& espg,
+    const PhysicalQuantity& physical_quantity_type,
+    const _FuncRealToCmplx& physical_quantity_value
+) {
+    pimpl->add_sound_source(
+        type_of_source, espg,
+        physical_quantity_type, physical_quantity_value
+    );
+}
+
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::add_surface_specific_acoustic_impedance(
+    const _epg_t& espg,
+    const _FuncRealToCmplx& impedance
+) {
+    pimpl->add_surface_specific_acoustic_impedance(espg, impedance);
+}
+
+// explicit instantiation declarations
+template class Simulation<
+    Phenomenon::ACOUSTIC,
+    NumericalMethod::FEM,
+    Domain::FREQUENCY,
+    Dimension::D3,
+    ElementOrder::O1
+>;
+template class Simulation<
+    Phenomenon::ACOUSTIC,
+    NumericalMethod::FEM,
+    Domain::FREQUENCY,
+    Dimension::D3,
+    ElementOrder::O2
+>;
 
 } // namespace numav
