@@ -1,6 +1,7 @@
 // Copyright (c) 2025 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
 #include "numav/numav.hpp"
+#include "modules/ac-fem-freq-d3/simulation/implementation.hpp"
 
 #include <tuple>
 #include <fstream>
@@ -14,7 +15,14 @@
 namespace numav {
 
 template <ElementOrder O>
-_idx_t SimulationAcFemFreqD3<O>::_get_closest_point(
+void SimulationAcFemFreqD3<O>::Impl::_check_if_mesh_is_defined() {
+    if (!_is_mesh_defined){
+        log::error("Mesh not defined. Call load_mesh to do so.");
+    }
+}
+
+template <ElementOrder O>
+_idx_t SimulationAcFemFreqD3<O>::Impl::_get_closest_point(
     const std::array<double,3>& point_coords
 ) {
     double minimum_distance_squared = std::numeric_limits<double>::max();
@@ -34,7 +42,7 @@ _idx_t SimulationAcFemFreqD3<O>::_get_closest_point(
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::_load_bdf(const char* const path_to_mesh)
+void SimulationAcFemFreqD3<O>::Impl::_load_bdf(const char* const path_to_mesh)
 {
     constexpr size_t MAX_BDF_CHARACTERS_PER_LINE = 80;
     std::ifstream file(path_to_mesh);
@@ -113,12 +121,12 @@ void SimulationAcFemFreqD3<O>::_load_bdf(const char* const path_to_mesh)
 }
 
 template<>
-void SimulationAcFemFreqD3<ElementOrder::O1>::_generate_extra_nodes() {
+void SimulationAcFemFreqD3<ElementOrder::O1>::Impl::_generate_extra_nodes() {
     // nothing needs to be done in this case (in order 1)
 }
 
 template<>
-void SimulationAcFemFreqD3<ElementOrder::O2>::_generate_extra_nodes()
+void SimulationAcFemFreqD3<ElementOrder::O2>::Impl::_generate_extra_nodes()
 {
     constexpr std::array<
         std::array<size_t,2>,EXTRA_NODES_IN_VOL_ELEM<ElementOrder::O2>
@@ -203,5 +211,21 @@ void SimulationAcFemFreqD3<ElementOrder::O2>::_generate_extra_nodes()
         }
     }
 }
+
+// explicit instantiation declarations
+template class Simulation<
+    Phenomenon::ACOUSTIC,
+    NumericalMethod::FEM,
+    Domain::FREQUENCY,
+    Dimension::D3,
+    ElementOrder::O1
+>;
+template class Simulation<
+    Phenomenon::ACOUSTIC,
+    NumericalMethod::FEM,
+    Domain::FREQUENCY,
+    Dimension::D3,
+    ElementOrder::O2
+>;
 
 } // namespace numav

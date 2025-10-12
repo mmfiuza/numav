@@ -2,17 +2,9 @@
 
 #pragma once
 
-#include <unordered_map>
-#include <unordered_set>
+#include <memory>
 
 #include "Eigen/Eigen"
-
-#if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
-    #include "mkl_dss.h"
-    #include "mkl_types.h"
-#endif
-
-#include "SafePtr.hpp"
 
 namespace numav {
 
@@ -98,117 +90,19 @@ public:
     > run();
 
 private:
-
-    // volume element properties
-    struct _VolProp {
-        _FuncRealToCmplx density;
-        _FuncRealToCmplx soundspeed;
-    };
-
-    size_t _ni_count()  const;
-    size_t _sei_count() const;
-    size_t _vei_count() const;
-    size_t _isei_count() const;
-    size_t _vsei_count() const;
-    size_t _pvni_count() const;
-    size_t _ispgi_count() const;
-    size_t _ispgv_count() const;
-    size_t _ivpg_count() const;
-    size_t _freq_count() const;
-    
-    void _load_bdf(const char* const);
-    void _generate_extra_nodes();
-    _idx_t _get_closest_point(const std::array<double,3>&);
-    void _check_if_mesh_is_defined();
-    void _check_if_it_can_run();
-    void _define_freq_vector();
-    void _organize_physical_group_data();
-    void _analyze_sparsity();
-    void _assemble_freq_independent_parts();
-    void _solve();
-
-    bool _is_mesh_defined;
-    bool _is_any_source_defined;
-    bool _is_freq_range_defined;
-
-    double _freq_min;
-    double _freq_max;
-    fz::SafePtr<double> _freq_steps;
-
-    fz::SafePtr<std::array<double,3>> _node_coords;
-    fz::SafePtr<std::array<_idx_t,NODES_IN_SFC_ELEM<O>>> _sei_to_ni;
-    fz::SafePtr<std::array<_idx_t,NODES_IN_VOL_ELEM<O>>> _vei_to_ni;
-
-    std::vector<std::tuple<_idx_t,_FuncRealToCmplx>> _point_volvel;
-    std::vector<std::tuple<_idx_t,_FuncRealToCmplx>> _point_pressure;
-
-    std::unordered_set<_epg_t> _existing_espg;
-    std::unordered_set<_epg_t> _existing_evpg;
-
-    fz::SafePtr<_epg_t> _sei_to_espg;
-    fz::SafePtr<_epg_t> _vei_to_evpg;
-    
-    std::unordered_map<_epg_t,_FuncRealToCmplx> _espg_to_velocity;
-    std::unordered_map<_epg_t,_FuncRealToCmplx> _espg_to_pressure;
-    std::unordered_map<_epg_t,_FuncRealToCmplx> _espg_to_impedance;
-    std::unordered_map<_epg_t,_VolProp>         _evpg_to_volprop;
-
-    std::unordered_map<_epg_t,_ipg_t> _espg_to_ispg;
-    std::unordered_map<_epg_t,_ipg_t> _evpg_to_ivpg;
-
-    fz::SafePtr<_idx_t> _isei_to_sei;
-    fz::SafePtr<_idx_t> _vsei_to_sei;
-
-    fz::SafePtr<_ipg_t> _isei_to_ispgi;
-    fz::SafePtr<_ipg_t> _vsei_to_ispgv;
-    fz::SafePtr<_ipg_t> _vei_to_ivpg;
-    
-    fz::SafePtr<_FuncRealToCmplx> _ispgv_to_velocity;
-    fz::SafePtr<_FuncRealToCmplx> _ispgp_to_pressure;
-    fz::SafePtr<_FuncRealToCmplx> _ispgi_to_impedance;
-    fz::SafePtr<_VolProp>         _ivpg_to_volprop;
-    
-    fz::SafePtr<std::pair<_idx_t,_idx_t>> _nnz_rowcol_idx_pairs;
-    fz::SafePtr<std::complex<double>> _a_vals;
-    fz::SafePtr<_idx_t> _b_row_idx;
-    fz::SafePtr<std::complex<double>> _b_vals;
-
-    fz::SafePtr<fz::SafePtr<double>> _ispg_to_damp_fi_part;
-    fz::SafePtr<fz::SafePtr<std::complex<double>*>> _ispg_to_ptr_in_a;
-
-    // todo: evaluate if these are all necessary to be complex
-    fz::SafePtr<_FuncRealToCmplx> _pvni_to_forc_fi_part;
-    fz::SafePtr<std::complex<double>*> _pvni_to_ptr_in_b;
-    fz::SafePtr<fz::SafePtr<std::complex<double>>> _ispgv_to_forc_fi_part;
-    fz::SafePtr<fz::SafePtr<std::complex<double>*>> _ispgv_to_ptr_in_b;
-    fz::SafePtr<fz::SafePtr<std::complex<double>>> _ispgi_to_damp_fi_part;
-    fz::SafePtr<fz::SafePtr<std::complex<double>*>> _ispgi_to_ptr_in_a;
-    fz::SafePtr<fz::SafePtr<double>> _ivpg_to_stif_fi_part;
-    fz::SafePtr<fz::SafePtr<double>> _ivpg_to_mass_fi_part;
-    fz::SafePtr<fz::SafePtr<std::complex<double>*>> _ivpg_to_ptr_in_a;
-
-    #if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
-        _MKL_DSS_HANDLE_t _dss_handle;
-        fz::SafePtr<std::complex<double>> _b_dense;
-    #endif
-
-    Result<
-        Phenomenon::ACOUSTIC,
-        NumericalMethod::FEM,
-        Domain::FREQUENCY,
-        Dimension::D3
-    > _result;
+    class Impl;
+    std::unique_ptr<Impl> pimpl;
 };
 
 // explicit instantiation declarations
-template class Simulation<
+extern template class Simulation<
     Phenomenon::ACOUSTIC,
     NumericalMethod::FEM,
     Domain::FREQUENCY,
     Dimension::D3,
     ElementOrder::O1
 >;
-template class Simulation<
+extern template class Simulation<
     Phenomenon::ACOUSTIC,
     NumericalMethod::FEM,
     Domain::FREQUENCY,
@@ -216,7 +110,7 @@ template class Simulation<
     ElementOrder::O2
 >;
 
-// nicknames for types
+// alias for types
 template<ElementOrder O>
 using SimulationAcFemFreqD3 = typename numav::Simulation<
     Phenomenon::ACOUSTIC,

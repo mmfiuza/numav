@@ -1,6 +1,7 @@
 // Copyright (c) 2025 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
 #include "numav/numav.hpp"
+#include "modules/ac-fem-freq-d3/simulation/implementation.hpp"
 
 #include <tuple>
 #include <cmath>
@@ -263,7 +264,7 @@ shape_func_vol_gradient<ElementOrder::O2>(
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::_check_if_it_can_run() {
+void SimulationAcFemFreqD3<O>::Impl::_check_if_it_can_run() {
     _check_if_mesh_is_defined();
     if (!_is_any_source_defined){
         log::error("No sound source was defined."
@@ -282,14 +283,14 @@ void SimulationAcFemFreqD3<O>::_check_if_it_can_run() {
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::_define_freq_vector() {
+void SimulationAcFemFreqD3<O>::Impl::_define_freq_vector() {
     // todo: decide number here
     // todo: make it not linear
     _freq_steps = linspace(_freq_min, _freq_max, 1000);
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::_organize_physical_group_data()
+void SimulationAcFemFreqD3<O>::Impl::_organize_physical_group_data()
 {
     // generate structures accessed through IPG
     _ispgv_to_velocity =
@@ -433,7 +434,7 @@ void define_onemkl_sparsity_pattern(
 #endif
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::_analyze_sparsity()
+void SimulationAcFemFreqD3<O>::Impl::_analyze_sparsity()
 {
     constexpr std::array<
     std::array<size_t,2>, COMB_REP_SIZE<NODES_IN_VOL_ELEM<O>,2>
@@ -520,7 +521,7 @@ std::array<Eigen::Vector2d, NODES_IN_SFC_ELEM<O>> project_triangle_to_2d(
 }
 
 template<ElementOrder O>
-void SimulationAcFemFreqD3<O>::_assemble_freq_independent_parts()
+void SimulationAcFemFreqD3<O>::Impl::_assemble_freq_independent_parts()
 {   
     // assemble point velocity nodes
     _pvni_to_forc_fi_part = fz::SafePtr<_FuncRealToCmplx>(_pvni_count());
@@ -1031,7 +1032,7 @@ void solve_using_eigen(
 }
 
 template<ElementOrder O>
-void SimulationAcFemFreqD3<O>::_solve()
+void SimulationAcFemFreqD3<O>::Impl::_solve()
 {
     _result = ResultAcFemFreqD3(_ni_count(), _freq_count());
 
@@ -1153,15 +1154,31 @@ void SimulationAcFemFreqD3<O>::_solve()
 template <ElementOrder O>
 ResultAcFemFreqD3 SimulationAcFemFreqD3<O>::run()
 {
-    _check_if_it_can_run();
+    pimpl->_check_if_it_can_run();
     log::print_opening();
     log::print_opening_ac_fem_freq_d3();
-    _define_freq_vector();
-    _organize_physical_group_data();
-    _analyze_sparsity();
-    _assemble_freq_independent_parts();
-    _solve();
+    pimpl->_define_freq_vector();
+    pimpl->_organize_physical_group_data();
+    pimpl->_analyze_sparsity();
+    pimpl->_assemble_freq_independent_parts();
+    pimpl->_solve();
     return ResultAcFemFreqD3();
 }
+
+// explicit instantiation declarations
+template class Simulation<
+    Phenomenon::ACOUSTIC,
+    NumericalMethod::FEM,
+    Domain::FREQUENCY,
+    Dimension::D3,
+    ElementOrder::O1
+>;
+template class Simulation<
+    Phenomenon::ACOUSTIC,
+    NumericalMethod::FEM,
+    Domain::FREQUENCY,
+    Dimension::D3,
+    ElementOrder::O2
+>;
 
 } // namespace numav
