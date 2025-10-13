@@ -82,6 +82,10 @@ public:
     void _define_freq_vector();
     void _organize_physical_group_data();
     void _analyze_sparsity();
+    void _assemble_fi_part_for_point_velocity();
+    void _assemble_fi_part_for_sfc_velocity();
+    void _assemble_fi_part_for_sfc_impedance();
+    void _assemble_fi_part_for_vol_elements();
     void _assemble_freq_independent_parts();
     void _solve();
 
