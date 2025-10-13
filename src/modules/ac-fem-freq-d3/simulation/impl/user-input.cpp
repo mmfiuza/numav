@@ -58,7 +58,7 @@ void SimulationAcFemFreqD3<O>::Impl::load_mesh(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_volume_material(
-    const _epg_t& evpg,
+    const size_t& evpg,
     const _FuncRealToCmplx& density,
     const _FuncRealToCmplx& soundspeed
 ) {
@@ -70,7 +70,7 @@ void SimulationAcFemFreqD3<O>::Impl::add_volume_material(
         log::error("Tag {} already assigned.", evpg);
     }
     _evpg_to_volprop.insert({evpg, {density, soundspeed}});
-    const _ipg_t ivpg = _evpg_to_ivpg.size();
+    const size_t ivpg = _evpg_to_ivpg.size();
     _evpg_to_ivpg.insert({evpg, ivpg});
 }
 
@@ -85,7 +85,7 @@ void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
     if (type_of_source != TypeOfSource::POINT) {
         log::error("Tried to assign coordinates to a surface sound source.");
     }
-    const _idx_t closest_ni = _get_closest_point(point_coordinates);
+    const size_t closest_ni = _get_closest_point(point_coordinates);
     
     if (physical_quantity_type == PhysicalQuantity::VOLUME_VELOCITY) {
         _point_volvel.push_back(
@@ -107,7 +107,7 @@ void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
     const TypeOfSource& type_of_source,
-    const _epg_t& espg,
+    const size_t& espg,
     const PhysicalQuantity& physical_quantity_type,
     const _FuncRealToCmplx& physical_quantity_value
 ) {
@@ -125,12 +125,12 @@ void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
         log::error("Tag {} already assigned.", espg);
     }
     if (physical_quantity_type == PhysicalQuantity::PARTICLE_VELOCITY) {
-        const _ipg_t ispgv = _espg_to_velocity.size();
+        const size_t ispgv = _espg_to_velocity.size();
         _espg_to_velocity.insert({espg, physical_quantity_value});
         _espg_to_ispg.insert({espg, ispgv});
     }
     else if (physical_quantity_type == PhysicalQuantity::PRESSURE) {
-        const _ipg_t ispgp = _espg_to_pressure.size();
+        const size_t ispgp = _espg_to_pressure.size();
         _espg_to_pressure.insert({espg, physical_quantity_value});
         _espg_to_ispg.insert({espg, ispgp});
     }
@@ -143,7 +143,7 @@ void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_surface_specific_acoustic_impedance(
-    const _epg_t& espg,
+    const size_t& espg,
     const _FuncRealToCmplx& impedance
 ) {
     _check_if_mesh_is_defined();
@@ -156,7 +156,7 @@ void SimulationAcFemFreqD3<O>::Impl::add_surface_specific_acoustic_impedance(
     ) {
         log::error("Tag {} already assigned.", espg);
     }
-    const _ipg_t ispgi = _espg_to_impedance.size();
+    const size_t ispgi = _espg_to_impedance.size();
     _espg_to_impedance.insert({espg, impedance});
     _espg_to_ispg.insert({espg, ispgi});
 }

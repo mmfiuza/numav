@@ -25,7 +25,7 @@ SimulationAcFemFreqD3<O>::Impl::~Impl() {
     _sei_to_espg.free();
     _vei_to_evpg.free();
     _nnz_rowcol_idx_pairs.free();
-    for (_ipg_t ispgv=0; ispgv!=_ispgv_count(); ++ispgv) {
+    for (size_t ispgv=0; ispgv!=_ispgv_count(); ++ispgv) {
         _ispgv_to_forc_fi_part[ispgv].free();
         _ispgv_to_ptr_in_b[ispgv].free();
     }
@@ -33,7 +33,7 @@ SimulationAcFemFreqD3<O>::Impl::~Impl() {
     _pvni_to_ptr_in_b.free();
     _ispgv_to_forc_fi_part.free();
     _ispgv_to_ptr_in_b.free();
-    for (_ipg_t ivpg=0; ivpg!=_ivpg_count(); ++ivpg) {
+    for (size_t ivpg=0; ivpg!=_ivpg_count(); ++ivpg) {
         _ivpg_to_stif_fi_part[ivpg].free();
         _ivpg_to_mass_fi_part[ivpg].free();
         _ivpg_to_ptr_in_a[ivpg].free();
@@ -41,7 +41,7 @@ SimulationAcFemFreqD3<O>::Impl::~Impl() {
     _ivpg_to_stif_fi_part.free();
     _ivpg_to_mass_fi_part.free();
     _ivpg_to_ptr_in_a.free();
-    for (_ipg_t ispgi=0; ispgi!=_ispgi_count(); ++ispgi) {
+    for (size_t ispgi=0; ispgi!=_ispgi_count(); ++ispgi) {
         _ispgi_to_damp_fi_part[ispgi].free();
         _ispgi_to_ptr_in_a[ispgi].free();
     }

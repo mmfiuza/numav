@@ -22,7 +22,7 @@ void SimulationAcFemFreqD3<O>::load_mesh(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::add_volume_material(
-    const _epg_t& evpg,
+    const size_t& evpg,
     const _FuncRealToCmplx& density,
     const _FuncRealToCmplx& soundspeed
 ) {
@@ -45,7 +45,7 @@ void SimulationAcFemFreqD3<O>::add_sound_source(
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::add_sound_source(
     const TypeOfSource& type_of_source,
-    const _epg_t& espg,
+    const size_t& espg,
     const PhysicalQuantity& physical_quantity_type,
     const _FuncRealToCmplx& physical_quantity_value
 ) {
@@ -57,7 +57,7 @@ void SimulationAcFemFreqD3<O>::add_sound_source(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::add_surface_specific_acoustic_impedance(
-    const _epg_t& espg,
+    const size_t& espg,
     const _FuncRealToCmplx& impedance
 ) {
     pimpl->add_surface_specific_acoustic_impedance(espg, impedance);

@@ -15,12 +15,12 @@
 namespace numav {
 
 template <ElementOrder O>
-_idx_t SimulationAcFemFreqD3<O>::Impl::_get_closest_point(
+size_t SimulationAcFemFreqD3<O>::Impl::_get_closest_point(
     const std::array<double,3>& point_coords
 ) {
     double minimum_distance_squared = std::numeric_limits<double>::max();
-    _idx_t ni_closest = std::numeric_limits<size_t>::max();
-    for (_idx_t ni=0; ni!=_ni_count(); ++ni) {
+    size_t ni_closest = std::numeric_limits<size_t>::max();
+    for (size_t ni=0; ni!=_ni_count(); ++ni) {
         double distance_squared = 
             std::pow(_node_coords[ni][0] - point_coords[0], 2) +
             std::pow(_node_coords[ni][1] - point_coords[1], 2) +
@@ -82,7 +82,7 @@ void SimulationAcFemFreqD3<O>::Impl::_load_bdf(const char* const path_to_mesh)
             ++it_node_coords;
         }
         else if (line.starts_with("CTRIA3")) {
-            const _epg_t espg = parse<size_t>(line.substr(16,8));
+            const size_t espg = parse<size_t>(line.substr(16,8));
             _existing_espg.insert(espg);
             *it_elem_idx_to_espg = espg;
             ++it_elem_idx_to_espg;
@@ -94,7 +94,7 @@ void SimulationAcFemFreqD3<O>::Impl::_load_bdf(const char* const path_to_mesh)
             ++it_sfc_elem_node_idx;
         }
         else if (line.starts_with("CTETRA")) {
-            const _epg_t evpg = parse<size_t>(line.substr(16,8));
+            const size_t evpg = parse<size_t>(line.substr(16,8));
             _existing_evpg.insert(evpg);
             *it_elem_idx_to_evpg = evpg;
             ++it_elem_idx_to_evpg;
