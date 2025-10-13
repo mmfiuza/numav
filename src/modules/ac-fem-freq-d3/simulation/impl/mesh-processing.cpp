@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
 #include "numav/numav.hpp"
-#include "modules/ac-fem-freq-d3/simulation/implementation.hpp"
+#include "modules/ac-fem-freq-d3/simulation/impl/impl.hpp"
 
 #include <tuple>
 #include <fstream>
@@ -13,13 +13,6 @@
 #include "common/utils.hpp"
 
 namespace numav {
-
-template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::Impl::_check_if_mesh_is_defined() {
-    if (!_is_mesh_defined){
-        log::error("Mesh not defined. Call load_mesh to do so.");
-    }
-}
 
 template <ElementOrder O>
 _idx_t SimulationAcFemFreqD3<O>::Impl::_get_closest_point(

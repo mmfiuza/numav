@@ -1,6 +1,7 @@
 // Copyright (c) 2025 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
 #include "numav/numav.hpp"
+#include "modules/ac-fem-freq-d3/simulation/impl/macros.hpp"
 
 #include <unordered_map>
 #include <unordered_set>

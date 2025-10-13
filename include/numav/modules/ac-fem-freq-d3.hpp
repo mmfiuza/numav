@@ -94,22 +94,6 @@ private:
     std::unique_ptr<Impl> pimpl;
 };
 
-// explicit instantiation declarations
-extern template class Simulation<
-    Phenomenon::ACOUSTIC,
-    NumericalMethod::FEM,
-    Domain::FREQUENCY,
-    Dimension::D3,
-    ElementOrder::O1
->;
-extern template class Simulation<
-    Phenomenon::ACOUSTIC,
-    NumericalMethod::FEM,
-    Domain::FREQUENCY,
-    Dimension::D3,
-    ElementOrder::O2
->;
-
 // alias for types
 template<ElementOrder O>
 using SimulationAcFemFreqD3 = typename numav::Simulation<

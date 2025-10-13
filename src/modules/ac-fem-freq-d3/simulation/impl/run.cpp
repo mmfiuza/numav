@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
 #include "numav/numav.hpp"
-#include "modules/ac-fem-freq-d3/simulation/implementation.hpp"
+#include "modules/ac-fem-freq-d3/simulation/impl/impl.hpp"
 
 #include <tuple>
 #include <cmath>
@@ -1152,16 +1152,16 @@ void SimulationAcFemFreqD3<O>::Impl::_solve()
 }
 
 template <ElementOrder O>
-ResultAcFemFreqD3 SimulationAcFemFreqD3<O>::run()
+ResultAcFemFreqD3 SimulationAcFemFreqD3<O>::Impl::run()
 {
-    pimpl->_check_if_it_can_run();
+    _check_if_it_can_run();
     log::print_opening();
     log::print_opening_ac_fem_freq_d3();
-    pimpl->_define_freq_vector();
-    pimpl->_organize_physical_group_data();
-    pimpl->_analyze_sparsity();
-    pimpl->_assemble_freq_independent_parts();
-    pimpl->_solve();
+    _define_freq_vector();
+    _organize_physical_group_data();
+    _analyze_sparsity();
+    _assemble_freq_independent_parts();
+    _solve();
     return ResultAcFemFreqD3();
 }
 
