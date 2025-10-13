@@ -5,8 +5,6 @@
 
 #include <tuple>
 #include <cmath>
-#include <charconv>
-#include <cassert>
 #include <numbers>
 #include <algorithm>
 #include <limits>
@@ -432,6 +430,27 @@ void define_onemkl_sparsity_pattern(
     b_dense.fill(0);
 }
 #endif
+
+template<typename T>
+bool compare_pair(const std::pair<T,T>& a, const std::pair<T,T>& b) {
+    #if NUMAV_GLOBAL_MATRIX_STORAGE_ORDER == NUMAV_UPPER_COL_MAJOR
+        if (a.second != b.second) {
+            return a.second < b.second;
+        }
+        else {
+            return a.first < b.first;
+        }
+    #elif NUMAV_GLOBAL_MATRIX_STORAGE_ORDER == NUMAV_UPPER_ROW_MAJOR
+        if (a.first != b.first) {
+            return a.first < b.first;
+        }
+        else {
+            return a.second < b.second;
+        }
+    #else
+        static_assert(false, "Invalid GLOBAL_MATRIX_STORAGE_ORDER.");
+    #endif
+}
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::_analyze_sparsity()

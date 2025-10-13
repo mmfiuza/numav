@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include "numav/debug-macros.hpp"
+#include "numav/aliases.hpp"
+
 #include <cstddef>
 #include <tuple>
 #include <utility>

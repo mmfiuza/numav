@@ -2,7 +2,9 @@
 
 #pragma once
 
-#include "numav/typedefs.hpp"
+#include "numav/debug-macros.hpp"
+#include "numav/aliases.hpp"
+
 #include "SafePtr.hpp"
 
 #include <tuple>

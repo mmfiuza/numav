@@ -2,18 +2,12 @@
 
 #pragma once
 
-// debug macros
-#define SAFE_PTR_DEBUG
-#undef NDEBUG
-
-#include <cstddef>
 #include <complex>
 #include <functional>
 
 namespace numav {
 
     using _cmplx_t = typename std::complex<double>;
-
     using _FuncRealToCmplx = typename std::function<_cmplx_t(const double&)>;
 
 } // namespace numav
