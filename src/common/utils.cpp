@@ -7,4 +7,3 @@ void trim_right_whitespace(std::string_view& sv) {
     const size_t end = sv.find_last_not_of(WHITE_SPACE);
     sv = (end == std::string_view::npos) ? "" : sv.substr(0, end+1);
 }
-

@@ -1,7 +1,6 @@
 // Copyright (c) 2025 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
-#include "numav/numav.hpp"
-#include "modules/ac-fem-freq-d3/simulation/impl/impl.hpp"
+#include "modules/ac-fem-freq-d3/impl.hpp"
 
 #include <tuple>
 #include <cmath>

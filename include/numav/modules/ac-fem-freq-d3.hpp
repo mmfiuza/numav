@@ -2,31 +2,11 @@
 
 #pragma once
 
+#include <functional>
+#include <complex>
 #include <memory>
 
-#include "Eigen/Eigen"
-
 namespace numav {
-
-template<ElementOrder O> constexpr size_t NODES_IN_SFC_ELEM = [] {
-    if constexpr (O == ElementOrder::O1) { return 3; }
-    if constexpr (O == ElementOrder::O2) { return 6; }
-    return 0;
-}();
-
-template<ElementOrder O> constexpr size_t EXTRA_NODES_IN_SFC_ELEM = [] {
-    return NODES_IN_SFC_ELEM<O> - NODES_IN_SFC_ELEM<ElementOrder::O1>;
-}();
-
-template<ElementOrder O> constexpr size_t NODES_IN_VOL_ELEM = [] {
-    if constexpr (O == ElementOrder::O1) { return 4;  }
-    if constexpr (O == ElementOrder::O2) { return 10; }
-    return 0;
-}();
-
-template<ElementOrder O> constexpr size_t EXTRA_NODES_IN_VOL_ELEM = [] {
-    return NODES_IN_VOL_ELEM<O> - NODES_IN_VOL_ELEM<ElementOrder::O1>;
-}();
 
 template<ElementOrder O>
 class Simulation<
@@ -75,7 +55,7 @@ private:
     std::unique_ptr<Impl> pimpl;
 };
 
-// alias for types
+// alias for simulation type
 template<ElementOrder O>
 using SimulationAcFemFreqD3 = typename numav::Simulation<
     Phenomenon::ACOUSTIC,
@@ -83,12 +63,6 @@ using SimulationAcFemFreqD3 = typename numav::Simulation<
     Domain::FREQUENCY,
     Dimension::D3,
     O
->;
-using ResultAcFemFreqD3 = typename numav::Result<
-    Phenomenon::ACOUSTIC,
-    NumericalMethod::FEM,
-    Domain::FREQUENCY,
-    Dimension::D3
 >;
 
 } // namespace numav

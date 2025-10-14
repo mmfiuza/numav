@@ -2,17 +2,14 @@
 
 #pragma once
 
-#include "numav/debug-macros.hpp"
-#include "numav/aliases.hpp"
-
 namespace numav {
 
     enum class Phenomenon {
-        ACOUSTIC,
+        ACOUSTIC
     };
 
     enum class NumericalMethod {
-        FEM,
+        FEM
     };
 
     enum class Domain {
@@ -23,7 +20,7 @@ namespace numav {
     enum class Dimension {
         D1,
         D2,
-        D3,
+        D3
     };
 
     enum class ElementOrder {
@@ -33,31 +30,14 @@ namespace numav {
 
     enum class TypeOfSource {
         POINT,
-        SURFACE,
+        SURFACE
     };
 
     enum class PhysicalQuantity {
         PRESSURE,
         VOLUME_VELOCITY,
-        PARTICLE_VELOCITY,
+        PARTICLE_VELOCITY
     };
-    
-    template<Dimension D> constexpr size_t DIM_COUNT = [] {
-        if constexpr (D == Dimension::D1) { return 1; }
-        if constexpr (D == Dimension::D2) { return 2; }
-        if constexpr (D == Dimension::D3) { return 3; }
-        return 0;
-    }();
-
-    // declare the general Result class
-    template<
-        Phenomenon PHENOMENON,
-        NumericalMethod NUMERICAL_METHOD,
-        Domain DOMAIN,
-        Dimension DIMENSION,
-        auto... EXTRA
-    >
-    class Result {};
 
     // declare the general Simulation class
     template<

@@ -2,8 +2,8 @@
 
 #include "numav/numav.hpp"
 
-int main() {
-
+int main()
+{
     using namespace numav;
 
     // create the simulation object with some numerical method

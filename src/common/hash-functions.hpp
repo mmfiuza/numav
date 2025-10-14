@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include "numav/debug-macros.hpp"
-#include "numav/aliases.hpp"
+#include "common/debug-macros.hpp"
+#include "common/aliases.hpp"
 
 #include <cstddef>
 #include <tuple>

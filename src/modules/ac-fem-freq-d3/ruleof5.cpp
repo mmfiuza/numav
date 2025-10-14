@@ -1,11 +1,18 @@
 // Copyright (c) 2025 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
-#include "numav/numav.hpp"
-#include "modules/ac-fem-freq-d3/simulation/impl/impl.hpp"
+#include "modules/ac-fem-freq-d3/impl.hpp"
 
 #include "common/log.hpp"
 
 namespace numav {
+
+template <ElementOrder O>
+SimulationAcFemFreqD3<O>::Simulation() {
+    pimpl = std::make_unique<Impl>();
+}
+
+template <ElementOrder O>
+SimulationAcFemFreqD3<O>::~Simulation() = default;
 
 template<ElementOrder O>
 SimulationAcFemFreqD3<O>::Impl::Impl() {

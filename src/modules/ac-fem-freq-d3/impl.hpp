@@ -1,7 +1,8 @@
 // Copyright (c) 2025 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
 #include "numav/numav.hpp"
-#include "modules/ac-fem-freq-d3/simulation/impl/macros.hpp"
+#include "common/aliases.hpp"
+#include "modules/ac-fem-freq-d3/macros.hpp"
 
 #include <unordered_map>
 #include <unordered_set>
@@ -14,6 +15,33 @@
 #include "SafePtr.hpp"
 
 namespace numav {
+
+template<Dimension D> constexpr size_t DIM_COUNT = [] {
+    if constexpr (D == Dimension::D1) { return 1; }
+    if constexpr (D == Dimension::D2) { return 2; }
+    if constexpr (D == Dimension::D3) { return 3; }
+    return 0;
+}();
+
+template<ElementOrder O> constexpr size_t NODES_IN_SFC_ELEM = [] {
+    if constexpr (O == ElementOrder::O1) { return 3; }
+    if constexpr (O == ElementOrder::O2) { return 6; }
+    return 0;
+}();
+
+template<ElementOrder O> constexpr size_t EXTRA_NODES_IN_SFC_ELEM = [] {
+    return NODES_IN_SFC_ELEM<O> - NODES_IN_SFC_ELEM<ElementOrder::O1>;
+}();
+
+template<ElementOrder O> constexpr size_t NODES_IN_VOL_ELEM = [] {
+    if constexpr (O == ElementOrder::O1) { return 4;  }
+    if constexpr (O == ElementOrder::O2) { return 10; }
+    return 0;
+}();
+
+template<ElementOrder O> constexpr size_t EXTRA_NODES_IN_VOL_ELEM = [] {
+    return NODES_IN_VOL_ELEM<O> - NODES_IN_VOL_ELEM<ElementOrder::O1>;
+}();
 
 template<ElementOrder O>
 class SimulationAcFemFreqD3<O>::Impl
