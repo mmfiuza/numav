@@ -1085,6 +1085,7 @@ void SimulationAcFemFreqD3<O>::Impl::_solve()
     for (size_t fi=0; fi!=_freq_count(); ++fi)
     {
         _a_vals.fill(_cmplx_t(0.0, 0.0));
+        _b_vals.fill(_cmplx_t(0.0, 0.0));
         const double freq = _freq_steps[fi];
         const double omega = 2*std::numbers::pi*freq;
         const double omega_squared = std::pow(omega,2);
