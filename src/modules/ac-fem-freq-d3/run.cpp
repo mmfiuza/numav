@@ -426,7 +426,7 @@ void define_onemkl_sparsity_pattern(
 
     // allocate the null dense b vector
     b_dense = fz::SafePtr<_cmplx_t>(ni_count);
-    b_dense.fill(0);
+    b_dense.fill(0.0);
 }
 #endif
 
@@ -577,13 +577,13 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_velocity()
     }
 
     // allocate memory in the safe pointers
-    _ispgv_to_forc_fi_part = fz::SafePtr<fz::SafePtr<_cmplx_t>>(_ispgv_count());
+    _ispgv_to_forc_fi_part = fz::SafePtr<fz::SafePtr<double>>(_ispgv_count());
     _ispgv_to_ptr_in_b = fz::SafePtr<fz::SafePtr<_cmplx_t*>>(_ispgv_count());
     for (size_t ispgv=0; ispgv!=_ispgv_count(); ++ispgv)
     {
         const size_t size = ispgv_to_map_to_fipi[ispgv].size();
-        _ispgv_to_forc_fi_part[ispgv] = fz::SafePtr<_cmplx_t>(size);
-        _ispgv_to_forc_fi_part[ispgv].fill(_cmplx_t(0.0, 0.0));
+        _ispgv_to_forc_fi_part[ispgv] = fz::SafePtr<double>(size);
+        _ispgv_to_forc_fi_part[ispgv].fill(0.0);
         _ispgv_to_ptr_in_b[ispgv] = fz::SafePtr<_cmplx_t*>(size);
     }
 
@@ -685,13 +685,13 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_impedance()
     }
 
     // allocate memory in the safe pointers
-    _ispgi_to_damp_fi_part = fz::SafePtr<fz::SafePtr<_cmplx_t>>(_ispgi_count());
+    _ispgi_to_damp_fi_part = fz::SafePtr<fz::SafePtr<double>>(_ispgi_count());
     _ispgi_to_ptr_in_a = fz::SafePtr<fz::SafePtr<_cmplx_t*>>(_ispgi_count());
     for (size_t ispgi=0; ispgi!=_ispgi_count(); ++ispgi)
     {
         const size_t size = ispgi_to_map_to_fipi[ispgi].size();
-        _ispgi_to_damp_fi_part[ispgi] = fz::SafePtr<_cmplx_t>(size);
-        _ispgi_to_damp_fi_part[ispgi].fill(_cmplx_t(0.0, 0.0));
+        _ispgi_to_damp_fi_part[ispgi] = fz::SafePtr<double>(size);
+        _ispgi_to_damp_fi_part[ispgi].fill(0.0);
         _ispgi_to_ptr_in_a[ispgi] = fz::SafePtr<_cmplx_t*>(size);
     }
 

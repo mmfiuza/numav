@@ -164,12 +164,11 @@ private:
     fz::SafePtr<fz::SafePtr<double>> _ispg_to_damp_fi_part;
     fz::SafePtr<fz::SafePtr<std::complex<double>*>> _ispg_to_ptr_in_a;
 
-    // todo: evaluate if these are all necessary to be complex
     fz::SafePtr<_FuncRealToCmplx> _pvni_to_forc_fi_part;
     fz::SafePtr<std::complex<double>*> _pvni_to_ptr_in_b;
-    fz::SafePtr<fz::SafePtr<std::complex<double>>> _ispgv_to_forc_fi_part;
+    fz::SafePtr<fz::SafePtr<double>> _ispgv_to_forc_fi_part;
     fz::SafePtr<fz::SafePtr<std::complex<double>*>> _ispgv_to_ptr_in_b;
-    fz::SafePtr<fz::SafePtr<std::complex<double>>> _ispgi_to_damp_fi_part;
+    fz::SafePtr<fz::SafePtr<double>> _ispgi_to_damp_fi_part;
     fz::SafePtr<fz::SafePtr<std::complex<double>*>> _ispgi_to_ptr_in_a;
     fz::SafePtr<fz::SafePtr<double>> _ivpg_to_stif_fi_part;
     fz::SafePtr<fz::SafePtr<double>> _ivpg_to_mass_fi_part;
