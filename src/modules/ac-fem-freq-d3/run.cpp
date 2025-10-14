@@ -1186,6 +1186,7 @@ void SimulationAcFemFreqD3<O>::Impl::_solve()
     #if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
         _b_dense.free();
     #endif
+    _did_run = true;
 
     // print finish
     auto end_time = std::chrono::system_clock::now();
@@ -1210,6 +1211,10 @@ template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::export_result(
     const char* const path_to_result
 ) {
+    if (!_did_run) {
+        log::error("The Simulation needs to run before the result is exported."
+            " Call the run method first.");
+    }
     write_matrix(_cmplx_pressure_amp, path_to_result);
 }
 

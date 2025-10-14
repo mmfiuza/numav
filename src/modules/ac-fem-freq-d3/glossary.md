@@ -1,4 +1,3 @@
-
 # Glossary
 
 - entity: Some geometrical body (points, lines, surfaces, volumes, etc).
