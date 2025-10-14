@@ -50,12 +50,8 @@ public:
         const size_t&,
         const std::function<std::complex<double>(const double&)>&
     );
-    Result<
-        Phenomenon::ACOUSTIC,
-        NumericalMethod::FEM,
-        Domain::FREQUENCY,
-        Dimension::D3
-    > run();
+    void run();
+    void export_result(const char* const);
 
     // volume element properties
     struct _VolProp {
@@ -93,6 +89,7 @@ private:
     bool _is_mesh_defined;
     bool _is_any_source_defined;
     bool _is_freq_range_defined;
+    bool _did_run;
     
     double _freq_min;
     double _freq_max;
@@ -155,12 +152,7 @@ private:
         fz::SafePtr<std::complex<double>> _b_dense;
     #endif
 
-    Result<
-        Phenomenon::ACOUSTIC,
-        NumericalMethod::FEM,
-        Domain::FREQUENCY,
-        Dimension::D3
-    > _result;
+    Eigen::Matrix<_cmplx_t,Eigen::Dynamic,Eigen::Dynamic> _cmplx_pressure_amp;
 };
 
 } // namespace numav

@@ -14,6 +14,7 @@ SimulationAcFemFreqD3<O>::Impl::Impl() {
     _is_mesh_defined = false;
     _is_freq_range_defined = false;
     _is_any_source_defined = false;
+    _did_run = false;
 }
 
 template<ElementOrder O>

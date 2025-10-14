@@ -12,7 +12,7 @@ int main() {
         NumericalMethod::FEM,
         Domain::FREQUENCY,
         Dimension::D3,
-        ElementOrder::O1
+        ElementOrder::O2
     >();
 
     // load the mesh
@@ -37,13 +37,14 @@ int main() {
     // add volume velocity sources
     auto q =[](auto f) { return 1/f; };
     s.add_sound_source(
-        TypeOfSource::POINT, {1.0, 1.5, 2.0},
+        TypeOfSource::POINT, {3.0, 2.0, 1.0},
         PhysicalQuantity::VOLUME_VELOCITY, q
     );
-    // s.add_sound_source(
-    //     TypeOfSource::SURFACE, 2,
-    //     PhysicalQuantity::VOLUME_VELOCITY, q
-    // );
+    auto u =[](auto f) { return 1/f; };
+    s.add_sound_source(
+        TypeOfSource::SURFACE, 2,
+        PhysicalQuantity::PARTICLE_VELOCITY, u
+    );
 
     // // add pressure sources
     // auto p =[](auto f) { return 1/f; };
@@ -61,5 +62,8 @@ int main() {
     s.add_surface_specific_acoustic_impedance(5, Z);
 
     // run the simulation
-    auto result = s.run();
+    s.run();
+
+    // export the result to binary
+    s.export_result("pressure.bin");
 }

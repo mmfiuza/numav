@@ -10,11 +10,11 @@ function read_matrix_binary(filename)
     end
 end
 
-pressure_1 = read_matrix_binary("pressure_detj_fix_o2.bin")
-pressure_2 = read_matrix_binary("pressure_area2_o2.bin")
+pressure_1 = read_matrix_binary("pressure.bin")
+# pressure_2 = read_matrix_binary("pressure_area2_o2.bin")
 
 spl_1 = 20*log10.(abs.(pressure_1)/sqrt(2)/20e-6);
-spl_2 = 20*log10.(abs.(pressure_2)/sqrt(2)/20e-6);
+# spl_2 = 20*log10.(abs.(pressure_2)/sqrt(2)/20e-6);
 freq = LinRange(20, 100, 1000)
 
 using Plots
@@ -44,8 +44,8 @@ Plots.plot!(
     vec(freq), vec(spl_1[2,:]),
     label = "1"
 )
-Plots.plot!(
-    vec(freq), vec(spl_2[2,:]),
-    label = "2",
-    linestyle = :dash
-)
+# Plots.plot!(
+#     vec(freq), vec(spl_2[2,:]),
+#     label = "2",
+#     linestyle = :dash
+# )

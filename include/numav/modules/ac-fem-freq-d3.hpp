@@ -28,21 +28,6 @@ template<ElementOrder O> constexpr size_t EXTRA_NODES_IN_VOL_ELEM = [] {
     return NODES_IN_VOL_ELEM<O> - NODES_IN_VOL_ELEM<ElementOrder::O1>;
 }();
 
-template<> class Result<
-    Phenomenon::ACOUSTIC,
-    NumericalMethod::FEM,
-    Domain::FREQUENCY,
-    Dimension::D3
-> {
-public:
-    Result();
-    Result(const size_t&, const size_t&); // todo: make private
-    ~Result();
-    // todo: rule of 5
-    Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic> _data;
-private:
-};
-
 template<ElementOrder O>
 class Simulation<
     Phenomenon::ACOUSTIC,
@@ -82,12 +67,8 @@ public:
         const size_t&,
         const std::function<std::complex<double>(const double&)>&
     );
-    Result<
-        Phenomenon::ACOUSTIC,
-        NumericalMethod::FEM,
-        Domain::FREQUENCY,
-        Dimension::D3
-    > run();
+    void run();
+    void export_result(const char* const);
 
 private:
     class Impl;

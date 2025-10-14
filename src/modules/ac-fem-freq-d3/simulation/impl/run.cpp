@@ -633,7 +633,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_velocity()
         for (size_t gpi=0; gpi!=NGP_FORC<O>; ++gpi)
         {
             #if NUMAV_TRIANGLE_INTEGRATION_METHOD == NUMAV_JACOBIAN_DETERMINANT
-                Eigen::Matrix<double,2,NODES_IN_SFC_ELEM<O>> nabla_n =
+                const Eigen::Matrix<double,2,NODES_IN_SFC_ELEM<O>> nabla_n =
                     shape_func_sfc_gradient<O>(
                         GAUSS_POINTS_FORC[gpi][0], GAUSS_POINTS_FORC[gpi][1]
                     ); // todo: try putting constexpr here
@@ -765,7 +765,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_impedance()
         for (size_t gpi=0; gpi!=NGP_DAMP<O>; ++gpi)
         {
             #if NUMAV_TRIANGLE_INTEGRATION_METHOD == NUMAV_JACOBIAN_DETERMINANT
-                Eigen::Matrix<double,2,NODES_IN_SFC_ELEM<O>> nabla_n =
+                const Eigen::Matrix<double,2,NODES_IN_SFC_ELEM<O>> nabla_n =
                     shape_func_sfc_gradient<O>(
                         GAUSS_POINTS_DAMP[gpi][0], GAUSS_POINTS_DAMP[gpi][1]
                     ); // todo: try putting constexpr here
@@ -877,7 +877,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
             GAUSS_POINTS_STIF = GAUSS_POINTS_VOL<NGP_STIF<O>>;
         for (size_t gpi=0; gpi!=NGP_STIF<O>; ++gpi)
         {
-            Eigen::Matrix<double,DIM,NODES_IN_VOL_ELEM<O>> nabla_n =
+            const Eigen::Matrix<double,DIM,NODES_IN_VOL_ELEM<O>> nabla_n =
                 shape_func_vol_gradient<O>(
                     GAUSS_POINTS_STIF[gpi][0],
                     GAUSS_POINTS_STIF[gpi][1],
@@ -916,7 +916,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
             GAUSS_POINTS_MASS = GAUSS_POINTS_VOL<NGP_MASS<O>>;
         for (size_t gpi=0; gpi!=NGP_MASS<O>; ++gpi)
         {
-            Eigen::Matrix<double,DIM,NODES_IN_VOL_ELEM<O>> nabla_n =
+            const Eigen::Matrix<double,DIM,NODES_IN_VOL_ELEM<O>> nabla_n =
                 shape_func_vol_gradient<O>(
                     GAUSS_POINTS_MASS[gpi][0],
                     GAUSS_POINTS_MASS[gpi][1],
@@ -1073,7 +1073,11 @@ void solve_using_eigen(
 template<ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::_solve()
 {
-    _result = ResultAcFemFreqD3(_ni_count(), _freq_count());
+    // allocate the result matrix
+    _cmplx_pressure_amp = 
+        Eigen::Matrix<_cmplx_t, Eigen::Dynamic, Eigen::Dynamic>(
+            _ni_count(), _freq_count()
+        );
 
     // start timer
     auto start_time = std::chrono::system_clock::now();
@@ -1143,12 +1147,12 @@ void SimulationAcFemFreqD3<O>::Impl::_solve()
         #if NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
             solve_using_eigen(
                 _a_vals, _nnz_rowcol_idx_pairs, _b_vals, _b_row_idx,
-                _ni_count(), _result._data.data() + fi*_ni_count()
+                _cmplx_pressure_amp._data.data() + fi*_ni_count()
             );
         #elif NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
             solve_using_onemkl(
                 _dss_handle, _a_vals, _b_vals, _b_row_idx, _b_dense,
-                _result._data.data() + fi*_ni_count()
+                _cmplx_pressure_amp.data() + fi*_ni_count()
             );
         #else
             static_assert(false, "Invalid NUMAV_SYSTEM_SOLVER.");
@@ -1183,7 +1187,6 @@ void SimulationAcFemFreqD3<O>::Impl::_solve()
     #if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
         _b_dense.free();
     #endif
-    write_matrix(_result._data, "pressure.bin");
 
     // print finish
     auto end_time = std::chrono::system_clock::now();
@@ -1192,7 +1195,7 @@ void SimulationAcFemFreqD3<O>::Impl::_solve()
 }
 
 template <ElementOrder O>
-ResultAcFemFreqD3 SimulationAcFemFreqD3<O>::Impl::run()
+void SimulationAcFemFreqD3<O>::Impl::run()
 {
     _check_if_it_can_run();
     log::print_opening();
@@ -1202,7 +1205,13 @@ ResultAcFemFreqD3 SimulationAcFemFreqD3<O>::Impl::run()
     _analyze_sparsity();
     _assemble_freq_independent_parts();
     _solve();
-    return ResultAcFemFreqD3();
+}
+
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::Impl::export_result(
+    const char* const path_to_result
+) {
+    write_matrix(_cmplx_pressure_amp, path_to_result);
 }
 
 // explicit instantiation declarations
