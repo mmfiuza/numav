@@ -9,6 +9,7 @@
 #include <limits>
 #include <chrono>
 #include <iomanip>
+#include <set>
 
 #include "common/log.hpp"
 #include "common/hash-functions.hpp"
@@ -17,9 +18,11 @@
 
 namespace numav {
 
+// constants
 static constexpr size_t DIM = DIM_COUNT<Dimension::D3>;
 static constexpr double AREA_REF_TRIG = 1.0 / 2.0;
 static constexpr double VOLUME_REF_TET = 1.0 / 6.0;
+static constexpr double PENALTY_METHOD_CONSTANT = 1e12;
 
 template<ElementOrder O> constexpr size_t NGP_FORC = [] {
     if constexpr (O == ElementOrder::O1) { return 1; }
@@ -321,15 +324,14 @@ void SimulationAcFemFreqD3<O>::Impl::_organize_physical_group_data()
         }
     }
     _isei_to_sei = fz::SafePtr<size_t>(isei_count);
-    isei_count = 0;
+    size_t isei = 0;
     for (size_t sei=0; sei!=_sei_count(); ++sei) {
         if (_espg_to_impedance.contains(_sei_to_espg[sei])) {
-            const size_t new_isei = isei_count;
-            _isei_to_sei[new_isei] = sei;
-            ++isei_count;
+            _isei_to_sei[isei] = sei;
+            ++isei;
         }
     }
-    _isei_to_ispgi = fz::SafePtr<size_t>(isei_count);
+    _isei_to_ispgi = fz::SafePtr<size_t>(_isei_count());
     for (size_t isei=0; isei!=_isei_count(); ++isei) {
         size_t sei = _isei_to_sei[isei];
         _isei_to_ispgi[isei] = _espg_to_ispg.at(_sei_to_espg[sei]);
@@ -343,15 +345,14 @@ void SimulationAcFemFreqD3<O>::Impl::_organize_physical_group_data()
         }
     }
     _vsei_to_sei = fz::SafePtr<size_t>(vsei_count);
-    vsei_count = 0;
+    size_t vsei = 0;
     for (size_t sei=0; sei!=_sei_count(); ++sei) {
         if (_espg_to_velocity.contains(_sei_to_espg[sei])) {
-            const size_t new_vsei = vsei_count;
-            _vsei_to_sei[new_vsei] = sei;
-            ++vsei_count;
+            _vsei_to_sei[vsei] = sei;
+            ++vsei;
         }
     }
-    _vsei_to_ispgv = fz::SafePtr<size_t>(vsei_count);
+    _vsei_to_ispgv = fz::SafePtr<size_t>(_vsei_count());
     for (size_t vsei=0; vsei!=_vsei_count(); ++vsei) {
         size_t sei = _vsei_to_sei[vsei];
         _vsei_to_ispgv[vsei] = _espg_to_ispg.at(_sei_to_espg[sei]);
@@ -361,6 +362,27 @@ void SimulationAcFemFreqD3<O>::Impl::_organize_physical_group_data()
     _vei_to_ivpg = fz::SafePtr<size_t>(_vei_count());
     for (size_t vei=0; vei!=_vei_count(); ++vei) {
         _vei_to_ivpg[vei] = _evpg_to_ivpg.at(_vei_to_evpg[vei]);
+    }
+
+    // generate the contiguous vector with the ispgp of each pressure element
+    size_t psei_count = 0;
+    for (size_t sei=0; sei!=_sei_count(); ++sei) {
+        if (_espg_to_pressure.contains(_sei_to_espg[sei])) {
+            ++psei_count;
+        }
+    }
+    _psei_to_sei = fz::SafePtr<size_t>(psei_count);
+    size_t psei = 0;
+    for (size_t sei=0; sei!=_sei_count(); ++sei) {
+        if (_espg_to_pressure.contains(_sei_to_espg[sei])) {
+            _psei_to_sei[psei] = sei;
+            ++psei;
+        }
+    }
+    _psei_to_ispgp = fz::SafePtr<size_t>(_psei_count());
+    for (size_t psei=0; psei!=_psei_count(); ++psei) {
+        size_t sei = _psei_to_sei[psei];
+        _psei_to_ispgp[psei] = _espg_to_ispg.at(_sei_to_espg[sei]);
     }
 }
 
@@ -484,21 +506,31 @@ void SimulationAcFemFreqD3<O>::Impl::_analyze_sparsity()
     );
 
     // create sorted _b_row_idx
-    std::unordered_set<size_t> existing_velocity_nodes;
+    std::unordered_set<size_t> existing_source_nodes;
     for (size_t vsei=0; vsei!=_vsei_count(); ++vsei) {
         const size_t sei = _vsei_to_sei[vsei];
-        for (size_t i=0; i!=NODES_IN_SFC_ELEM<O>; ++i) {
-            const size_t ni = _sei_to_ni[sei][i];
-            existing_velocity_nodes.insert(ni);
+        for (size_t eni=0; eni!=NODES_IN_SFC_ELEM<O>; ++eni) {
+            const size_t ni = _sei_to_ni[sei][eni];
+            existing_source_nodes.insert(ni);
         }
     }
     for (size_t pvni=0; pvni!=_pvni_count(); ++pvni) {
-        existing_velocity_nodes.insert(std::get<size_t>(_point_volvel[pvni]));
+        existing_source_nodes.insert(std::get<size_t>(_point_volvel[pvni]));
     }
-    _b_row_idx = fz::SafePtr<size_t>(existing_velocity_nodes.size());
+    for (size_t psei=0; psei!=_psei_count(); ++psei) {
+        const size_t sei = _psei_to_sei[psei];
+        for (size_t eni=0; eni!=NODES_IN_SFC_ELEM<O>; ++eni) {
+            const size_t ni = _sei_to_ni[sei][eni];
+            existing_source_nodes.insert(ni);
+        }
+    }
+    for (size_t ppni=0; ppni!=_ppni_count(); ++ppni) {
+        existing_source_nodes.insert(std::get<size_t>(_point_pressure[ppni]));
+    }
+    _b_row_idx = fz::SafePtr<size_t>(existing_source_nodes.size());
     std::copy(
-        existing_velocity_nodes.begin(),
-        existing_velocity_nodes.end(),
+        existing_source_nodes.begin(),
+        existing_source_nodes.end(),
         _b_row_idx.begin()
     );
     std::sort(_b_row_idx.begin(), _b_row_idx.end());
@@ -954,6 +986,114 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
     ivpg_to_map_to_fipi.free();
 }
 
+template<typename T>
+std::unordered_map<std::vector<size_t>, std::vector<T>> find_set_intersections(
+    const fz::SafePtr<fz::SafePtr<T>>& sets
+) {
+    std::unordered_map<T, std::vector<size_t>> element_to_sets;
+    // map each element to the indices of sets that contain it
+    for (size_t set_index=0; set_index!=sets.size(); ++set_index) {
+        for (const auto& element : sets[set_index]) {
+            element_to_sets[element].push_back(set_index);
+        }
+    }
+    // group elements by which sets contain them
+    std::unordered_map<std::vector<size_t>, std::vector<T>> intersections;
+    for (const auto& [element, set_indices] : element_to_sets) {
+        // Sort the set indices for consistent grouping
+        std::vector<size_t> sorted_indices = set_indices;
+        std::sort(sorted_indices.begin(), sorted_indices.end());
+        intersections[sorted_indices].push_back(element);
+    }
+    return intersections;
+}
+
+template<ElementOrder O>
+void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_point_pressure()
+{
+    fz::SafePtr<fz::SafePtr<size_t>> sets(_ppni_count() + _ispgp_count());
+    for (size_t ppni=0; ppni!=_ppni_count(); ++ppni) {
+        sets[ppni] = fz::SafePtr<size_t>(1);
+        sets[ppni][0] = std::get<size_t>(_point_pressure[ppni]);
+    }
+    for (size_t ispgp=0; ispgp!=_ispgp_count(); ++ispgp) {
+        std::set<size_t> unique_nodes;
+        for (size_t psei=0; psei!=_psei_count(); ++psei) {
+            if (_psei_to_ispgp[psei] == ispgp){
+                const size_t sei = _psei_to_sei[psei];
+                for (size_t eni=0; eni!=NODES_IN_SFC_ELEM<O>; ++eni) {
+                    const size_t ni = _sei_to_ni[sei][eni];
+                    unique_nodes.insert(ni);
+                }
+            }
+        }
+        sets[_ppni_count()+ispgp] = fz::SafePtr<size_t>(unique_nodes.size());
+        size_t i = 0;
+        for (const auto& ni : unique_nodes) {
+            sets[_ppni_count()+ispgp][i] = ni;
+            ++i;
+        }
+    }
+    std::unordered_map<std::vector<size_t>,std::vector<size_t>>
+        intersections = find_set_intersections(sets);
+    const size_t pvi_count = intersections.size();
+    _pvi_to_pressure = fz::SafePtr<_FuncRealToCmplx>(pvi_count);
+    size_t pvi = 0;
+    for (auto& [set_indexes, ni_vector] : intersections) {
+        auto average = [this,set_indexes](const double& freq) {
+            _cmplx_t sum = 0;
+            for (const auto& set_index : set_indexes) {
+                if (set_index < _ppni_count()) {
+                    const size_t& ppni = set_index;
+                    sum += std::get<_FuncRealToCmplx>(
+                        _point_pressure[ppni]
+                    )(freq);
+                }
+                else {
+                    const size_t ispgp = set_index - _ppni_count();
+                    sum += (_ispgp_to_pressure[ispgp])(freq);
+                }
+            }
+            return sum / static_cast<double>(set_indexes.size());
+        };
+        _pvi_to_pressure[pvi] = average;
+        ++pvi;
+    }
+
+    // define _pvi_to_ptr_in_a and _pvi_to_ptr_in_b
+    _pvi_to_ptr_in_a = fz::SafePtr<fz::SafePtr<_cmplx_t*>>(_pvi_count());
+    _pvi_to_ptr_in_b = fz::SafePtr<fz::SafePtr<_cmplx_t*>>(_pvi_count());
+    pvi = 0;
+    for (auto& [set_indexes, ni_vector] : intersections) {
+        _pvi_to_ptr_in_a[pvi] = fz::SafePtr<_cmplx_t*>(ni_vector.size());
+        _pvi_to_ptr_in_b[pvi] = fz::SafePtr<_cmplx_t*>(ni_vector.size());
+        size_t fipi = 0;
+        for (const auto& ni : ni_vector) {
+            // _pvi_to_ptr_in_a
+            const std::pair<size_t,size_t> pair = std::make_pair(ni, ni);
+            const std::pair<size_t,size_t>* const pair_ptr =
+                std::lower_bound(
+                    _nnz_rowcol_idx_pairs.begin(),
+                    _nnz_rowcol_idx_pairs.end(),
+                    pair,
+                    compare_pair<size_t>
+                );
+            const ptrdiff_t ptrdiff_a = 
+                pair_ptr - _nnz_rowcol_idx_pairs.begin();
+            _pvi_to_ptr_in_a[pvi][fipi] = _a_vals.begin() + ptrdiff_a;
+            
+            // _pvi_to_ptr_in_b
+            const size_t* const ni_ptr = std::lower_bound(
+                _b_row_idx.begin(), _b_row_idx.end(), ni
+            );
+            const ptrdiff_t ptrdiff_b = ni_ptr - _b_row_idx.begin();
+            _pvi_to_ptr_in_b[pvi][fipi] = _b_vals.begin() + ptrdiff_b;
+            
+            ++fipi;
+        }
+        ++pvi;
+    }
+}
 
 template<ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::_assemble_freq_independent_parts()
@@ -962,6 +1102,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_freq_independent_parts()
     _assemble_fi_part_for_sfc_velocity();
     _assemble_fi_part_for_sfc_impedance();
     _assemble_fi_part_for_vol_elements();
+    _assemble_fi_part_for_point_pressure();
 }
 
 #if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
@@ -1139,6 +1280,16 @@ void SimulationAcFemFreqD3<O>::Impl::_solve()
                 *_ivpg_to_ptr_in_a[ivpg][fipi] +=
                     _ivpg_to_stif_fi_part[ivpg][fipi] * stif_fd_part +
                     _ivpg_to_mass_fi_part[ivpg][fipi] * mass_fd_part;
+            }
+        }
+
+        // add pressure to a and b
+        for (size_t pvi=0; pvi!=_pvi_count(); ++pvi) {
+            const _cmplx_t pressure = (_pvi_to_pressure[pvi])(freq);
+            for (size_t fipi=0; fipi!=_pvi_to_ptr_in_a[pvi].size(); ++fipi) {
+                *_pvi_to_ptr_in_a[pvi][fipi] += PENALTY_METHOD_CONSTANT;
+                *_pvi_to_ptr_in_b[pvi][fipi] +=
+                    PENALTY_METHOD_CONSTANT * pressure;
             }
         }
 

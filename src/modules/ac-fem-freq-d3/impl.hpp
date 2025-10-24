@@ -59,24 +59,24 @@ public:
     );
     void add_volume_material(
         const size_t&,
-        const std::function<std::complex<double>(const double&)>&,
-        const std::function<std::complex<double>(const double&)>&
+        const std::function<_cmplx_t(const double&)>&,
+        const std::function<_cmplx_t(const double&)>&
     );
     void add_sound_source(
         const TypeOfSource&,
         const std::array<double,3>&,
         const PhysicalQuantity&,
-        const std::function<std::complex<double>(const double&)>&
+        const std::function<_cmplx_t(const double&)>&
     );
     void add_sound_source(
         const TypeOfSource&,
         const size_t&,
         const PhysicalQuantity&,
-        const std::function<std::complex<double>(const double&)>&
+        const std::function<_cmplx_t(const double&)>&
     );
     void add_surface_specific_acoustic_impedance(
         const size_t&,
-        const std::function<std::complex<double>(const double&)>&
+        const std::function<_cmplx_t(const double&)>&
     );
     void run();
     void export_result(const char* const);
@@ -92,10 +92,14 @@ public:
     size_t _vei_count() const;
     size_t _isei_count() const;
     size_t _vsei_count() const;
+    size_t _psei_count() const;
     size_t _pvni_count() const;
+    size_t _ppni_count() const;
     size_t _ispgi_count() const;
     size_t _ispgv_count() const;
+    size_t _ispgp_count() const;
     size_t _ivpg_count() const;
+    size_t _pvi_count() const;
     size_t _freq_count() const;
     
     void _load_bdf(const char* const);
@@ -110,6 +114,7 @@ public:
     void _assemble_fi_part_for_sfc_velocity();
     void _assemble_fi_part_for_sfc_impedance();
     void _assemble_fi_part_for_vol_elements();
+    void _assemble_fi_part_for_point_pressure();
     void _assemble_freq_independent_parts();
     void _solve();
 
@@ -146,9 +151,11 @@ private:
 
     fz::SafePtr<size_t> _isei_to_sei;
     fz::SafePtr<size_t> _vsei_to_sei;
+    fz::SafePtr<size_t> _psei_to_sei;
 
     fz::SafePtr<size_t> _isei_to_ispgi;
     fz::SafePtr<size_t> _vsei_to_ispgv;
+    fz::SafePtr<size_t> _psei_to_ispgp;
     fz::SafePtr<size_t> _vei_to_ivpg;
     
     fz::SafePtr<_FuncRealToCmplx> _ispgv_to_velocity;
@@ -157,26 +164,29 @@ private:
     fz::SafePtr<_VolProp>         _ivpg_to_volprop;
     
     fz::SafePtr<std::pair<size_t,size_t>> _nnz_rowcol_idx_pairs;
-    fz::SafePtr<std::complex<double>> _a_vals;
+    fz::SafePtr<_cmplx_t> _a_vals;
     fz::SafePtr<size_t> _b_row_idx;
-    fz::SafePtr<std::complex<double>> _b_vals;
+    fz::SafePtr<_cmplx_t> _b_vals;
 
     fz::SafePtr<fz::SafePtr<double>> _ispg_to_damp_fi_part;
-    fz::SafePtr<fz::SafePtr<std::complex<double>*>> _ispg_to_ptr_in_a;
+    fz::SafePtr<fz::SafePtr<_cmplx_t*>> _ispg_to_ptr_in_a;
 
     fz::SafePtr<_FuncRealToCmplx> _pvni_to_forc_fi_part;
-    fz::SafePtr<std::complex<double>*> _pvni_to_ptr_in_b;
+    fz::SafePtr<_cmplx_t*> _pvni_to_ptr_in_b;
     fz::SafePtr<fz::SafePtr<double>> _ispgv_to_forc_fi_part;
-    fz::SafePtr<fz::SafePtr<std::complex<double>*>> _ispgv_to_ptr_in_b;
+    fz::SafePtr<fz::SafePtr<_cmplx_t*>> _ispgv_to_ptr_in_b;
     fz::SafePtr<fz::SafePtr<double>> _ispgi_to_damp_fi_part;
-    fz::SafePtr<fz::SafePtr<std::complex<double>*>> _ispgi_to_ptr_in_a;
+    fz::SafePtr<fz::SafePtr<_cmplx_t*>> _ispgi_to_ptr_in_a;
     fz::SafePtr<fz::SafePtr<double>> _ivpg_to_stif_fi_part;
     fz::SafePtr<fz::SafePtr<double>> _ivpg_to_mass_fi_part;
-    fz::SafePtr<fz::SafePtr<std::complex<double>*>> _ivpg_to_ptr_in_a;
+    fz::SafePtr<fz::SafePtr<_cmplx_t*>> _ivpg_to_ptr_in_a;
+    fz::SafePtr<_FuncRealToCmplx> _pvi_to_pressure;
+    fz::SafePtr<fz::SafePtr<_cmplx_t*>> _pvi_to_ptr_in_a;
+    fz::SafePtr<fz::SafePtr<_cmplx_t*>> _pvi_to_ptr_in_b;
 
     #if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
         _MKL_DSS_HANDLE_t _dss_handle;
-        fz::SafePtr<std::complex<double>> _b_dense;
+        fz::SafePtr<_cmplx_t> _b_dense;
     #endif
 
     Eigen::Matrix<_cmplx_t,Eigen::Dynamic,Eigen::Dynamic> _cmplx_pressure_amp;

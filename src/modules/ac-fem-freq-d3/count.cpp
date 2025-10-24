@@ -21,17 +21,27 @@ size_t SimulationAcFemFreqD3<O>::Impl::_vei_count() const {
 
 template <ElementOrder O>
 size_t SimulationAcFemFreqD3<O>::Impl::_isei_count() const {
-    return _isei_to_ispgi.size();
+    return _isei_to_sei.size();
 }
 
 template <ElementOrder O>
 size_t SimulationAcFemFreqD3<O>::Impl::_vsei_count() const {
-    return _vsei_to_ispgv.size();
+    return _vsei_to_sei.size();
+}
+
+template <ElementOrder O>
+size_t SimulationAcFemFreqD3<O>::Impl::_psei_count() const {
+    return _psei_to_sei.size();
 }
 
 template <ElementOrder O>
 size_t SimulationAcFemFreqD3<O>::Impl::_pvni_count() const {
     return _point_volvel.size();
+}
+
+template <ElementOrder O>
+size_t SimulationAcFemFreqD3<O>::Impl::_ppni_count() const {
+    return _point_pressure.size();
 }
 
 template <ElementOrder O>
@@ -45,8 +55,18 @@ size_t SimulationAcFemFreqD3<O>::Impl::_ispgv_count() const {
 }
 
 template <ElementOrder O>
+size_t SimulationAcFemFreqD3<O>::Impl::_ispgp_count() const {
+    return _espg_to_pressure.size();
+}
+
+template <ElementOrder O>
 size_t SimulationAcFemFreqD3<O>::Impl::_ivpg_count() const {
     return _evpg_to_volprop.size();
+}
+
+template <ElementOrder O>
+size_t SimulationAcFemFreqD3<O>::Impl::_pvi_count() const {
+    return _pvi_to_pressure.size();
 }
 
 template <ElementOrder O>

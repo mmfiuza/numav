@@ -19,6 +19,7 @@ class Simulation<
 public:
     Simulation();
     ~Simulation();
+    
     void set_frequency_range(
         const double&,
         const double&
@@ -47,8 +48,11 @@ public:
         const size_t&,
         const std::function<std::complex<double>(const double&)>&
     );
-    void run();
-    void export_result(const char* const);
+    void run(
+    );
+    void export_result(
+        const char* const
+    );
 
 private:
     class Impl;
