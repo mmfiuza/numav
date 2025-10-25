@@ -2,6 +2,7 @@
 
 #include "numav/numav.hpp"
 #include "common/aliases.hpp"
+#include "common/debug-macros.hpp"
 #include "modules/ac-fem-freq-d3/macros.hpp"
 
 #include <unordered_map>
@@ -108,13 +109,17 @@ public:
     void _check_if_mesh_is_defined();
     void _check_if_it_can_run();
     void _define_freq_vector();
+    void _organize_volume_physical_group_data();
+    void _organize_pressure_physical_group_data();
+    void _organize_impedance_physical_group_data();
+    void _organize_velocity_physical_group_data();
     void _organize_physical_group_data();
-    void _analyze_sparsity();
+    void _allocate_a_and_b();
     void _assemble_fi_part_for_point_velocity();
     void _assemble_fi_part_for_sfc_velocity();
     void _assemble_fi_part_for_sfc_impedance();
     void _assemble_fi_part_for_vol_elements();
-    void _assemble_fi_part_for_point_pressure();
+    void _assemble_fi_part_for_pressure();
     void _assemble_freq_independent_parts();
     void _solve();
 
@@ -135,16 +140,16 @@ private:
     std::vector<std::tuple<size_t,_FuncRealToCmplx>> _point_volvel;
     std::vector<std::tuple<size_t,_FuncRealToCmplx>> _point_pressure;
 
-    std::unordered_set<size_t> _existing_espg;
     std::unordered_set<size_t> _existing_evpg;
+    std::unordered_set<size_t> _existing_espg;
 
     fz::SafePtr<size_t> _sei_to_espg;
     fz::SafePtr<size_t> _vei_to_evpg;
     
+    std::unordered_map<size_t,_VolProp> _evpg_to_volprop;
+    std::unordered_map<size_t,_FuncRealToCmplx> _espg_to_impedance;
     std::unordered_map<size_t,_FuncRealToCmplx> _espg_to_velocity;
     std::unordered_map<size_t,_FuncRealToCmplx> _espg_to_pressure;
-    std::unordered_map<size_t,_FuncRealToCmplx> _espg_to_impedance;
-    std::unordered_map<size_t,_VolProp>         _evpg_to_volprop;
 
     std::unordered_map<size_t,size_t> _espg_to_ispg;
     std::unordered_map<size_t,size_t> _evpg_to_ivpg;
@@ -153,43 +158,44 @@ private:
     fz::SafePtr<size_t> _vsei_to_sei;
     fz::SafePtr<size_t> _psei_to_sei;
 
+    fz::SafePtr<size_t> _vei_to_ivpg;
     fz::SafePtr<size_t> _isei_to_ispgi;
     fz::SafePtr<size_t> _vsei_to_ispgv;
     fz::SafePtr<size_t> _psei_to_ispgp;
-    fz::SafePtr<size_t> _vei_to_ivpg;
-    
-    fz::SafePtr<_FuncRealToCmplx> _ispgv_to_velocity;
-    fz::SafePtr<_FuncRealToCmplx> _ispgp_to_pressure;
-    fz::SafePtr<_FuncRealToCmplx> _ispgi_to_impedance;
-    fz::SafePtr<_VolProp>         _ivpg_to_volprop;
-    
+
     fz::SafePtr<std::pair<size_t,size_t>> _nnz_rowcol_idx_pairs;
     fz::SafePtr<_cmplx_t> _a_vals;
     fz::SafePtr<size_t> _b_row_idx;
     fz::SafePtr<_cmplx_t> _b_vals;
+    
+    fz::SafePtr<_VolProp> _ivpg_to_volprop;
+    fz::SafePtr<_FuncRealToCmplx> _ispgi_to_impedance;
+    fz::SafePtr<_FuncRealToCmplx> _ispgv_to_velocity;
+    fz::SafePtr<_FuncRealToCmplx> _ispgp_to_pressure;
 
-    fz::SafePtr<fz::SafePtr<double>> _ispg_to_damp_fi_part;
-    fz::SafePtr<fz::SafePtr<_cmplx_t*>> _ispg_to_ptr_in_a;
-
-    fz::SafePtr<_FuncRealToCmplx> _pvni_to_forc_fi_part;
-    fz::SafePtr<_cmplx_t*> _pvni_to_ptr_in_b;
-    fz::SafePtr<fz::SafePtr<double>> _ispgv_to_forc_fi_part;
-    fz::SafePtr<fz::SafePtr<_cmplx_t*>> _ispgv_to_ptr_in_b;
-    fz::SafePtr<fz::SafePtr<double>> _ispgi_to_damp_fi_part;
-    fz::SafePtr<fz::SafePtr<_cmplx_t*>> _ispgi_to_ptr_in_a;
     fz::SafePtr<fz::SafePtr<double>> _ivpg_to_stif_fi_part;
     fz::SafePtr<fz::SafePtr<double>> _ivpg_to_mass_fi_part;
     fz::SafePtr<fz::SafePtr<_cmplx_t*>> _ivpg_to_ptr_in_a;
+
+    fz::SafePtr<fz::SafePtr<double>> _ispgi_to_damp_fi_part;
+    fz::SafePtr<fz::SafePtr<_cmplx_t*>> _ispgi_to_ptr_in_a;
+
+    fz::SafePtr<_FuncRealToCmplx> _pvni_to_forc_fi_part;
+    fz::SafePtr<_cmplx_t*> _pvni_to_ptr_in_b;
+
+    fz::SafePtr<fz::SafePtr<double>> _ispgv_to_forc_fi_part;
+    fz::SafePtr<fz::SafePtr<_cmplx_t*>> _ispgv_to_ptr_in_b;
+    
     fz::SafePtr<_FuncRealToCmplx> _pvi_to_pressure;
     fz::SafePtr<fz::SafePtr<_cmplx_t*>> _pvi_to_ptr_in_a;
     fz::SafePtr<fz::SafePtr<_cmplx_t*>> _pvi_to_ptr_in_b;
+
+    Eigen::Matrix<_cmplx_t,Eigen::Dynamic,Eigen::Dynamic> _cmplx_pressure_amp;
 
     #if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
         _MKL_DSS_HANDLE_t _dss_handle;
         fz::SafePtr<_cmplx_t> _b_dense;
     #endif
-
-    Eigen::Matrix<_cmplx_t,Eigen::Dynamic,Eigen::Dynamic> _cmplx_pressure_amp;
 };
 
 } // namespace numav
