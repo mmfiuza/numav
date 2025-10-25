@@ -71,6 +71,7 @@ void SimulationAcFemFreqD3<O>::Impl::add_volume_material(
     _evpg_to_volprop.insert({evpg, {density, soundspeed}});
     const size_t ivpg = _evpg_to_ivpg.size();
     _evpg_to_ivpg.insert({evpg, ivpg});
+    ++_ivpg_count;
 }
 
 template <ElementOrder O>
@@ -90,11 +91,13 @@ void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
         _point_volvel.push_back(
             std::make_tuple(closest_ni, physical_quantity_value)
         );
+        ++_pvni_count;
     }
     else if (physical_quantity_type == PhysicalQuantity::PRESSURE) {
         _point_pressure.push_back(
             std::make_tuple(closest_ni, physical_quantity_value)
         );
+        ++_ppni_count;
     }
     else {
         log::error("Possible physical quantities are volume velocity"
@@ -127,11 +130,13 @@ void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
         const size_t ispgv = _espg_to_velocity.size();
         _espg_to_velocity.insert({espg, physical_quantity_value});
         _espg_to_ispg.insert({espg, ispgv});
+        ++_ispgv_count;
     }
     else if (physical_quantity_type == PhysicalQuantity::PRESSURE) {
         const size_t ispgp = _espg_to_pressure.size();
         _espg_to_pressure.insert({espg, physical_quantity_value});
         _espg_to_ispg.insert({espg, ispgp});
+        ++_ispgp_count;
     }
     else {
         log::error("Possible physical quantities are particle velocity"
@@ -158,6 +163,7 @@ void SimulationAcFemFreqD3<O>::Impl::add_surface_specific_acoustic_impedance(
     const size_t ispgi = _espg_to_impedance.size();
     _espg_to_impedance.insert({espg, impedance});
     _espg_to_ispg.insert({espg, ispgi});
+    ++_ispgi_count;
 }
 
 // explicit instantiation declarations

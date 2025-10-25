@@ -87,21 +87,24 @@ public:
         _FuncRealToCmplx density;
         _FuncRealToCmplx soundspeed;
     };
-    
-    size_t _ni_count()  const;
-    size_t _sei_count() const;
-    size_t _vei_count() const;
-    size_t _isei_count() const;
-    size_t _vsei_count() const;
-    size_t _psei_count() const;
-    size_t _pvni_count() const;
-    size_t _ppni_count() const;
-    size_t _ispgi_count() const;
-    size_t _ispgv_count() const;
-    size_t _ispgp_count() const;
-    size_t _ivpg_count() const;
-    size_t _pvi_count() const;
-    size_t _freq_count() const;
+
+    size_t _ni_count;
+    size_t _vei_count;
+    size_t _sei_count;
+
+    size_t _isei_count;
+    size_t _vsei_count;
+    size_t _psei_count;
+
+    size_t _ivpg_count;
+    size_t _ispgi_count;
+    size_t _pvni_count;
+    size_t _ispgv_count;
+    size_t _ppni_count;
+    size_t _ispgp_count;
+    size_t _pvi_count;
+
+    size_t _freq_count;
     
     void _load_bdf(const char* const);
     void _generate_extra_nodes();
