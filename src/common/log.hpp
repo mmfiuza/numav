@@ -8,8 +8,6 @@
 #include "spdlog/spdlog.h"
 #include "fmt/core.h"
 
-#include <stdexcept>
-
 namespace numav::log {
 
     void set_level();
@@ -24,7 +22,6 @@ namespace numav::log {
     template<typename... T>
     void error(fmt::format_string<T...> fmt, T&&... args) {
         spdlog::error(fmt, args...);
-        throw std::runtime_error("numav error");
     }
 
     void print_opening();

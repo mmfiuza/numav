@@ -6,6 +6,7 @@
 #include <fstream>
 #include <limits>
 
+#include "common/exception.hpp"
 #include "common/log.hpp"
 #include "common/hash-functions.hpp"
 #include "common/maths.hpp"
@@ -42,7 +43,7 @@ void SimulationAcFemFreqD3<O>::Impl::_load_bdf(const char* const path_to_mesh)
     line.reserve(MAX_BDF_CHARACTERS_PER_LINE);
     
     if (!file.is_open()) {
-        log::error("Could not open file: {}", path_to_mesh);
+        error("Could not open file: {}", path_to_mesh);
     }
 
     // first pass: count lines by type

@@ -2,6 +2,7 @@
 
 #include "modules/ac-fem-freq-d3/impl.hpp"
 
+#include "common/exception.hpp"
 #include "common/log.hpp"
 
 #include <tuple>
@@ -12,7 +13,7 @@ namespace numav {
     template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::_check_if_mesh_is_defined() {
     if (!_is_mesh_defined){
-        log::error("Mesh not defined. Call load_mesh to do so.");
+        error("Mesh not defined. Call load_mesh to do so.");
     }
 }
 
@@ -22,10 +23,10 @@ void SimulationAcFemFreqD3<O>::Impl::set_frequency_range(
     const double& freq_max
 ) {
     if (freq_min<0 || freq_max<0) {
-        log::error("Frequency limits should be positive.");
+        error("Frequency limits should be positive.");
     }
     if (freq_min >= freq_max) {
-        log::error("Upper frequency should be greater than the lower.");
+        error("Upper frequency should be greater than the lower.");
     }
     _freq_min = freq_min;
     _freq_max = freq_max;
@@ -37,7 +38,7 @@ void SimulationAcFemFreqD3<O>::Impl::load_mesh(
     const char* const path_to_mesh
 ) {
     if (_is_mesh_defined) {
-        log::error("Mesh is already defined.");
+        error("Mesh is already defined.");
     }
     std::string str = path_to_mesh;
     if (str.ends_with(".bdf") || str.ends_with(".nas")) {
@@ -49,7 +50,7 @@ void SimulationAcFemFreqD3<O>::Impl::load_mesh(
         const std::string format = std::string(
             str.substr(dot_position, format_len)
         );
-        log::error("Unrecognized file format: \"{0}\".", format);
+        error("Unrecognized file format: \"{0}\".", format);
     }
     _generate_extra_nodes(); // call is based on the element order
     _is_mesh_defined = true;
@@ -63,10 +64,10 @@ void SimulationAcFemFreqD3<O>::Impl::add_volume_material(
 ) {
     _check_if_mesh_is_defined();
     if (!_existing_evpg.contains(evpg)) {
-        log::error("Tag {} not found in mesh file.", evpg);
+        error("Tag {} not found in mesh file.", evpg);
     }
     if (_evpg_to_volprop.contains(evpg)) {
-        log::error("Tag {} already assigned.", evpg);
+        error("Tag {} already assigned.", evpg);
     }
     _evpg_to_volprop.insert({evpg, {density, soundspeed}});
     const size_t ivpg = _evpg_to_ivpg.size();
@@ -83,7 +84,7 @@ void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
 ) {
     _check_if_mesh_is_defined();
     if (type_of_source != TypeOfSource::POINT) {
-        log::error("Tried to assign coordinates to a surface sound source.");
+        error("Tried to assign coordinates to a surface sound source.");
     }
     const size_t closest_ni = _get_closest_point(point_coordinates);
     
@@ -100,7 +101,7 @@ void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
         ++_ppni_count;
     }
     else {
-        log::error("Possible physical quantities are volume velocity"
+        error("Possible physical quantities are volume velocity"
             " or pressure.");
     }
     _is_any_source_defined = true;
@@ -115,16 +116,16 @@ void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
 ) {
     _check_if_mesh_is_defined();
     if (type_of_source != TypeOfSource::SURFACE) {
-        log::error("Tried to assign a tag to a point.");
+        error("Tried to assign a tag to a point.");
     }
     if (!_existing_espg.contains(espg)) {
-        log::error("Tag {} not found in mesh file.", espg);
+        error("Tag {} not found in mesh file.", espg);
     }
     if (_espg_to_pressure.contains(espg) ||
         _espg_to_velocity.contains(espg) ||
         _espg_to_impedance.contains(espg)
     ) {
-        log::error("Tag {} already assigned.", espg);
+        error("Tag {} already assigned.", espg);
     }
     if (physical_quantity_type == PhysicalQuantity::PARTICLE_VELOCITY) {
         const size_t ispgv = _espg_to_velocity.size();
@@ -139,7 +140,7 @@ void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
         ++_ispgp_count;
     }
     else {
-        log::error("Possible physical quantities are particle velocity"
+        error("Possible physical quantities are particle velocity"
             " or pressure.");
     }
     _is_any_source_defined = true;
@@ -152,13 +153,13 @@ void SimulationAcFemFreqD3<O>::Impl::add_surface_specific_acoustic_impedance(
 ) {
     _check_if_mesh_is_defined();
     if (!_existing_espg.contains(espg)) {
-        log::error("Tag {} not found in mesh file.", espg);
+        error("Tag {} not found in mesh file.", espg);
     }
     if (_espg_to_pressure.contains(espg) ||
         _espg_to_velocity.contains(espg) ||
         _espg_to_impedance.contains(espg)
     ) {
-        log::error("Tag {} already assigned.", espg);
+        error("Tag {} already assigned.", espg);
     }
     const size_t ispgi = _espg_to_impedance.size();
     _espg_to_impedance.insert({espg, impedance});

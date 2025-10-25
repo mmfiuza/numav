@@ -11,6 +11,7 @@
 #include <iomanip>
 #include <set>
 
+#include "common/exception.hpp"
 #include "common/log.hpp"
 #include "common/hash-functions.hpp"
 #include "common/maths.hpp"
@@ -267,16 +268,16 @@ template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::_check_if_it_can_run() {
     _check_if_mesh_is_defined();
     if (!_is_any_source_defined){
-        log::error("No sound source was defined."
+        error("No sound source was defined."
             " Call add_sound_source to do so.");
     }
     if (!_is_freq_range_defined){
-        log::error("Simulation frequency range was not defined."
+        error("Simulation frequency range was not defined."
             " Call set_frequency_range to do so.");
     }
     for (auto& evpg : _existing_evpg) {
         if (!_evpg_to_volprop.contains(evpg)) {
-            log::error("Volume tag {} was not assigned."
+            error("Volume tag {} was not assigned."
             " Call add_volume_material to do so.", evpg);
         }
     }
@@ -1194,7 +1195,6 @@ void solve_using_eigen(
             ++it_triplets_a;
         }
     }
-    
     Eigen::SparseMatrix<_cmplx_t> a(node_count, node_count);
     a.setFromTriplets(triplets_a.begin(), triplets_a.end());
     triplets_a.free();
@@ -1378,7 +1378,7 @@ void SimulationAcFemFreqD3<O>::Impl::export_result(
     const char* const path_to_result
 ) {
     if (!_did_run) {
-        log::error("The Simulation needs to run before the result is exported."
+        error("The Simulation needs to run before the result is exported."
             " Call the run method first.");
     }
     write_matrix(_cmplx_pressure_amp, path_to_result);
