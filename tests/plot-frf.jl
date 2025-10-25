@@ -11,7 +11,7 @@ function read_matrix_binary(filename)
 end
 
 pressure_1 = read_matrix_binary("pressure.bin")
-# pressure_2 = read_matrix_binary("pressure_area2_o2.bin")
+# pressure_2 = read_matrix_binary("pressure2.bin")
 
 spl_1 = 20*log10.(abs.(pressure_1)/sqrt(2)/20e-6);
 # spl_2 = 20*log10.(abs.(pressure_2)/sqrt(2)/20e-6);
@@ -22,7 +22,7 @@ using Plots
 Plots.plot(
     xaxis = :log10,
     xlim = [20, 100],
-    ylim = [0, 200],
+    # ylim = [0, 3],
     xticks = (20: 10 : 100, string.(20: 10 : 100)),
     xlabel = "Frequency (Hz)",
     ylabel = "SPL (dB)",
@@ -41,7 +41,7 @@ Plots.plot(
     size = (600, 400),
 )
 Plots.plot!(
-    vec(freq), vec(spl_1[2,:]),
+    vec(freq), vec(abs.(spl_1[665,:])),
     label = "1"
 )
 # Plots.plot!(
