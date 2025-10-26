@@ -392,6 +392,11 @@ void SimulationAcFemFreqD3<O>::Impl::_organize_pressure_physical_group_data()
     }
 }
 
+void print_dss_error(const _INTEGER_t* const error_id) {
+    fprintf(stderr, "MLK code %lli\n", *error_id);
+    exit(1);
+}
+
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::_organize_physical_group_data() {
     _organize_volume_physical_group_data();
@@ -434,13 +439,8 @@ void define_onemkl_sparsity_pattern(
     
     constexpr MKL_INT options = NUMAV_MKL_OPTIONS;
     
-    // error code stuff
+    // error code
     _INTEGER_t error_id;
-    auto print_dss_error = [](const _INTEGER_t* const error_id) {
-        fprintf(stderr, "MLK code %lli\n", *error_id);
-        exit(1);
-        return;
-    };
     
     // initialize the solver
     error_id = dss_create(dss_handle, options);
@@ -1130,13 +1130,8 @@ void solve_using_onemkl(
     fz::SafePtr<_cmplx_t>& b_dense,
     _cmplx_t* const x_out
 ) {
-    // error code stuff
+    // error code
     _INTEGER_t error_id;
-    auto print_dss_error = [](const _INTEGER_t* const error_id) {
-        fprintf(stderr, "MLK code %lli\n", *error_id);
-        exit(1);
-        return;
-    };
     
     // factor the matrix
     constexpr MKL_INT positive_definiteness = MKL_DSS_INDEFINITE;
@@ -1349,10 +1344,12 @@ void SimulationAcFemFreqD3<O>::Impl::_solve()
             std::cout << "\n";
         }
     }
-    #if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
-        _b_dense.free();
-    #endif
     _did_run = true;
+    #if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
+        constexpr MKL_INT options = NUMAV_MKL_OPTIONS;
+        _INTEGER_t error_id = dss_delete(_dss_handle, options);
+        if (error_id != MKL_DSS_SUCCESS) { print_dss_error(&error_id); }
+    #endif
 
     // print finish
     auto end_time = std::chrono::system_clock::now();
