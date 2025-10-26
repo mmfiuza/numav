@@ -395,10 +395,12 @@ void SimulationAcFemFreqD3<O>::Impl::_organize_pressure_physical_group_data()
     }
 }
 
-void print_dss_error(const _INTEGER_t* const error_id) {
-    fprintf(stderr, "MLK code %lli\n", *error_id);
-    exit(1);
-}
+#if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
+    void print_dss_error(const _INTEGER_t* const error_id) {
+        fprintf(stderr, "MLK code %lli\n", *error_id);
+        exit(1);
+    }
+#endif
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::_organize_physical_group_data() {
