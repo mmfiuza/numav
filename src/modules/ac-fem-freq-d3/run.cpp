@@ -396,9 +396,8 @@ void SimulationAcFemFreqD3<O>::Impl::_organize_pressure_physical_group_data()
 }
 
 #if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
-    void print_dss_error(const _INTEGER_t* const error_id) {
-        fprintf(stderr, "MLK code %lli\n", *error_id);
-        exit(1);
+    void print_dss_error(const _INTEGER_t& error_id) {
+        error("oneMLK error code: {}", error_id);
     }
 #endif
 
@@ -449,7 +448,7 @@ void define_onemkl_sparsity_pattern(
     
     // initialize the solver
     error_id = dss_create(dss_handle, options);
-    if (error_id != MKL_DSS_SUCCESS) { print_dss_error(&error_id); }
+    if (error_id != MKL_DSS_SUCCESS) { print_dss_error(error_id); }
     
     // define the non-zero structure of the matrix
     const MKL_INT symmetry_type = MKL_DSS_SYMMETRIC_COMPLEX;
@@ -457,11 +456,11 @@ void define_onemkl_sparsity_pattern(
         dss_handle, symmetry_type, a_row_ptr.data(),
         node_count, node_count, a_col_idx.data(), nnz_count
     );
-    if (error_id != MKL_DSS_SUCCESS) { print_dss_error(&error_id); }
+    if (error_id != MKL_DSS_SUCCESS) { print_dss_error(error_id); }
     
     // reorder the matrix
     error_id = dss_reorder(dss_handle, options, 0);
-    if (error_id != MKL_DSS_SUCCESS) { print_dss_error(&error_id); }
+    if (error_id != MKL_DSS_SUCCESS) { print_dss_error(error_id); }
     a_row_ptr.free();
     a_col_idx.free();
 
@@ -1144,7 +1143,7 @@ void solve_using_onemkl(
         dss_handle, positive_definiteness,
         reinterpret_cast<const double*>(a_vals.data())
     );
-    if (error_id != MKL_DSS_SUCCESS) { print_dss_error(&error_id); }
+    if (error_id != MKL_DSS_SUCCESS) { print_dss_error(error_id); }
 
     // dense b vector
     for (size_t i=0; i!=b_vals.size(); ++i) {
@@ -1158,7 +1157,7 @@ void solve_using_onemkl(
         dss_handle, options, reinterpret_cast<const double*>(b_dense.data()),
         num_of_b, reinterpret_cast<double*>(x_out)
     );
-    if (error_id != MKL_DSS_SUCCESS) { print_dss_error(&error_id); }
+    if (error_id != MKL_DSS_SUCCESS) { print_dss_error(error_id); }
 }
 #endif
 
@@ -1353,7 +1352,7 @@ void SimulationAcFemFreqD3<O>::Impl::_solve()
     #if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
         constexpr MKL_INT options = NUMAV_MKL_OPTIONS;
         _INTEGER_t error_id = dss_delete(_dss_handle, options);
-        if (error_id != MKL_DSS_SUCCESS) { print_dss_error(&error_id); }
+        if (error_id != MKL_DSS_SUCCESS) { print_dss_error(error_id); }
     #endif
 
     // print finish
