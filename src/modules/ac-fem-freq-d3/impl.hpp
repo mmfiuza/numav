@@ -50,6 +50,10 @@ class SimulationAcFemFreqD3<O>::Impl
 public:
     Impl();
     ~Impl();
+    Impl(const Impl&) = delete;
+    Impl& operator=(const Impl&) = delete;
+    Impl(Impl&&) noexcept;
+    Impl& operator=(Impl&&) noexcept;
 
     void set_frequency_range(
         const double&,

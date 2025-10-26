@@ -15,6 +15,16 @@ template <ElementOrder O>
 SimulationAcFemFreqD3<O>::~Simulation() = default;
 
 template<ElementOrder O>
+SimulationAcFemFreqD3<O>::Simulation(
+    Simulation&& other
+) noexcept = default;
+
+template<ElementOrder O>
+SimulationAcFemFreqD3<O>& SimulationAcFemFreqD3<O>::operator=(
+    Simulation&& other
+) noexcept = default;
+
+template<ElementOrder O>
 SimulationAcFemFreqD3<O>::Impl::Impl() {
     log::set_level();
     log::set_pattern();
@@ -83,6 +93,16 @@ SimulationAcFemFreqD3<O>::Impl::~Impl() {
     _pvi_to_ptr_in_a.free();
     _pvi_to_ptr_in_b.free();
 }
+
+template<ElementOrder O>
+SimulationAcFemFreqD3<O>::Impl::Impl(
+    Impl&& other
+) noexcept = default;
+
+template<ElementOrder O>
+SimulationAcFemFreqD3<O>::Impl& SimulationAcFemFreqD3<O>::Impl::operator=(
+    Impl&& other
+) noexcept = default;
 
 // explicit instantiation declarations
 template class Simulation<

@@ -19,6 +19,10 @@ class Simulation<
 public:
     Simulation();
     ~Simulation();
+    Simulation(const Simulation&) = delete;
+    Simulation& operator=(const Simulation&) = delete;
+    Simulation(Simulation&&) noexcept;
+    Simulation& operator=(Simulation&&) noexcept;
     
     void set_frequency_range(
         const double&,
