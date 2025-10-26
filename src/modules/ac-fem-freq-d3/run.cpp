@@ -281,6 +281,9 @@ void SimulationAcFemFreqD3<O>::Impl::_check_if_it_can_run() {
             " Call add_volume_material to do so.", evpg);
         }
     }
+    if (_did_run) {
+        error("This Simulation has already been run.");
+    }
 }
 
 template <ElementOrder O>
