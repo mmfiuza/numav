@@ -70,7 +70,20 @@ constexpr std::array<std::array<double,DIM>,N> GAUSS_POINTS_VOL = [] {
         constexpr double a = (5.0 -     std::sqrt(5.0)) / 20.0;
         constexpr double b = (5.0 + 3.0*std::sqrt(5.0)) / 20.0;
         return std::array<std::array<double,DIM>,N>{{
-            {a,a,a}, {b,a,a}, {a,b,a}, {a,a,b}
+            {a,a,a},
+            {b,a,a}, {a,b,a}, {a,a,b}
+        }};
+    }
+    if constexpr (N == 11) {
+        constexpr double a =  1.0 / 4.0;
+        constexpr double b =  1.0 / 14.0;
+        constexpr double c = 11.0 / 14.0;
+        constexpr double d = 0.399403576166799;
+        constexpr double e = 0.100596423833201;
+        return std::array<std::array<double,DIM>,N>{{
+            {a,a,a},
+            {b,b,b}, {c,b,b}, {b,c,b}, {b,b,c},
+            {d,d,e}, {d,e,d}, {e,d,d}, {d,e,e}, {e,d,e}, {e,e,d}
         }};
     }
     if constexpr (N == 15) {
@@ -82,9 +95,10 @@ constexpr std::array<std::array<double,DIM>,N> GAUSS_POINTS_VOL = [] {
         constexpr double f = ( 5.0 -     std::sqrt(15.0)) / 20.0;
         constexpr double g = ( 5.0 +     std::sqrt(15.0)) / 20.0;
         return std::array<std::array<double,DIM>,N>{{
-            {a,a,a}, {b,b,b}, {b,b,d}, {b,d,b}, {d,b,b}, 
-            {c,c,c}, {c,c,e}, {c,e,c}, {e,c,c}, {f,f,g},
-            {f,g,f}, {g,f,f}, {f,g,g}, {g,f,g}, {g,g,f}
+            {a,a,a},
+            {b,b,b}, {b,b,d}, {b,d,b}, {d,b,b}, 
+            {c,c,c}, {c,c,e}, {c,e,c}, {e,c,c},
+            {f,f,g}, {f,g,f}, {g,f,f}, {f,g,g}, {g,f,g}, {g,g,f}
         }};
     }
 }();
@@ -110,6 +124,12 @@ constexpr std::array<double,N> GAUSS_WEIGHTS_VOL = [] {
     if constexpr (N == 4) {
         constexpr double a = VOLUME_REF_TET * 1.0 / 4.0;
         return std::array<double,N>({a,a,a,a});
+    }
+    if constexpr (N == 11) {
+        constexpr double a = -148.0 / 1875.0 * VOLUME_REF_TET;
+        constexpr double b =  343.0 / 7500.0 * VOLUME_REF_TET;
+        constexpr double c =   56.0 / 375.0  * VOLUME_REF_TET;
+        return std::array<double,N>({a,b,b,b,b,c,c,c,c,c,c});
     }
     if constexpr (N == 15) {
         constexpr double a =
