@@ -106,11 +106,11 @@ constexpr std::array<std::array<double,DIM>,N> GAUSS_POINTS_VOL = [] {
 template<size_t N>
 constexpr std::array<double,N> GAUSS_WEIGHTS_SFC = [] {
     if constexpr (N == 1) {
-        constexpr double a = AREA_REF_TRIG;
+        constexpr double a = 1.0 / 2.0;
         return std::array<double,N>({a});
     }
     if constexpr (N == 3) {
-        constexpr double a = AREA_REF_TRIG * 1.0 / 3.0;
+        constexpr double a = 1.0 / 6.0;
         return std::array<double,N>({a,a,a});
     }
 }();
@@ -118,28 +118,24 @@ constexpr std::array<double,N> GAUSS_WEIGHTS_SFC = [] {
 template<size_t N>
 constexpr std::array<double,N> GAUSS_WEIGHTS_VOL = [] {
     if constexpr (N == 1) {
-        constexpr double a = VOLUME_REF_TET;
+        constexpr double a = 1.0 / 6.0;
         return std::array<double,N>({a});
     }
     if constexpr (N == 4) {
-        constexpr double a = VOLUME_REF_TET * 1.0 / 4.0;
+        constexpr double a = 1.0 / 24.0;
         return std::array<double,N>({a,a,a,a});
     }
     if constexpr (N == 11) {
-        constexpr double a = -148.0 / 1875.0 * VOLUME_REF_TET;
-        constexpr double b =  343.0 / 7500.0 * VOLUME_REF_TET;
-        constexpr double c =   56.0 / 375.0  * VOLUME_REF_TET;
+        constexpr double a = -74.0 / 5625.0;
+        constexpr double b = 343.0 / 45000.0;
+        constexpr double c = 28.0 / 1125.0;
         return std::array<double,N>({a,b,b,b,b,c,c,c,c,c,c});
     }
     if constexpr (N == 15) {
-        constexpr double a =
-            VOLUME_REF_TET * 16.0 / 135.0;
-        constexpr double b =
-            VOLUME_REF_TET * (2665.0 - 14.0*std::sqrt(15.0)) / 37800.0;
-        constexpr double c =
-            VOLUME_REF_TET * (2665.0 + 14.0*std::sqrt(15.0)) / 37800.0;
-        constexpr double d =
-            VOLUME_REF_TET * 10.0 / 189.0;
+        constexpr double a = 8.0 / 405.0;
+        constexpr double b = (2665.0 - 14.0*std::sqrt(15.0)) / 226800.0;
+        constexpr double c = (2665.0 + 14.0*std::sqrt(15.0)) / 226800.0;
+        constexpr double d = 5.0 / 567.0;
         return std::array<double,N>({a,b,b,b,b,c,c,c,c,d,d,d,d,d,d});
     }
 }();
