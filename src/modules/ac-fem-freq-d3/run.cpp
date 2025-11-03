@@ -70,8 +70,16 @@ constexpr std::array<std::array<double,DIM>,N> GAUSS_POINTS_VOL = [] {
         constexpr double a = (5.0 -     std::sqrt(5.0)) / 20.0;
         constexpr double b = (5.0 + 3.0*std::sqrt(5.0)) / 20.0;
         return std::array<std::array<double,DIM>,N>{{
+            {a,a,a}, {b,a,a}, {a,b,a}, {a,a,b}
+        }};
+    }
+    if constexpr (N == 5) {
+        constexpr double a = 1.0 / 4.0;
+        constexpr double b = 1.0 / 6.0;
+        constexpr double c = 1.0 / 2.0;
+        return std::array<std::array<double,DIM>,N>{{
             {a,a,a},
-            {b,a,a}, {a,b,a}, {a,a,b}
+            {b,b,b}, {c,b,b}, {b,c,b}, {b,b,c}
         }};
     }
     if constexpr (N == 11) {
@@ -124,6 +132,11 @@ constexpr std::array<double,N> GAUSS_WEIGHTS_VOL = [] {
     if constexpr (N == 4) {
         constexpr double a = 1.0 / 24.0;
         return std::array<double,N>({a,a,a,a});
+    }
+    if constexpr (N == 5) {
+        constexpr double a = -2.0 / 15.0;
+        constexpr double b = 3.0 / 40.0;
+        return std::array<double,N>({a,b,b,b,b});
     }
     if constexpr (N == 11) {
         constexpr double a = -74.0 / 5625.0;
