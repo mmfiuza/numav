@@ -4,6 +4,8 @@
 
 #include <cassert>
 
+#include "Eigen/Eigen"
+
 namespace numav {
 
 fz::SafePtr<double> linspace(
@@ -40,6 +42,18 @@ double get_triangle_area(const std::array<std::array<double,3>,3>& coords)
     const double s = (a + b + c) / 2.0;
     const double area = std::sqrt(s * (s-a) * (s-b) * (s-c));
     return area;
+}
+
+double get_tetrahedron_volume(const std::array<std::array<double,3>,4>& coords)
+{
+    const Eigen::Matrix<double,4,4> mat {
+        {coords[0][0], coords[1][0], coords[2][0], coords[3][0]},
+        {coords[0][1], coords[1][1], coords[2][1], coords[3][1]},
+        {coords[0][2], coords[1][2], coords[2][2], coords[3][2]},
+        {           1,            1,            1,            1}
+    };
+    const double volume = (1.0/6.0) * std::abs(mat.determinant());
+    return volume;
 }
 
 } // namespace numav

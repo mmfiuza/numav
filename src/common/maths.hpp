@@ -17,6 +17,8 @@ fz::SafePtr<double> linspace(
 
 double get_triangle_area(const std::array<std::array<double,3>,3>& coords);
 
+double get_tetrahedron_volume(const std::array<std::array<double,3>,4>& coords);
+
 template<typename... T>
 auto mean(const T&... args) {
     return (args + ...) / (sizeof...(args));

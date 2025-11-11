@@ -22,7 +22,7 @@ namespace numav {
 // constants
 static constexpr size_t DIM = DIM_COUNT<Dimension::D3>;
 static constexpr double AREA_REF_TRIG = 1.0 / 2.0;
-static constexpr double VOLUME_REF_TET = 1.0 / 6.0;
+static constexpr double VOL_REF_TET = 1.0 / 6.0;
 static constexpr double PENALTY_METHOD_CONSTANT = 1e12;
 
 template<ElementOrder O> constexpr size_t NGP_FORC = [] {
@@ -292,6 +292,35 @@ shape_func_vol_gradient<ElementOrder::O2>(
         {0, 0, 4*xi2-1, 1-4*xi3, 0, 4*xi0, -4*xi0, 4*xi1, -4*xi1, 4*(xi3-xi2)}
     };
 }
+
+template<ElementOrder O>
+Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,NODES_IN_VOL_ELEM<O>> 
+NNT_MATRIX_VOL = [] {
+    if constexpr (O == ElementOrder::O1) {
+        return 
+        Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,NODES_IN_VOL_ELEM<O>> {
+            { 1.0/60.0, 1.0/120.0, 1.0/120.0, 1.0/120.0},
+            {1.0/120.0,  1.0/60.0, 1.0/120.0, 1.0/120.0},
+            {1.0/120.0, 1.0/120.0,  1.0/60.0, 1.0/120.0},
+            {1.0/120.0, 1.0/120.0, 1.0/120.0,  1.0/60.0}
+        };
+    }
+    if constexpr (O == ElementOrder::O2) {
+        return 
+        Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,NODES_IN_VOL_ELEM<O>> {
+            { 1.0/420.0, 1.0/2520.0, 1.0/2520.0, 1.0/2520.0, -1.0/630.0, -1.0/630.0, -1.0/630.0,  -1.0/420.0,  -1.0/420.0,  -1.0/420.0},
+            {1.0/2520.0,  1.0/420.0, 1.0/2520.0, 1.0/2520.0, -1.0/630.0,  -1.0/420.0,  -1.0/420.0, -1.0/630.0, -1.0/630.0,  -1.0/420.0},
+            {1.0/2520.0, 1.0/2520.0,  1.0/420.0, 1.0/2520.0,  -1.0/420.0, -1.0/630.0,  -1.0/420.0, -1.0/630.0,  -1.0/420.0, -1.0/630.0},
+            {1.0/2520.0, 1.0/2520.0, 1.0/2520.0,  1.0/420.0,  -1.0/420.0,  -1.0/420.0, -1.0/630.0,  -1.0/420.0, -1.0/630.0, -1.0/630.0},
+            {-1.0/630.0, -1.0/630.0,  -1.0/420.0,  -1.0/420.0,  4.0/315.0,  2.0/315.0,  2.0/315.0,  2.0/315.0,  2.0/315.0,  1.0/315.0},
+            {-1.0/630.0,  -1.0/420.0, -1.0/630.0,  -1.0/420.0,  2.0/315.0,  4.0/315.0,  2.0/315.0,  2.0/315.0,  1.0/315.0,  2.0/315.0},
+            {-1.0/630.0,  -1.0/420.0,  -1.0/420.0, -1.0/630.0,  2.0/315.0,  2.0/315.0,  4.0/315.0,  1.0/315.0,  2.0/315.0,  2.0/315.0},
+            { -1.0/420.0, -1.0/630.0, -1.0/630.0,  -1.0/420.0,  2.0/315.0,  2.0/315.0,  1.0/315.0,  4.0/315.0,  2.0/315.0,  2.0/315.0},
+            { -1.0/420.0, -1.0/630.0,  -1.0/420.0, -1.0/630.0,  2.0/315.0,  1.0/315.0,  2.0/315.0,  2.0/315.0,  4.0/315.0,  2.0/315.0},
+            { -1.0/420.0,  -1.0/420.0, -1.0/630.0, -1.0/630.0,  1.0/315.0,  2.0/315.0,  2.0/315.0,  2.0/315.0,  2.0/315.0,  4.0/315.0}
+        };
+    }
+}();
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::_check_if_it_can_run() {
@@ -681,7 +710,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
             Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,NODES_IN_VOL_ELEM<O>>
                 btb = b_matrix.transpose() * b_matrix;
             
-            const double det_jac = jac_matrix.determinant();
+            const double det_jac = std::abs(jac_matrix.determinant());
             
             // todo: multiply detj and w without creating another eigen matrix
             const
@@ -697,45 +726,69 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
         }
 
         // mass matrix
-        constexpr std::array<std::array<double,DIM>,NGP_MASS<O>>
-            GAUSS_POINTS_MASS = GAUSS_POINTS_VOL<NGP_MASS<O>>;
-        for (size_t gpi=0; gpi!=NGP_MASS<O>; ++gpi)
-        {
-            const Eigen::Matrix<double,DIM,NODES_IN_VOL_ELEM<O>> nabla_n =
-                shape_func_vol_gradient<O>(
-                    GAUSS_POINTS_MASS[gpi][0],
-                    GAUSS_POINTS_MASS[gpi][1],
-                    GAUSS_POINTS_MASS[gpi][2]
-                ); // todo: try putting constexpr here
+        #if NUMAV_MASS_INTEGRATION_METHOD == NUMAV_GAUSS_QUADRATURE
+            constexpr std::array<std::array<double,DIM>,NGP_MASS<O>>
+                GAUSS_POINTS_MASS = GAUSS_POINTS_VOL<NGP_MASS<O>>;
+            for (size_t gpi=0; gpi!=NGP_MASS<O>; ++gpi)
+            {
+                const Eigen::Matrix<double,DIM,NODES_IN_VOL_ELEM<O>> nabla_n =
+                    shape_func_vol_gradient<O>(
+                        GAUSS_POINTS_MASS[gpi][0],
+                        GAUSS_POINTS_MASS[gpi][1],
+                        GAUSS_POINTS_MASS[gpi][2]
+                    ); // todo: try putting constexpr here
 
-            const Eigen::Matrix<double,DIM,DIM> jac_matrix = 
-                nabla_n * coords_matrix;
+                const Eigen::Matrix<double,DIM,DIM> jac_matrix = 
+                    nabla_n * coords_matrix;
+                
+                const double det_jac = std::abs(jac_matrix.determinant());
+
+                const Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,1> n =
+                    shape_func_vol<O>(
+                        GAUSS_POINTS_MASS[gpi][0],
+                        GAUSS_POINTS_MASS[gpi][1],
+                        GAUSS_POINTS_MASS[gpi][2]
+                    );
+
+                const
+                Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,NODES_IN_VOL_ELEM<O>>
+                    nnt = n * n.transpose();
+                
+                // todo: multiply detj and w without creating another matrix
+                const
+                Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,NODES_IN_VOL_ELEM<O>>
+                    nnt_detj_w =
+                        nnt * det_jac * GAUSS_WEIGHTS_VOL<NGP_MASS<O>>[gpi];
+                
+                for (size_t nci=0; nci!=COMBS_VOL.size(); ++nci) {
+                    _ivpg_to_mass_fi_part[ivpg][fipi_vol[nci]] += nnt_detj_w(
+                        COMBS_VOL[nci][0], COMBS_VOL[nci][1]
+                    );
+                }
+            }
+        #elif NUMAV_MASS_INTEGRATION_METHOD == NUMAV_ANALYTIC
+            const 
+            Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,NODES_IN_VOL_ELEM<O>>
+                nnt = NNT_MATRIX_VOL<O>;
             
-            const double det_jac = jac_matrix.determinant();
-
-            const Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,1> n =
-                shape_func_vol<O>(
-                    GAUSS_POINTS_MASS[gpi][0],
-                    GAUSS_POINTS_MASS[gpi][1],
-                    GAUSS_POINTS_MASS[gpi][2]
-                );
-
+            std::array<std::array<double,3>,4> coords;
+            for (size_t ni=0; ni!=4; ++ni) {
+                for (size_t di=0; di!=DIM; ++di) {
+                    coords[ni][di] = coords_matrix(ni,di);
+                }
+            }
+            const double detj = get_tetrahedron_volume(coords) / VOL_REF_TET;
+                    
             const
             Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,NODES_IN_VOL_ELEM<O>>
-                nnt = n * n.transpose();
-            
-            // todo: multiply detj and w without creating another eigen matrix
-            const
-            Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,NODES_IN_VOL_ELEM<O>>
-                nnt_detj_w =
-                    nnt * det_jac * GAUSS_WEIGHTS_VOL<NGP_MASS<O>>[gpi];
+                nnt_detj = nnt * detj;
             
             for (size_t nci=0; nci!=COMBS_VOL.size(); ++nci) {
-                _ivpg_to_mass_fi_part[ivpg][fipi_vol[nci]] += nnt_detj_w(
+                _ivpg_to_mass_fi_part[ivpg][fipi_vol[nci]] += nnt_detj(
                     COMBS_VOL[nci][0], COMBS_VOL[nci][1]
                 );
             }
-        }
+        #endif
     }
     ivpg_to_map_to_fipi.free();
 }
@@ -857,7 +910,8 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_impedance()
                     _node_coords[node_idx][2]
                 });
             }
-            const double det_jac = 2*get_triangle_area(triangle_coords);
+            const double det_jac = 
+                get_triangle_area(triangle_coords) / AREA_REF_TRIG;
         #else
             static_assert(
                 false, "Invalid NUMAV_TRIANGLE_INTEGRATION_METHOD."
@@ -876,7 +930,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_impedance()
                     ); // todo: try putting constexpr here
                 const Eigen::Matrix<double,2,2> jac_matrix =
                     nabla_n * coords_matrix;
-                const double det_jac = jac_matrix.determinant();
+                const double det_jac = std::abs(jac_matrix.determinant());
             #endif
 
             const Eigen::Matrix<double,NODES_IN_SFC_ELEM<O>,1> n =
@@ -997,15 +1051,13 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_velocity()
             GAUSS_POINTS_FORC = GAUSS_POINTS_SFC<NGP_FORC<O>>;
         for (size_t gpi=0; gpi!=NGP_FORC<O>; ++gpi)
         {
-            #if NUMAV_TRIANGLE_INTEGRATION_METHOD == NUMAV_JACOBIAN_DETERMINANT
-                const Eigen::Matrix<double,2,NODES_IN_SFC_ELEM<O>> nabla_n =
-                    shape_func_sfc_gradient<O>(
-                        GAUSS_POINTS_FORC[gpi][0], GAUSS_POINTS_FORC[gpi][1]
-                    ); // todo: try putting constexpr here
-                const Eigen::Matrix<double,2,2> jac_matrix =
-                    nabla_n * coords_matrix;
-                const double det_jac = jac_matrix.determinant();
-            #endif
+            const Eigen::Matrix<double,2,NODES_IN_SFC_ELEM<O>> nabla_n =
+                shape_func_sfc_gradient<O>(
+                    GAUSS_POINTS_FORC[gpi][0], GAUSS_POINTS_FORC[gpi][1]
+                ); // todo: try putting constexpr here
+            const Eigen::Matrix<double,2,2> jac_matrix =
+                nabla_n * coords_matrix;
+            const double det_jac = jac_matrix.determinant();
 
             const Eigen::Matrix<double,NODES_IN_SFC_ELEM<O>,1> n =
                 shape_func_sfc<O>(
