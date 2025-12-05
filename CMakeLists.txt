@@ -58,10 +58,3 @@ target_link_libraries(numav PRIVATE
     -lpthread -lm -ldl
 )
 target_link_libraries(numav PRIVATE spdlog::spdlog_header_only)
-
-# install numav
-install(TARGETS numav
-    ARCHIVE DESTINATION lib
-    LIBRARY DESTINATION lib
-    RUNTIME DESTINATION bin
-)
