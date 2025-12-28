@@ -66,5 +66,5 @@ int main()
     s.run();
 
     // export the result to binary
-    s.export_result("pressure.bin");
+    s.export_result("result.nmvr");
 }

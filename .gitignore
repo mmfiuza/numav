@@ -49,3 +49,4 @@ Manifest.toml
 
 # simulation results
 *.bin
+*.nmvr

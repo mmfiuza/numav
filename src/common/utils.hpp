@@ -34,6 +34,23 @@ std::pair<T,T> make_ascending_pair(const T& a, const T& b) {
     return a<b ? std::make_pair(a,b) : std::make_pair(b,a);
 }
 
+template<typename T, std::size_t... Sizes>
+constexpr auto concat_constexpr_arrays(const std::array<T, Sizes>&... arrays)
+{
+    constexpr std::size_t total_size = (Sizes + ...);
+    std::array<T, total_size> result{};
+    
+    std::size_t index = 0;
+    (
+        (
+            std::copy(arrays.begin(), arrays.end(), result.begin() + index), 
+            index += arrays.size()
+        ), ...
+    );
+    
+    return result;
+}
+
 template<typename T>
 void write_matrix(const T& matrix, const std::string& filename) {
     std::ofstream file(filename, std::ios::binary);
