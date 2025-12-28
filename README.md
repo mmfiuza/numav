@@ -42,7 +42,7 @@ cmake -B build -D CMAKE_BUILD_TYPE=Release -D BUILD_EXAMPLES=TRUE &&
 cmake --build build --parallel ${nproc}
 ```
 
-## How to link a code against libnumav.so (Static Numav)
+## How to link a code against libnumav.a (Static Numav)
 Run:
 ```
 g++ -o my_simulation my_simulation.cpp -Iinclude -L./build/lib -L/opt/intel/oneapi/mkl/2025.2/lib -Wl,--start-group -l:libmkl_core.a -l:libmkl_gf_ilp64.a -l:libmkl_gnu_thread.a -Wl,--end-group -lgomp -lpthread -lm -ldl -lnumav -m64 -flto
