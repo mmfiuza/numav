@@ -1,21 +1,18 @@
 # Copyright (c) 2025 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
-function read_matrix_binary(filename)
-    open(filename, "r") do io
-        rows = read(io, UInt64)
-        cols = read(io, UInt64)
-        n = rows * cols
-        data = read!(io, Vector{ComplexF64}(undef, n))
-        return reshape(data, (rows, cols))
-    end
-end
+include("../utils/read_nmvr.jl")
 
-pressure_1 = read_matrix_binary("pressure.bin")
-# pressure_2 = read_matrix_binary("pressure2.bin")
+data_1 = read_nmvr("result.nmvr")
+data_2 = read_nmvr("result.nmvr")
+
+pressure_1 = data_1["cpx_pres"]
+pressure_2 = data_2["cpx_pres"]
+
+freq_1 = data_1["freq_stp"]
+freq_2 = data_2["freq_stp"]
 
 spl_1 = 20*log10.(abs.(pressure_1)/sqrt(2)/20e-6);
-# spl_2 = 20*log10.(abs.(pressure_2)/sqrt(2)/20e-6);
-freq = LinRange(20, 100, 1000)
+spl_2 = 20*log10.(abs.(pressure_2)/sqrt(2)/20e-6);
 
 using Plots
 
@@ -41,11 +38,11 @@ Plots.plot(
     size = (600, 400),
 )
 Plots.plot!(
-    vec(freq), vec(abs.(spl_1[665,:])),
+    vec(freq_1), vec(abs.(spl_1[665,:])),
     label = "1"
 )
-# Plots.plot!(
-#     vec(freq), vec(spl_2[2,:]),
-#     label = "2",
-#     linestyle = :dash
-# )
+Plots.plot!(
+    vec(freq_2), vec(spl_2[665,:]),
+    label = "2",
+    linestyle = :dash
+)
