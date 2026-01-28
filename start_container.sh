@@ -39,7 +39,7 @@ add_ssh_keys() {
         
         # Try to add the key
         if ssh-add "$key" 2>/dev/null; then
-            echo "Added: $(basename "$key")"
+            echo "Added ssh key: $(basename "$key")"
         else
             echo "Skipped: $(basename "$key") (not a valid private key or requires passphrase)"
         fi
