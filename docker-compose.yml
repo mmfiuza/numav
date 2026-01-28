@@ -1,11 +1,11 @@
 # Copyright (c) 2025 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
 services:
-  numav-solver:
+  numav:
     build: 
       context: .
       dockerfile: Dockerfile
-    container_name: numav-solver
+    container_name: numav
     working_dir: /workspace
     volumes:
       - .:/workspace

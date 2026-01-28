@@ -50,4 +50,4 @@ add_ssh_keys "$1" # Usage: add_ssh_keys /path/to/keys
 
 docker compose up -d
 
-docker compose exec numav-solver bash
+docker compose exec numav bash
