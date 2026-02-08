@@ -53,3 +53,8 @@ Manifest.toml
 # simulation results
 *.bin
 *.nmvr
+
+# TCC simulations: do not version outputs
+simulations/**/outputs/*
+!simulations/**/outputs/.gitkeep
+
