@@ -1,0 +1,1 @@
+add_subdirectory(sala_config_05_PRATO)
