@@ -54,3 +54,10 @@ Manifest.toml
 
 # Internal stored environment variables
 .env
+
+# TCC simulations: do not version outputs
+simulations/**/outputs/*
+!simulations/**/outputs/.gitkeep
+
+*:Zone.Identifier
+
