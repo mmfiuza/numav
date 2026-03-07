@@ -294,32 +294,114 @@ shape_func_vol_gradient<ElementOrder::O2>(
     };
 }
 
+// general get_stif_matrix_const_part declaration for all orders
+template<ElementOrder O>
+Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,NODES_IN_VOL_ELEM<O>>
+get_stif_matrix_const_part(const std::array<std::array<double,3>,4>&);
+
+template<>
+Eigen::Matrix<double,
+    NODES_IN_VOL_ELEM<ElementOrder::O1>, NODES_IN_VOL_ELEM<ElementOrder::O1>
+>
+get_stif_matrix_const_part<ElementOrder::O1>(
+    const std::array<std::array<double,3>,4>& coords
+) {
+    const double x03 = coords[0][0] - coords[3][0];
+    const double x13 = coords[1][0] - coords[3][0];
+    const double x23 = coords[2][0] - coords[3][0];
+    const double y03 = coords[0][1] - coords[3][1];
+    const double y13 = coords[1][1] - coords[3][1];
+    const double y23 = coords[2][1] - coords[3][1];
+    const double z03 = coords[0][2] - coords[3][2];
+    const double z13 = coords[1][2] - coords[3][2];
+    const double z23 = coords[2][2] - coords[3][2];
+
+    const double a = x23*z13 - x13*z23;
+    const double b = y13*z23 - y23*z13;
+    const double c = x13*y23 - x23*y13;
+    const double d = x03*z23 - x23*z03;
+    const double e = x23*y03 - x03*y23;
+    const double f = y23*z03 - y03*z23;
+    const double g = y03*z13 - y13*z03;
+    const double h = x13*z03 - x03*z13;
+    const double i = x03*y13 - x13*y03;
+    const double j = -(c + i + e);
+    const double k = -(f + b + g);
+    const double l = -(d + a + h);
+
+    Eigen::Matrix<double,
+        NODES_IN_VOL_ELEM<ElementOrder::O1>,NODES_IN_VOL_ELEM<ElementOrder::O1>
+    > btb;
+
+    btb(0,0) = a*a + b*b + c*c;
+    btb(0,1) = a*d + b*f + c*e;
+    btb(0,2) = a*h + b*g + c*i;
+    btb(0,3) = a*l + b*k + c*j;
+    btb(1,1) = d*d + e*e + f*f;
+    btb(1,2) = d*h + e*i + f*g;
+    btb(1,3) = d*l + e*j + f*k;
+    btb(2,2) = g*g + h*h + i*i;
+    btb(2,3) = g*k + h*l + i*j;
+    btb(3,3) = j*j + k*k + l*l;
+
+    return btb;
+}
+
+template<>
+Eigen::Matrix<double,
+    NODES_IN_VOL_ELEM<ElementOrder::O2>, NODES_IN_VOL_ELEM<ElementOrder::O2>
+>
+get_stif_matrix_const_part<ElementOrder::O2>(
+    const std::array<std::array<double,3>,4>& coords
+) {
+    // TODO
+    error("Analytic intgration for second order stifness matrix is not done.");
+
+    (void) coords;
+
+    Eigen::Matrix<double,
+        NODES_IN_VOL_ELEM<ElementOrder::O2>,NODES_IN_VOL_ELEM<ElementOrder::O2>
+    > btb;
+
+    return btb;
+}
+
 template<ElementOrder O>
 Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,NODES_IN_VOL_ELEM<O>> 
-NNT_MATRIX_VOL = [] {
+MASS_MATRIX_CONST_PART = [] {
     if constexpr (O == ElementOrder::O1) {
         return 
         Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,NODES_IN_VOL_ELEM<O>> {
-            { 1.0/60.0, 1.0/120.0, 1.0/120.0, 1.0/120.0},
-            {1.0/120.0,  1.0/60.0, 1.0/120.0, 1.0/120.0},
-            {1.0/120.0, 1.0/120.0,  1.0/60.0, 1.0/120.0},
-            {1.0/120.0, 1.0/120.0, 1.0/120.0,  1.0/60.0}
+            {1.0/10.0, 1.0/20.0, 1.0/20.0, 1.0/20.0},
+            {1.0/20.0, 1.0/10.0, 1.0/20.0, 1.0/20.0},
+            {1.0/20.0, 1.0/20.0, 1.0/10.0, 1.0/20.0},
+            {1.0/20.0, 1.0/20.0, 1.0/20.0, 1.0/10.0}
         };
     }
     if constexpr (O == ElementOrder::O2) {
         return 
-        Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,NODES_IN_VOL_ELEM<O>> {
-            { 1.0/420.0, 1.0/2520.0, 1.0/2520.0, 1.0/2520.0, -1.0/630.0, -1.0/630.0, -1.0/630.0,  -1.0/420.0,  -1.0/420.0,  -1.0/420.0},
-            {1.0/2520.0,  1.0/420.0, 1.0/2520.0, 1.0/2520.0, -1.0/630.0,  -1.0/420.0,  -1.0/420.0, -1.0/630.0, -1.0/630.0,  -1.0/420.0},
-            {1.0/2520.0, 1.0/2520.0,  1.0/420.0, 1.0/2520.0,  -1.0/420.0, -1.0/630.0,  -1.0/420.0, -1.0/630.0,  -1.0/420.0, -1.0/630.0},
-            {1.0/2520.0, 1.0/2520.0, 1.0/2520.0,  1.0/420.0,  -1.0/420.0,  -1.0/420.0, -1.0/630.0,  -1.0/420.0, -1.0/630.0, -1.0/630.0},
-            {-1.0/630.0, -1.0/630.0,  -1.0/420.0,  -1.0/420.0,  4.0/315.0,  2.0/315.0,  2.0/315.0,  2.0/315.0,  2.0/315.0,  1.0/315.0},
-            {-1.0/630.0,  -1.0/420.0, -1.0/630.0,  -1.0/420.0,  2.0/315.0,  4.0/315.0,  2.0/315.0,  2.0/315.0,  1.0/315.0,  2.0/315.0},
-            {-1.0/630.0,  -1.0/420.0,  -1.0/420.0, -1.0/630.0,  2.0/315.0,  2.0/315.0,  4.0/315.0,  1.0/315.0,  2.0/315.0,  2.0/315.0},
-            { -1.0/420.0, -1.0/630.0, -1.0/630.0,  -1.0/420.0,  2.0/315.0,  2.0/315.0,  1.0/315.0,  4.0/315.0,  2.0/315.0,  2.0/315.0},
-            { -1.0/420.0, -1.0/630.0,  -1.0/420.0, -1.0/630.0,  2.0/315.0,  1.0/315.0,  2.0/315.0,  2.0/315.0,  4.0/315.0,  2.0/315.0},
-            { -1.0/420.0,  -1.0/420.0, -1.0/630.0, -1.0/630.0,  1.0/315.0,  2.0/315.0,  2.0/315.0,  2.0/315.0,  2.0/315.0,  4.0/315.0}
-        };
+            Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,NODES_IN_VOL_ELEM<O>> {
+                { +1.0/70.0, +1.0/420.0, +1.0/420.0, +1.0/420.0, -1.0/105.0,
+                    -1.0/105.0, -1.0/105.0,  -1.0/70.0,  -1.0/70.0,  -1.0/70.0},
+                {+1.0/420.0,  +1.0/70.0, +1.0/420.0, +1.0/420.0, -1.0/105.0,
+                    -1.0/70.0,  -1.0/70.0, -1.0/105.0, -1.0/105.0,  -1.0/70.0},
+                {+1.0/420.0, +1.0/420.0,  +1.0/70.0, +1.0/420.0,  -1.0/70.0,
+                    -1.0/105.0,  -1.0/70.0, -1.0/105.0,  -1.0/70.0, -1.0/105.0},
+                {+1.0/420.0, +1.0/420.0, +1.0/420.0,  +1.0/70.0,  -1.0/70.0,
+                    -1.0/70.0, -1.0/105.0,  -1.0/70.0, -1.0/105.0, -1.0/105.0},
+                {-1.0/105.0, -1.0/105.0,  -1.0/70.0,  -1.0/70.0, +8.0/105.0,
+                    +4.0/105.0, +4.0/105.0, +4.0/105.0, +4.0/105.0, +2.0/105.0},
+                {-1.0/105.0,  -1.0/70.0, -1.0/105.0,  -1.0/70.0, +4.0/105.0,
+                    +8.0/105.0, +4.0/105.0, +4.0/105.0, +2.0/105.0, +4.0/105.0},
+                {-1.0/105.0,  -1.0/70.0,  -1.0/70.0, -1.0/105.0, +4.0/105.0,
+                    +4.0/105.0, +8.0/105.0, +2.0/105.0, +4.0/105.0, +4.0/105.0},
+                { -1.0/70.0, -1.0/105.0, -1.0/105.0,  -1.0/70.0, +4.0/105.0,
+                    +4.0/105.0, +2.0/105.0, +8.0/105.0, +4.0/105.0, +4.0/105.0},
+                { -1.0/70.0, -1.0/105.0,  -1.0/70.0, -1.0/105.0, +4.0/105.0,
+                    +2.0/105.0, +4.0/105.0, +4.0/105.0, +8.0/105.0, +4.0/105.0},
+                { -1.0/70.0,  -1.0/70.0, -1.0/105.0, -1.0/105.0, +2.0/105.0,
+                    +4.0/105.0, +4.0/105.0, +4.0/105.0, +4.0/105.0, +8.0/105.0}
+            };
     }
 }();
 
@@ -679,52 +761,85 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
         }
         
         // coordinates matrix
-        Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,DIM> coords_matrix;
-        for (size_t ni=0; ni!=NODES_IN_VOL_ELEM<O>; ++ni) {
-            const size_t node_idx = _vei_to_ni[vei][ni];
-            for (size_t di=0; di!=DIM; ++di) {
-                coords_matrix(ni,di) = _node_coords[node_idx][di];
+        #if \
+        NUMAV_STIF_INTEGRATION_METHOD == NUMAV_GAUSS_QUADRATURE || \
+        NUMAV_MASS_INTEGRATION_METHOD == NUMAV_GAUSS_QUADRATURE
+            Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,DIM> coords_matrix;
+            for (size_t ni=0; ni!=NODES_IN_VOL_ELEM<O>; ++ni) {
+                const size_t node_idx = _vei_to_ni[vei][ni];
+                for (size_t di=0; di!=DIM; ++di) {
+                    coords_matrix(ni,di) = _node_coords[node_idx][di];
+                }
             }
-        }
+        #endif
+        #if \
+        NUMAV_STIF_INTEGRATION_METHOD == NUMAV_ANALYTIC || \
+        NUMAV_MASS_INTEGRATION_METHOD == NUMAV_ANALYTIC
+            std::array<std::array<double,3>,4> coords;
+            for (size_t ni=0; ni!=NODES_IN_VOL_ELEM<O>; ++ni) {
+                const size_t node_idx = _vei_to_ni[vei][ni];
+                for (size_t di=0; di!=DIM; ++di) {
+                    coords[ni][di] = _node_coords[node_idx][di];
+                }
+            }
+            const double tet_volume = get_tetrahedron_volume(coords);
+        #endif
 
         // stiffness matrix
-        constexpr std::array<std::array<double,DIM>,NGP_STIF<O>>
-            GAUSS_POINTS_STIF = GAUSS_POINTS_VOL<NGP_STIF<O>>;
-        for (size_t gpi=0; gpi!=NGP_STIF<O>; ++gpi)
-        {
-            const Eigen::Matrix<double,DIM,NODES_IN_VOL_ELEM<O>> nabla_n =
-                shape_func_vol_gradient<O>(
-                    GAUSS_POINTS_STIF[gpi][0],
-                    GAUSS_POINTS_STIF[gpi][1],
-                    GAUSS_POINTS_STIF[gpi][2]
-                ); // todo: try putting constexpr here
+        #if NUMAV_STIF_INTEGRATION_METHOD == NUMAV_GAUSS_QUADRATURE
+            constexpr std::array<std::array<double,DIM>,NGP_STIF<O>>
+                GAUSS_POINTS_STIF = GAUSS_POINTS_VOL<NGP_STIF<O>>;
+            for (size_t gpi=0; gpi!=NGP_STIF<O>; ++gpi)
+            {
+                const Eigen::Matrix<double,DIM,NODES_IN_VOL_ELEM<O>> nabla_n =
+                    shape_func_vol_gradient<O>(
+                        GAUSS_POINTS_STIF[gpi][0],
+                        GAUSS_POINTS_STIF[gpi][1],
+                        GAUSS_POINTS_STIF[gpi][2]
+                    ); // todo: try putting constexpr here
 
-            const Eigen::Matrix<double,DIM,DIM> jac_matrix = 
-                nabla_n * coords_matrix;
+                const Eigen::Matrix<double,DIM,DIM> jac_matrix = 
+                    nabla_n * coords_matrix;
 
-            const Eigen::Matrix<double,DIM,DIM> inv_jac = jac_matrix.inverse();
-            
-            const Eigen::Matrix<double,DIM,NODES_IN_VOL_ELEM<O>> b_matrix =
-                inv_jac * nabla_n;
-            
+                const Eigen::Matrix<double,DIM,DIM> inv_jac =
+                    jac_matrix.inverse();
+                
+                const Eigen::Matrix<double,DIM,NODES_IN_VOL_ELEM<O>> b_matrix =
+                    inv_jac * nabla_n;
+                
+                const
+                Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,NODES_IN_VOL_ELEM<O>>
+                    btb = b_matrix.transpose() * b_matrix;
+                
+                const double det_jac = std::abs(jac_matrix.determinant());
+                
+                // todo: multiply detj and w without creating another matrix
+                const
+                Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,NODES_IN_VOL_ELEM<O>>
+                    btb_detj_w = 
+                        btb * det_jac * GAUSS_WEIGHTS_VOL<NGP_STIF<O>>[gpi];
+
+                for (size_t nci=0; nci!=COMBS_VOL.size(); ++nci) {
+                    _ivpg_to_stif_fi_part[ivpg][fipi_vol[nci]] += btb_detj_w(
+                        COMBS_VOL[nci][0], COMBS_VOL[nci][1]
+                    );
+                }
+            }
+        #elif NUMAV_STIF_INTEGRATION_METHOD == NUMAV_ANALYTIC
             const
-            Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,NODES_IN_VOL_ELEM<O>>
-                btb = b_matrix.transpose() * b_matrix;
-            
-            const double det_jac = std::abs(jac_matrix.determinant());
-            
-            // todo: multiply detj and w without creating another eigen matrix
+            Eigen::Matrix<double, NODES_IN_VOL_ELEM<O>, NODES_IN_VOL_ELEM<O>>
+                stif_matrix_const_part = get_stif_matrix_const_part<O>(coords);
+
             const
-            Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,NODES_IN_VOL_ELEM<O>>
-                btb_detj_w = 
-                    btb * det_jac * GAUSS_WEIGHTS_VOL<NGP_STIF<O>>[gpi];
+            Eigen::Matrix<double, NODES_IN_VOL_ELEM<O>, NODES_IN_VOL_ELEM<O>>
+                stif_fi_part = stif_matrix_const_part / (36*tet_volume);
 
             for (size_t nci=0; nci!=COMBS_VOL.size(); ++nci) {
-                _ivpg_to_stif_fi_part[ivpg][fipi_vol[nci]] += btb_detj_w(
+                _ivpg_to_stif_fi_part[ivpg][fipi_vol[nci]] += stif_fi_part(
                     COMBS_VOL[nci][0], COMBS_VOL[nci][1]
                 );
             }
-        }
+        #endif
 
         // mass matrix
         #if NUMAV_MASS_INTEGRATION_METHOD == NUMAV_GAUSS_QUADRATURE
@@ -770,22 +885,14 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
         #elif NUMAV_MASS_INTEGRATION_METHOD == NUMAV_ANALYTIC
             const 
             Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,NODES_IN_VOL_ELEM<O>>
-                nnt = NNT_MATRIX_VOL<O>;
-            
-            std::array<std::array<double,3>,4> coords;
-            for (size_t ni=0; ni!=4; ++ni) {
-                for (size_t di=0; di!=DIM; ++di) {
-                    coords[ni][di] = coords_matrix(ni,di);
-                }
-            }
-            const double detj = get_tetrahedron_volume(coords) / VOL_REF_TET;
+                mass_matrix_const_part = MASS_MATRIX_CONST_PART<O>;
                     
             const
             Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,NODES_IN_VOL_ELEM<O>>
-                nnt_detj = nnt * detj;
+                mass_fi_part = mass_matrix_const_part * tet_volume;
             
             for (size_t nci=0; nci!=COMBS_VOL.size(); ++nci) {
-                _ivpg_to_mass_fi_part[ivpg][fipi_vol[nci]] += nnt_detj(
+                _ivpg_to_mass_fi_part[ivpg][fipi_vol[nci]] += mass_fi_part(
                     COMBS_VOL[nci][0], COMBS_VOL[nci][1]
                 );
             }
