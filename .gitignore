@@ -38,10 +38,8 @@
 /build
 /products
 
-# BDF: ignorar tudo por padrão...
+# meshes (with exception of the tests directory)
 *.bdf
-# ...mas permitir os BDF que estão diretamente em tests/
-!tests/
 !tests/*.bdf
 
 # zip
