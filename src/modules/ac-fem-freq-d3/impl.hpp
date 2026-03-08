@@ -83,6 +83,10 @@ public:
         const size_t&,
         const std::function<_cmplx_t(const double&)>&
     );
+    void add_surface_specific_acoustic_impedance(
+        const size_t&,
+        const char* const
+    );
     void run();
     void export_result(const char* const);
 

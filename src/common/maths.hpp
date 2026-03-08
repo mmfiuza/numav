@@ -53,4 +53,79 @@ COMBINATION_REP = [] { // todo: generalize for K!=2 (maybe)
     return result;
 }();
 
+template<typename XContainer, typename YContainer, typename XType>
+auto interpolate(
+    const XContainer& x_array,
+    const YContainer& y_array,
+    const XType& x_value)
+{
+    // Obtain sizes and iterators in a container‑agnostic way
+    auto x_size = std::size(x_array);
+    auto y_size = std::size(y_array);
+    auto x_begin = std::begin(x_array);
+    auto x_end   = std::end(x_array);
+    auto y_begin = std::begin(y_array);
+
+    // Input validation
+    if (x_size == 0 || y_size == 0)
+        throw std::invalid_argument("Vectors must not be empty.");
+    if (x_size != y_size)
+        throw std::invalid_argument(
+            "x_array and y_array must have the same size."
+        );
+
+    // Check strict monotonicity of x_array
+    if (x_size >= 2) {
+        auto prev = x_begin;
+        auto curr = std::next(prev);
+        while (curr != x_end) {
+            if (*prev >= *curr)
+                throw std::invalid_argument(
+                    "x_array must be strictly increasing."
+                );
+            ++prev;
+            ++curr;
+        }
+    }
+
+    // Single point case
+    if (x_size == 1) {
+        if (x_value == *x_begin)
+            return *y_begin;
+        else
+            throw std::out_of_range("Extrapolation not allowed.");
+    }
+
+    // Reject extrapolation
+    if (x_value < *x_begin || x_value > *std::prev(x_end))
+        throw std::out_of_range("Extrapolation not allowed.");
+
+    // Locate the interval using binary search
+    auto it = std::lower_bound(x_begin, x_end, x_value);
+
+    // Exact match at a knot (including boundaries)
+    if (it != x_end && x_value == *it) {
+        auto index = std::distance(x_begin, it);
+        auto y_it = y_begin;
+        std::advance(y_it, index);
+        return *y_it;
+    }
+
+    // Otherwise, interval is between the previous element and the found one
+    // Note: it cannot be x_begin because we already handled x_value < *x_begin
+    auto prev_it = std::prev(it); // guaranteed to exist because it != x_begin
+
+    // Get iterators to the corresponding y values
+    auto prev_index = std::distance(x_begin, prev_it);
+    auto curr_index = std::distance(x_begin, it);
+    auto y_prev = y_begin;
+    auto y_curr = y_begin;
+    std::advance(y_prev, prev_index);
+    std::advance(y_curr, curr_index);
+
+    // Linear interpolation formula
+    return *y_prev + (*y_curr - *y_prev) *
+           (x_value - *prev_it) / (*it - *prev_it);
+}
+
 } // namespace numav

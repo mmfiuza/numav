@@ -63,6 +63,14 @@ void SimulationAcFemFreqD3<O>::add_surface_specific_acoustic_impedance(
 }
 
 template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::add_surface_specific_acoustic_impedance(
+    const size_t& espg,
+    const char* const impedance_text_file
+) {
+    pimpl->add_surface_specific_acoustic_impedance(espg, impedance_text_file);
+}
+
+template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::run() {
     pimpl->run();
 }

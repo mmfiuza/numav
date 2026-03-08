@@ -4,6 +4,7 @@
 
 #include "common/exception.hpp"
 #include "common/log.hpp"
+#include "common/maths.hpp"
 
 #include <tuple>
 #include <fstream>
@@ -161,6 +162,85 @@ void SimulationAcFemFreqD3<O>::Impl::add_surface_specific_acoustic_impedance(
     ) {
         error("Tag {} already assigned.", espg);
     }
+    const size_t ispgi = _espg_to_impedance.size();
+    _espg_to_impedance.insert({espg, impedance});
+    _espg_to_ispg.insert({espg, ispgi});
+    ++_ispgi_count;
+}
+
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::Impl::add_surface_specific_acoustic_impedance(
+    const size_t& espg,
+    const char* const impedance_text_file
+) {
+    _check_if_mesh_is_defined();
+    if (!_existing_espg.contains(espg)) {
+        error("Tag {} not found in mesh file.", espg);
+    }
+    if (_espg_to_pressure.contains(espg) ||
+        _espg_to_velocity.contains(espg) ||
+        _espg_to_impedance.contains(espg)
+    ) {
+        error("Tag {} already assigned.", espg);
+    }
+
+    std::ifstream file(impedance_text_file);
+    std::string line;
+    if (!file.is_open()) {
+        error("Could not open file: {}", impedance_text_file);
+    }
+
+    // first pass: count lines
+    size_t line_count = 0;
+    while (std::getline(file, line)) {
+        ++line_count;
+    }
+    file.clear();
+    file.seekg(0, std::ios::beg);
+    std::vector<double> freq_vec;
+    freq_vec.reserve(line_count);
+    std::vector<_cmplx_t> impedance_vec;
+    impedance_vec.reserve(line_count);
+
+    // second pass: read each line
+    while (std::getline(file, line))
+    {
+        // read frequency
+        size_t first_comma_pos = line.find(',');
+        if (first_comma_pos == std::string::npos) {
+            continue; // malformed line is skipped
+        }
+        std::string freq_str = line.substr(0, first_comma_pos);
+        std::istringstream freq_input_string(freq_str);
+        double freq;
+        freq_input_string >> freq;
+        freq_vec.push_back(freq);
+        
+        // read real part of impedance
+        size_t second_comma_pos = line.find(',', first_comma_pos+1);
+        if (second_comma_pos == std::string::npos) {
+            continue; // malformed line is skipped
+        }
+        std::string real_impedance_str =
+            line.substr(first_comma_pos + 1, second_comma_pos);
+        std::istringstream real_impedance_input_string(real_impedance_str);
+        double real_impedance;
+        real_impedance_input_string >> real_impedance;
+        
+        // read imaginary part of impedance
+        std::string imag_impedance_str = line.substr(second_comma_pos + 1);
+        std::istringstream imag_impedance_input_string(imag_impedance_str);
+        double imag_impedance;
+        imag_impedance_input_string >> imag_impedance;
+        
+        // write complex impedance to the vector
+        impedance_vec.push_back(_cmplx_t(real_impedance, imag_impedance));
+    }
+
+    auto impedance = [freq_vec, impedance_vec](double freq) {
+        return interpolate(freq_vec, impedance_vec, freq);
+    };
+
     const size_t ispgi = _espg_to_impedance.size();
     _espg_to_impedance.insert({espg, impedance});
     _espg_to_ispg.insert({espg, ispgi});
