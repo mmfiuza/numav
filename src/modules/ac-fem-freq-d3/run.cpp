@@ -765,10 +765,10 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
         NUMAV_STIF_INTEGRATION_METHOD == NUMAV_GAUSS_QUADRATURE || \
         NUMAV_MASS_INTEGRATION_METHOD == NUMAV_GAUSS_QUADRATURE
             Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,DIM> coords_matrix;
-            for (size_t ni=0; ni!=NODES_IN_VOL_ELEM<O>; ++ni) {
-                const size_t node_idx = _vei_to_ni[vei][ni];
+            for (size_t eni=0; eni!=NODES_IN_VOL_ELEM<O>; ++eni) {
+                const size_t ni = _vei_to_ni[vei][eni];
                 for (size_t di=0; di!=DIM; ++di) {
-                    coords_matrix(ni,di) = _node_coords[node_idx][di];
+                    coords_matrix(eni,di) = _node_coords[ni][di];
                 }
             }
         #endif
@@ -776,10 +776,10 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
         NUMAV_STIF_INTEGRATION_METHOD == NUMAV_ANALYTIC || \
         NUMAV_MASS_INTEGRATION_METHOD == NUMAV_ANALYTIC
             std::array<std::array<double,3>,4> coords;
-            for (size_t ni=0; ni!=4; ++ni) {
-                const size_t node_idx = _vei_to_ni[vei][ni];
+            for (size_t eni=0; eni!=4; ++eni) {
+                const size_t ni = _vei_to_ni[vei][eni];
                 for (size_t di=0; di!=DIM; ++di) {
-                    coords[ni][di] = _node_coords[node_idx][di];
+                    coords[eni][di] = _node_coords[ni][di];
                 }
             }
             const double tet_volume = get_tetrahedron_volume(coords);
@@ -906,8 +906,8 @@ std::array<Eigen::Vector2d, NODES_IN_SFC_ELEM<O>> project_triangle_to_2d(
     const std::array<Eigen::Vector3d, NODES_IN_SFC_ELEM<O>>& vertices_3d
 ) {
     std::array<Eigen::Vector3d, NODES_IN_SFC_ELEM<O>> point_minus_origin;
-    for (size_t ni = 0; ni!=NODES_IN_SFC_ELEM<O>; ++ni) {
-        point_minus_origin[ni] = vertices_3d[ni] - vertices_3d[0];
+    for (size_t eni = 0; eni!=NODES_IN_SFC_ELEM<O>; ++eni) {
+        point_minus_origin[eni] = vertices_3d[eni] - vertices_3d[0];
     }
     const Eigen::Vector3d& u = point_minus_origin[1];
     const Eigen::Vector3d& v = point_minus_origin[2];
@@ -917,9 +917,9 @@ std::array<Eigen::Vector2d, NODES_IN_SFC_ELEM<O>> project_triangle_to_2d(
     y /= y.norm();
 
     std::array<Eigen::Vector2d, NODES_IN_SFC_ELEM<O>> vertices_2d;
-    for (size_t ni = 0; ni!=NODES_IN_SFC_ELEM<O>; ++ni) {
-        vertices_2d[ni] = Eigen::Vector2d(
-            point_minus_origin[ni].dot(x), point_minus_origin[ni].dot(y)
+    for (size_t eni = 0; eni!=NODES_IN_SFC_ELEM<O>; ++eni) {
+        vertices_2d[eni] = Eigen::Vector2d(
+            point_minus_origin[eni].dot(x), point_minus_origin[eni].dot(y)
         );
     }
     return vertices_2d;
