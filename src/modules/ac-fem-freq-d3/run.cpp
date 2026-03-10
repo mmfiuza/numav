@@ -776,7 +776,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
         NUMAV_STIF_INTEGRATION_METHOD == NUMAV_ANALYTIC || \
         NUMAV_MASS_INTEGRATION_METHOD == NUMAV_ANALYTIC
             std::array<std::array<double,3>,4> coords;
-            for (size_t ni=0; ni!=NODES_IN_VOL_ELEM<O>; ++ni) {
+            for (size_t ni=0; ni!=4; ++ni) {
                 const size_t node_idx = _vei_to_ni[vei][ni];
                 for (size_t di=0; di!=DIM; ++di) {
                     coords[ni][di] = _node_coords[node_idx][di];
