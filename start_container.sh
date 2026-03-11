@@ -48,6 +48,9 @@ add_ssh_keys() {
 
 add_ssh_keys "$1" # Usage: add_ssh_keys /path/to/keys
 
+export HOST_UID=$(id -u)
+export HOST_GID=$(id -g)
+
 docker compose up -d
 
-docker compose exec numav bash
+docker compose exec -u $HOST_UID numav bash

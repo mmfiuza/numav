@@ -16,7 +16,8 @@ RUN apt-get update && apt-get install -y \
     squashfs-tools=1:4.5.1-1 \
     libeigen3-dev=3.4.0-4 \
     libspdlog-dev=1:1.10.0+ds-0.4 \
-    wget=1.21.3-1+deb12u1
+    wget=1.21.3-1+deb12u1 \
+    gosu=1.14-1+b10
 
 # install intel oneMKL
 RUN wget https://registrationcenter-download.intel.com/akdlm/IRC_NAS/47c7d946-fca1-441a-b0df-b094e3f045ea/intel-onemkl-2025.2.0.629_offline.sh
@@ -33,3 +34,9 @@ RUN juliaup default 1.11
 RUN julia +1.11 -e 'using Pkg; Pkg.add([ \
     PackageSpec(name="Plots", version="1.40") \
 ])'
+
+# Set the entrypoint
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD ["bash"]
