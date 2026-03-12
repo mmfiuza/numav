@@ -22,9 +22,9 @@ size_t SimulationAcFemFreqD3<O>::Impl::_get_closest_point(
     size_t ni_closest = std::numeric_limits<size_t>::max();
     for (size_t ni=0; ni!=_ni_count; ++ni) {
         double distance_squared = 
-            std::pow(_node_coords[ni][0] - point_coords[0], 2) +
-            std::pow(_node_coords[ni][1] - point_coords[1], 2) +
-            std::pow(_node_coords[ni][2] - point_coords[2], 2)
+            std::pow(_ni_to_coords[ni][0] - point_coords[0], 2) +
+            std::pow(_ni_to_coords[ni][1] - point_coords[1], 2) +
+            std::pow(_ni_to_coords[ni][2] - point_coords[2], 2)
         ;
         if (distance_squared < minimum_distance_squared) {
             minimum_distance_squared = distance_squared;
@@ -58,14 +58,14 @@ void SimulationAcFemFreqD3<O>::Impl::_load_bdf(const char* const path_to_mesh)
     }
 
     // second pass: parse data
-    _node_coords = fz::SafePtr<std::array<double,3>>(_ni_count);
+    _ni_to_coords = fz::SafePtr<std::array<double,3>>(_ni_count);
     _sei_to_ni =
         fz::SafePtr<std::array<size_t,NODES_IN_SFC_ELEM<O>>>(_sei_count);
     _vei_to_ni =
         fz::SafePtr<std::array<size_t,NODES_IN_VOL_ELEM<O>>>(_vei_count);
     _sei_to_espg = fz::SafePtr<size_t>(_sei_count);
     _vei_to_evpg = fz::SafePtr<size_t>(_vei_count);
-    auto it_node_coords = _node_coords.begin();
+    auto it_ni_to_coords = _ni_to_coords.begin();
     auto it_sfc_elem_node_idx = _sei_to_ni.begin();
     auto it_vol_elem_node_idx = _vei_to_ni.begin();
     auto it_elem_idx_to_espg = _sei_to_espg.begin();
@@ -74,12 +74,12 @@ void SimulationAcFemFreqD3<O>::Impl::_load_bdf(const char* const path_to_mesh)
     file.seekg(0, std::ios::beg);
     while (std::getline(file, line)) {
         if (line.starts_with("GRID")) {
-            *it_node_coords = {
+            *it_ni_to_coords = {
                 parse<double>(line.substr(24,8)),
                 parse<double>(line.substr(32,8)),
                 parse<double>(line.substr(40,8))
             };
-            ++it_node_coords;
+            ++it_ni_to_coords;
         }
         else if (line.starts_with("CTRIA3")) {
             const size_t espg = parse<size_t>(line.substr(16,8));
@@ -156,9 +156,9 @@ void SimulationAcFemFreqD3<ElementOrder::O2>::Impl::_generate_extra_nodes()
     }
 
     // TODO: grow() here
-    auto temp = std::move(_node_coords);
-    _node_coords = fz::SafePtr<std::array<double,3>>(_ni_count);
-    std::copy(temp.begin(), temp.end(), _node_coords.begin());
+    auto temp = std::move(_ni_to_coords);
+    _ni_to_coords = fz::SafePtr<std::array<double,3>>(_ni_count);
+    std::copy(temp.begin(), temp.end(), _ni_to_coords.begin());
     temp.free();
     
     // second pass: create the extra nodes and assign to volume elements
@@ -172,19 +172,19 @@ void SimulationAcFemFreqD3<ElementOrder::O2>::Impl::_generate_extra_nodes()
                 _vei_to_ni[vei][VTX_PAIRS_VOL[i][1]]
             );
             const double x = mean(
-                _node_coords[std::get<0>(tup)][0],
-                _node_coords[std::get<1>(tup)][0]
+                _ni_to_coords[std::get<0>(tup)][0],
+                _ni_to_coords[std::get<1>(tup)][0]
             );
             const double y = mean(
-                _node_coords[std::get<0>(tup)][1],
-                _node_coords[std::get<1>(tup)][1]
+                _ni_to_coords[std::get<0>(tup)][1],
+                _ni_to_coords[std::get<1>(tup)][1]
             );
             const double z = mean(
-                _node_coords[std::get<0>(tup)][2],
-                _node_coords[std::get<1>(tup)][2]
+                _ni_to_coords[std::get<0>(tup)][2],
+                _ni_to_coords[std::get<1>(tup)][2]
             );
             const size_t idx_extra_node = idxs_extra_nodes.at(tup);
-            _node_coords[idx_extra_node] = {x, y, z}; // add extra node
+            _ni_to_coords[idx_extra_node] = {x, y, z}; // add extra node
         }
     }
     is_extra_node.free();

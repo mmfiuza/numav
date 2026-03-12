@@ -43,7 +43,7 @@ SimulationAcFemFreqD3<O>::Impl::Impl() {
 template<ElementOrder O>
 SimulationAcFemFreqD3<O>::Impl::~Impl() {
     _freq_steps.free();
-    _node_coords.free();
+    _ni_to_coords.free();
     _sei_to_ni.free();
     _vei_to_ni.free();
     _sei_to_espg.free();

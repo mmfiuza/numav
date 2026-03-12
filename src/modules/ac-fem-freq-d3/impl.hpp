@@ -144,8 +144,7 @@ private:
     double _freq_max;
     fz::SafePtr<double> _freq_steps;
 
-    // TODO: rename to _ni_to_coords
-    fz::SafePtr<std::array<double,3>> _node_coords;
+    fz::SafePtr<std::array<double,3>> _ni_to_coords;
     fz::SafePtr<std::array<size_t,NODES_IN_SFC_ELEM<O>>> _sei_to_ni;
     fz::SafePtr<std::array<size_t,NODES_IN_VOL_ELEM<O>>> _vei_to_ni;
 

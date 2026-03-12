@@ -768,7 +768,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
             for (size_t eni=0; eni!=NODES_IN_VOL_ELEM<O>; ++eni) {
                 const size_t ni = _vei_to_ni[vei][eni];
                 for (size_t di=0; di!=DIM; ++di) {
-                    coords_matrix(eni,di) = _node_coords[ni][di];
+                    coords_matrix(eni,di) = _ni_to_coords[ni][di];
                 }
             }
         #endif
@@ -779,7 +779,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
             for (size_t eni=0; eni!=4; ++eni) {
                 const size_t ni = _vei_to_ni[vei][eni];
                 for (size_t di=0; di!=DIM; ++di) {
-                    coords[eni][di] = _node_coords[ni][di];
+                    coords[eni][di] = _ni_to_coords[ni][di];
                 }
             }
             const double tet_volume = get_tetrahedron_volume(coords);
@@ -995,9 +995,9 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_impedance()
             for (size_t eni=0; eni!=NODES_IN_SFC_ELEM<O>; ++eni) {
                 const size_t node_idx = _sei_to_ni[sei][eni];
                 triangle_3d[eni] = Eigen::Vector3d(
-                    _node_coords[node_idx][0],
-                    _node_coords[node_idx][1],
-                    _node_coords[node_idx][2]
+                    _ni_to_coords[node_idx][0],
+                    _ni_to_coords[node_idx][1],
+                    _ni_to_coords[node_idx][2]
                 );
             }
             std::array<Eigen::Vector2d, NODES_IN_SFC_ELEM<O>> triangle_2d =
@@ -1013,9 +1013,9 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_impedance()
             for (size_t ni=0; ni!=3; ++ni) {
                 const size_t node_idx = _sei_to_ni[sei][ni];
                 triangle_coords[ni] = std::array<double,DIM>({
-                    _node_coords[node_idx][0],
-                    _node_coords[node_idx][1],
-                    _node_coords[node_idx][2]
+                    _ni_to_coords[node_idx][0],
+                    _ni_to_coords[node_idx][1],
+                    _ni_to_coords[node_idx][2]
                 });
             }
             const double det_jac = 
@@ -1141,9 +1141,9 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_velocity()
         for (size_t eni=0; eni!=NODES_IN_SFC_ELEM<O>; ++eni) {
             const size_t node_idx = _sei_to_ni[sei][eni];
             triangle_3d[eni] = Eigen::Vector3d(
-                _node_coords[node_idx][0],
-                _node_coords[node_idx][1],
-                _node_coords[node_idx][2]
+                _ni_to_coords[node_idx][0],
+                _ni_to_coords[node_idx][1],
+                _ni_to_coords[node_idx][2]
             );
         }
         std::array<Eigen::Vector2d, NODES_IN_SFC_ELEM<O>> triangle_2d =
@@ -1632,7 +1632,7 @@ void SimulationAcFemFreqD3<O>::Impl::export_result(
         file,
         nmvr::NODE_INDEX_TO_COORDINATES_CHUNK_ID,
         _ni_count * 3 * sizeof(double),
-        _node_coords.data()
+        _ni_to_coords.data()
     );
 
     // chunk: surface element index to node index
