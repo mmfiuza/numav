@@ -2,6 +2,9 @@
 
 #!/bin/bash
 
+# Move to the script's directory (docker/)
+cd "$(dirname "$0")"
+
 # Add all private keys from a directory to ssh-agent
 add_ssh_keys() {
     local key_dir="${1:-$HOME/.ssh}"  # Default to ~/.ssh if no argument

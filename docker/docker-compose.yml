@@ -3,12 +3,12 @@
 services:
   numav:
     build: 
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: docker/Dockerfile
     container_name: numav
     working_dir: /workspace
     volumes:
-      - .:/workspace
+      - ..:/workspace
       - ${SSH_AUTH_SOCK}:/ssh-agent
       - ${HOME}/.gitconfig:/home/devuser/.gitconfig 
     environment:

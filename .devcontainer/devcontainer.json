@@ -1,7 +1,7 @@
 {
   "name": "Numav Development Container",
   // Use your existing compose file
-  "dockerComposeFile": "../docker-compose.yml",
+  "dockerComposeFile": "../docker/docker-compose.yml",
   // Tell VS Code which service to attach to
   "service": "numav",
   // The working folder inside the container
@@ -10,7 +10,6 @@
   // Run this script on the host *before* the container is created
   "initializeCommand": "${localWorkspaceFolder}/.devcontainer/initialize.sh",
 
-  // Recommended VS Code extensions (adjust as needed)
   "customizations": {
     "vscode": {
       "extensions": [
@@ -21,7 +20,6 @@
     }
   },
 
-  // The user that VS Code’s server should use.
   // This matches the user created by entrypoint.sh.
   "remoteUser": "devuser"
 }
