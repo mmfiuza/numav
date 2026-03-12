@@ -3,11 +3,19 @@
 The Numav Solver is a C++ library to perform acoustics and vibrations simulations.
 
 ## How to start the development container
-Run:
+The development container can be started in two ways:
+- directly in a linux terminal environment;
+- through the Dev Containers VS Code extension.
+
+### Linux terminal
+To start the container directly in a Linux terminal environment, go to the root directory of this repository and run:
 ```
-./start_container.sh <path-to-github-ssh-keys>
+./docker/start_container.sh <path-to-your-github-ssh-keys>
 ```
-`<path-to-github-ssh-keys>` is an optional argument. Its default value is `~/.ssh`.
+`<path-to-your-github-ssh-keys>` is an optional argument. Its default value is `~/.ssh`.
+
+### VS Code
+To start the container through the Dev Containers VS Code extension, install it and open the root folder of this repository. Then, click the remote indicator in the bottom-left corner and select **Reopen in Container**.
 
 ## How to build libnumav (static)
 Run:
