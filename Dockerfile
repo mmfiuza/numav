@@ -17,7 +17,8 @@ RUN apt-get update && apt-get install -y \
     libeigen3-dev=3.4.0-4 \
     libspdlog-dev=1:1.10.0+ds-0.4 \
     wget=1.21.3-1+deb12u1 \
-    gosu=1.14-1+b10
+    gosu=1.14-1+b10 \
+    tree=2.1.0-1
 
 # install intel oneMKL
 RUN wget https://registrationcenter-download.intel.com/akdlm/IRC_NAS/47c7d946-fca1-441a-b0df-b094e3f045ea/intel-onemkl-2025.2.0.629_offline.sh

@@ -51,3 +51,6 @@ Manifest.toml
 # simulation results
 *.bin
 *.nmvr
+
+# Internal stored environment variables
+.env

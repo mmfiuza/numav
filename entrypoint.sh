@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# Get UID and GID from environment (set by start_container.sh)
+# Get UID and GID from environment (set by start_container.sh or .env)
 HOST_UID=${HOST_UID:-0}
 HOST_GID=${HOST_GID:-$HOST_UID}   # default GID to UID if not provided
 
@@ -23,6 +23,11 @@ if [ "$HOST_UID" != "0" ]; then
         USER_NAME=devuser
     else
         USER_NAME=$EXISTING_USER
+    fi
+
+    # Ensure the home directory is owned by the user
+    if [ -d "/home/$USER_NAME" ]; then
+        chown $HOST_UID:$HOST_GID "/home/$USER_NAME"
     fi
 
     # Drop privileges and execute the command (e.g., bash)
