@@ -12,7 +12,7 @@ Cada subdiretório representa um \*\*caso de simulação independente\*\*.
 
 
 
----
+\---
 
 
 
@@ -78,7 +78,7 @@ utilizado pelas ferramentas de pós-processamento do Numav.
 
 
 
----
+\---
 
 
 
@@ -110,7 +110,7 @@ build/lib/libnumav.a
 
 
 
----
+\---
 
 
 
@@ -132,31 +132,31 @@ g++ -o simul\_config\_05
 
 simulations/sala\_config\_05\_PRATO/inputs/sala\_config\_5.cpp
 
--Iinclude
+\-Iinclude
 
--L./build/lib
+\-L./build/lib
 
--L/opt/intel/oneapi/mkl/2025.2/lib
+\-L/opt/intel/oneapi/mkl/2025.2/lib
 
--Wl,--start-group
+\-Wl,--start-group
 
--l:libmkl\_core.a
+\-l:libmkl\_core.a
 
--l:libmkl\_gf\_ilp64.a
+\-l:libmkl\_gf\_ilp64.a
 
--l:libmkl\_gnu\_thread.a
+\-l:libmkl\_gnu\_thread.a
 
--Wl,--end-group
+\-Wl,--end-group
 
--lgomp -lpthread -lm -ldl
+\-lgomp -lpthread -lm -ldl
 
--lnumav
+\-lnumav
 
--m64 -flto
+\-m64 -flto
 
 
 
----
+\---
 
 
 
@@ -172,7 +172,7 @@ Após a compilação:
 
 
 
----
+\---
 
 
 
@@ -194,7 +194,7 @@ no formato binário `.nmvr`.
 
 
 
----
+\---
 
 
 
@@ -206,15 +206,11 @@ no formato binário `.nmvr`.
 
 \- Os arquivos `.cpp` definem:
 
-&nbsp; - propriedades físicas
+  - propriedades físicas
 
-&nbsp; - fontes acústicas
+  - fontes acústicas
 
-&nbsp; - impedâncias de contorno
+  - impedâncias de contorno
 
-&nbsp; - faixa de frequência da simulação.
-
-
-
-
+  - faixa de frequência da simulação.
 
