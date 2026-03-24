@@ -94,14 +94,9 @@ Antes de executar qualquer simulação é necessário compilar a biblioteca
 
 A partir da raiz do repositório:
 
-rm -rf build \&\&
-
-cmake -B build -D CMAKE\_BUILD\_TYPE=Release \&\&
-
+rm -rf build &&
+cmake -B build -D CMAKE_BUILD_TYPE=Release &&
 cmake --build build --parallel ${nproc}
-
-
-
 
 
 Isso gera a biblioteca:
@@ -126,35 +121,7 @@ e linkando contra a biblioteca \*\*libnumav\*\*.
 
 Exemplo (configuração 05):
 
-
-
-g++ -o simul\_config\_05
-
-simulations/sala\_config\_05\_PRATO/inputs/sala\_config\_5.cpp
-
-\-Iinclude
-
-\-L./build/lib
-
-\-L/opt/intel/oneapi/mkl/2025.2/lib
-
-\-Wl,--start-group
-
-\-l:libmkl\_core.a
-
-\-l:libmkl\_gf\_ilp64.a
-
-\-l:libmkl\_gnu\_thread.a
-
-\-Wl,--end-group
-
-\-lgomp -lpthread -lm -ldl
-
-\-lnumav
-
-\-m64 -flto
-
-
+g++ -o simulations/sala_config_05_PRATO/outputs/simul_config_05 simulations/sala_config_05_PRATO/inputs/sala_config_5.cpp -Iinclude -L./build/lib -L/opt/intel/oneapi/mkl/2025.2/lib -Wl,--start-group -l:libmkl_core.a -l:libmkl_gf_ilp64.a -l:libmkl_gnu_thread.a -Wl,--end-group -lgomp -lpthread -lm -ldl -lnumav -m64 -flto
 
 \---
 
@@ -168,7 +135,7 @@ Após a compilação:
 
 
 
-./simul\_config\_05
+./simul_config_05
 
 
 
@@ -182,12 +149,7 @@ Após a compilação:
 
 Os resultados são exportados para:
 
-
-
 simulations/<config>/outputs/
-
-
-
 
 
 no formato binário `.nmvr`.

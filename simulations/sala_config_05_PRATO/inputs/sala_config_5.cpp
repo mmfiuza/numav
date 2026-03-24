@@ -19,8 +19,8 @@ int main()
     s.load_mesh("simulations/sala_config_05_PRATO/inputs/sala_CONFIG_5_versaoteste.bdf");
 
     // determine simulation frequency range
-    double freq_min = 20;
-    double freq_max = 300;
+    double freq_min = 25;
+    double freq_max = 400;
     s.set_frequency_range(freq_min, freq_max);
 
     s.add_volume_material(
@@ -42,6 +42,12 @@ int main()
         PhysicalQuantity::PARTICLE_VELOCITY, u
     );
 
+    // Sub-woofer cone
+    s.add_sound_source(
+        TypeOfSource::SURFACE, 8, // id da superfície
+        PhysicalQuantity::PARTICLE_VELOCITY, u
+    );
+
     // add pressure sources
     // auto p0 = [](auto f) { return 1; };
     // s.add_sound_source(
@@ -55,8 +61,8 @@ int main()
     // );
  
     // add specific surface acoustic impedance
-    auto Z = [](auto f) { return std::complex<double>(4000*f, 4000*f); };
-    s.add_surface_specific_acoustic_impedance(5, Z);
+    s.add_surface_specific_acoustic_impedance(5, "simulations/sala_config_05_PRATO/inputs/Zs_DBMiki_sigma3714_L50mm.txt");
+
 
     // run the simulation
     s.run();
