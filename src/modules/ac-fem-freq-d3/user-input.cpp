@@ -57,6 +57,71 @@ void SimulationAcFemFreqD3<O>::Impl::load_mesh(
     _is_mesh_defined = true;
 }
 
+_FuncRealToCmplx convert_table_to_real_to_cmplx_func(
+    const char* const impedance_text_file
+) {
+    // open file
+    std::ifstream file(impedance_text_file);
+    std::string line;
+    if (!file.is_open()) {
+        error("Could not open file: {}", impedance_text_file);
+    }
+
+    // first pass: count lines
+    size_t line_count = 0;
+    while (std::getline(file, line)) {
+        ++line_count;
+    }
+    file.clear();
+    file.seekg(0, std::ios::beg);
+    std::vector<double> real_vec;
+    real_vec.reserve(line_count);
+    std::vector<_cmplx_t> cmplx_vec;
+    cmplx_vec.reserve(line_count);
+
+    // second pass: read each line
+    while (std::getline(file, line))
+    {
+        // read frequency
+        size_t first_comma_pos = line.find(',');
+        if (first_comma_pos == std::string::npos) {
+            continue; // malformed line is skipped
+        }
+        std::string col1_str = line.substr(0, first_comma_pos);
+        std::istringstream col1_input_string(col1_str);
+        double col1;
+        col1_input_string >> col1;
+        real_vec.push_back(col1);
+        
+        // read real part of complex vector
+        size_t second_comma_pos = line.find(',', first_comma_pos+1);
+        if (second_comma_pos == std::string::npos) {
+            continue; // malformed line is skipped
+        }
+        std::string col2_str =
+            line.substr(first_comma_pos + 1, second_comma_pos);
+        std::istringstream col2_input_string(col2_str);
+        double col2;
+        col2_input_string >> col2;
+        
+        // read imaginary part of complex vector
+        std::string col3_str = line.substr(second_comma_pos + 1);
+        std::istringstream col3_input_string(col3_str);
+        double col3;
+        col3_input_string >> col3;
+        
+        // write complex vector
+        cmplx_vec.push_back(_cmplx_t(col2, col3));
+    }
+    
+    // create the _FuncRealToCmplx funciton
+    auto func_real_to_cmplx = [real_vec, cmplx_vec](double real) {
+        return interpolate(real_vec, cmplx_vec, real);
+    };
+
+    return func_real_to_cmplx;
+}
+
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_volume_material(
     const size_t& evpg,
@@ -74,6 +139,44 @@ void SimulationAcFemFreqD3<O>::Impl::add_volume_material(
     const size_t ivpg = _evpg_to_ivpg.size();
     _evpg_to_ivpg.insert({evpg, ivpg});
     ++_ivpg_count;
+}
+
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::Impl::add_volume_material(
+    const size_t& evpg,
+    const char* const density_text_file,
+    const _FuncRealToCmplx& soundspeed
+) {
+    _FuncRealToCmplx density = 
+        convert_table_to_real_to_cmplx_func(density_text_file);
+
+    add_volume_material(evpg, density, soundspeed);
+}
+
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::Impl::add_volume_material(
+    const size_t& evpg,
+    const _FuncRealToCmplx& density,
+    const char* const soundspeed_text_file
+) {
+    _FuncRealToCmplx soundspeed = 
+        convert_table_to_real_to_cmplx_func(soundspeed_text_file);
+
+    add_volume_material(evpg, density, soundspeed);
+}
+
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::Impl::add_volume_material(
+    const size_t& evpg,
+    const char* const density_text_file,
+    const char* const soundspeed_text_file
+) {
+    _FuncRealToCmplx density = 
+        convert_table_to_real_to_cmplx_func(density_text_file);
+    _FuncRealToCmplx soundspeed = 
+        convert_table_to_real_to_cmplx_func(soundspeed_text_file);
+
+    add_volume_material(evpg, density, soundspeed);
 }
 
 template <ElementOrder O>
@@ -111,14 +214,23 @@ void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
     const TypeOfSource& type_of_source,
-    const size_t& espg,
+    const std::array<double,3>& point_coordinates,
     const PhysicalQuantity& physical_quantity_type,
-    const _FuncRealToCmplx& physical_quantity_value
+    const char* const physical_quantity_value_text_file
 ) {
-    _check_if_mesh_is_defined();
-    if (type_of_source != TypeOfSource::SURFACE) {
-        error("Tried to assign a tag to a point.");
-    }
+    _FuncRealToCmplx physical_quantity_value = 
+        convert_table_to_real_to_cmplx_func(physical_quantity_value_text_file);
+
+    add_sound_source(
+        type_of_source,
+        point_coordinates,
+        physical_quantity_type,
+        physical_quantity_value
+    );
+}
+
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::Impl::_validate_espg(const size_t& espg) {
     if (!_existing_espg.contains(espg)) {
         error("Tag {} not found in mesh file.", espg);
     }
@@ -128,6 +240,21 @@ void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
     ) {
         error("Tag {} already assigned.", espg);
     }
+}
+
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
+    const TypeOfSource& type_of_source,
+    const size_t& espg,
+    const PhysicalQuantity& physical_quantity_type,
+    const _FuncRealToCmplx& physical_quantity_value
+) {
+    _check_if_mesh_is_defined();
+    _validate_espg(espg);
+    if (type_of_source != TypeOfSource::SURFACE) {
+        error("Tried to assign a tag to a point.");
+    }
+    
     if (physical_quantity_type == PhysicalQuantity::PARTICLE_VELOCITY) {
         const size_t ispgv = _espg_to_velocity.size();
         _espg_to_velocity.insert({espg, physical_quantity_value});
@@ -148,20 +275,30 @@ void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
 }
 
 template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
+    const TypeOfSource& type_of_source,
+    const size_t& espg,
+    const PhysicalQuantity& physical_quantity_type,
+    const char* const physical_quantity_value_text_file
+) {
+    _FuncRealToCmplx physical_quantity_value = 
+        convert_table_to_real_to_cmplx_func(physical_quantity_value_text_file);
+
+    add_sound_source(
+        type_of_source,
+        espg,
+        physical_quantity_type,
+        physical_quantity_value
+    );
+}
+
+template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_surface_specific_acoustic_impedance(
     const size_t& espg,
     const _FuncRealToCmplx& impedance
 ) {
     _check_if_mesh_is_defined();
-    if (!_existing_espg.contains(espg)) {
-        error("Tag {} not found in mesh file.", espg);
-    }
-    if (_espg_to_pressure.contains(espg) ||
-        _espg_to_velocity.contains(espg) ||
-        _espg_to_impedance.contains(espg)
-    ) {
-        error("Tag {} already assigned.", espg);
-    }
+    _validate_espg(espg);
     const size_t ispgi = _espg_to_impedance.size();
     _espg_to_impedance.insert({espg, impedance});
     _espg_to_ispg.insert({espg, ispgi});
@@ -173,78 +310,10 @@ void SimulationAcFemFreqD3<O>::Impl::add_surface_specific_acoustic_impedance(
     const size_t& espg,
     const char* const impedance_text_file
 ) {
-    _check_if_mesh_is_defined();
-    if (!_existing_espg.contains(espg)) {
-        error("Tag {} not found in mesh file.", espg);
-    }
-    if (_espg_to_pressure.contains(espg) ||
-        _espg_to_velocity.contains(espg) ||
-        _espg_to_impedance.contains(espg)
-    ) {
-        error("Tag {} already assigned.", espg);
-    }
-
-    std::ifstream file(impedance_text_file);
-    std::string line;
-    if (!file.is_open()) {
-        error("Could not open file: {}", impedance_text_file);
-    }
-
-    // first pass: count lines
-    size_t line_count = 0;
-    while (std::getline(file, line)) {
-        ++line_count;
-    }
-    file.clear();
-    file.seekg(0, std::ios::beg);
-    std::vector<double> freq_vec;
-    freq_vec.reserve(line_count);
-    std::vector<_cmplx_t> impedance_vec;
-    impedance_vec.reserve(line_count);
-
-    // second pass: read each line
-    while (std::getline(file, line))
-    {
-        // read frequency
-        size_t first_comma_pos = line.find(',');
-        if (first_comma_pos == std::string::npos) {
-            continue; // malformed line is skipped
-        }
-        std::string freq_str = line.substr(0, first_comma_pos);
-        std::istringstream freq_input_string(freq_str);
-        double freq;
-        freq_input_string >> freq;
-        freq_vec.push_back(freq);
-        
-        // read real part of impedance
-        size_t second_comma_pos = line.find(',', first_comma_pos+1);
-        if (second_comma_pos == std::string::npos) {
-            continue; // malformed line is skipped
-        }
-        std::string real_impedance_str =
-            line.substr(first_comma_pos + 1, second_comma_pos);
-        std::istringstream real_impedance_input_string(real_impedance_str);
-        double real_impedance;
-        real_impedance_input_string >> real_impedance;
-        
-        // read imaginary part of impedance
-        std::string imag_impedance_str = line.substr(second_comma_pos + 1);
-        std::istringstream imag_impedance_input_string(imag_impedance_str);
-        double imag_impedance;
-        imag_impedance_input_string >> imag_impedance;
-        
-        // write complex impedance to the vector
-        impedance_vec.push_back(_cmplx_t(real_impedance, imag_impedance));
-    }
-
-    auto impedance = [freq_vec, impedance_vec](double freq) {
-        return interpolate(freq_vec, impedance_vec, freq);
-    };
-
-    const size_t ispgi = _espg_to_impedance.size();
-    _espg_to_impedance.insert({espg, impedance});
-    _espg_to_ispg.insert({espg, ispgi});
-    ++_ispgi_count;
+    _FuncRealToCmplx impedance = 
+        convert_table_to_real_to_cmplx_func(impedance_text_file);
+    
+    add_surface_specific_acoustic_impedance(espg, impedance);
 }
 
 // explicit instantiation declarations

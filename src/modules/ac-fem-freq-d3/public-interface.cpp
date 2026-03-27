@@ -29,6 +29,33 @@ void SimulationAcFemFreqD3<O>::add_volume_material(
 }
 
 template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::add_volume_material(
+    const size_t& evpg,
+    const char* const density_text_file,
+    const _FuncRealToCmplx& soundspeed
+) {
+    pimpl->add_volume_material(evpg, density_text_file, soundspeed);
+}
+
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::add_volume_material(
+    const size_t& evpg,
+    const _FuncRealToCmplx& density,
+    const char* const soundspeed_text_file
+) {
+    pimpl->add_volume_material(evpg, density, soundspeed_text_file);
+}
+
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::add_volume_material(
+    const size_t& evpg,
+    const char* const density_text_file,
+    const char* const soundspeed_text_file
+) {
+    pimpl->add_volume_material(evpg, density_text_file, soundspeed_text_file);
+}
+
+template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::add_sound_source(
     const TypeOfSource& type_of_source,
     const std::array<double,3>& point_coordinates,
@@ -44,6 +71,19 @@ void SimulationAcFemFreqD3<O>::add_sound_source(
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::add_sound_source(
     const TypeOfSource& type_of_source,
+    const std::array<double,3>& point_coordinates,
+    const PhysicalQuantity& physical_quantity_type,
+    const char* const physical_quantity_value_text_file
+) {
+    pimpl->add_sound_source(
+        type_of_source, point_coordinates,
+        physical_quantity_type, physical_quantity_value_text_file
+    );
+}
+
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::add_sound_source(
+    const TypeOfSource& type_of_source,
     const size_t& espg,
     const PhysicalQuantity& physical_quantity_type,
     const _FuncRealToCmplx& physical_quantity_value
@@ -51,6 +91,19 @@ void SimulationAcFemFreqD3<O>::add_sound_source(
     pimpl->add_sound_source(
         type_of_source, espg,
         physical_quantity_type, physical_quantity_value
+    );
+}
+
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::add_sound_source(
+    const TypeOfSource& type_of_source,
+    const size_t& espg,
+    const PhysicalQuantity& physical_quantity_type,
+    const char* const physical_quantity_value_text_file
+) {
+    pimpl->add_sound_source(
+        type_of_source, espg,
+        physical_quantity_type, physical_quantity_value_text_file
     );
 }
 

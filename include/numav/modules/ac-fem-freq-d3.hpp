@@ -36,6 +36,21 @@ public:
         const std::function<std::complex<double>(const double&)>&,
         const std::function<std::complex<double>(const double&)>&
     );
+    void add_volume_material(
+        const size_t&,
+        const char* const,
+        const std::function<std::complex<double>(const double&)>&
+    );
+    void add_volume_material(
+        const size_t&,
+        const std::function<std::complex<double>(const double&)>&,
+        const char* const
+    );
+    void add_volume_material(
+        const size_t&,
+        const char* const,
+        const char* const
+    );
     void add_sound_source(
         const TypeOfSource&,
         const std::array<double,3>&,
@@ -44,9 +59,21 @@ public:
     );
     void add_sound_source(
         const TypeOfSource&,
+        const std::array<double,3>&,
+        const PhysicalQuantity&,
+        const char* const
+    );
+    void add_sound_source(
+        const TypeOfSource&,
         const size_t&,
         const PhysicalQuantity&,
         const std::function<std::complex<double>(const double&)>&
+    );
+    void add_sound_source(
+        const TypeOfSource&,
+        const size_t&,
+        const PhysicalQuantity&,
+        const char* const
     );
     void add_surface_specific_acoustic_impedance(
         const size_t&,
