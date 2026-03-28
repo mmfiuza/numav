@@ -2,7 +2,7 @@
 
 #pragma once
 
-// define the llinear system solver
+// define the linear system solver
 #define NUMAV_EIGEN 01
 #define NUMAV_ONEMKL 02
 #define NUMAV_SYSTEM_SOLVER NUMAV_ONEMKL
