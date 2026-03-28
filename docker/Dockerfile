@@ -28,12 +28,12 @@ RUN rm intel-onemkl-2025.2.0.629_offline.sh
 # install Julia
 RUN curl -fsSL https://install.julialang.org | sh -s -- --yes
 ENV PATH="/root/.juliaup/bin:$PATH"
-RUN juliaup add 1.11
-RUN juliaup default 1.11
+RUN juliaup add 1.12.5
+RUN juliaup default 1.12.5
 
 # install Julia packages
-RUN julia +1.11 -e 'using Pkg; Pkg.add([ \
-    PackageSpec(name="Plots", version="1.40") \
+RUN julia +1.12.5 -e 'using Pkg; Pkg.add([ \
+    PackageSpec(name="Plots", version="1.41.6") \
 ])'
 
 # Set the entrypoint
