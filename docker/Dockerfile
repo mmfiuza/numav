@@ -30,6 +30,7 @@ RUN rm intel-onemkl-2025.2.0.629_offline.sh
 # install Julia
 ARG JULIA_VERSION="1.12.5"
 ARG JULIAUP_VERSION="1.19.9"
+ENV JULIA_DEPOT_PATH=/usr/local/share/julia
 ENV JULIAUP_DEPOT_PATH=/usr/local/share
 RUN case "$(uname -m)" in \
         x86_64)    JULIAUP_ARCH="x86_64" ;; \
@@ -49,6 +50,7 @@ RUN julia +${JULIA_VERSION} -e 'using Pkg; Pkg.add([ \
     PackageSpec(name="Plots", version="1.41.6"), \
     PackageSpec(name="Symbolics", version="7.17.0") \
 ])'
+RUN chmod -R 777 ${JULIA_DEPOT_PATH}
 
 # Set the entrypoint
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
