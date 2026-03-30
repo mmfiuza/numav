@@ -18,16 +18,12 @@
     static_assert(false, "Invalid NUMAV_SYSTEM_SOLVER.");
 #endif
 
-// define the integration method for trianglar elements
-#define NUMAV_JACOBIAN_DETERMINANT 21
-#define NUMAV_TRIANGLE_AREA 22
-#define NUMAV_TRIANGLE_INTEGRATION_METHOD NUMAV_JACOBIAN_DETERMINANT
-
-// define the integration method for the mass matrices
+// define the integration method for the matrices
 #define NUMAV_ANALYTIC 31
 #define NUMAV_GAUSS_QUADRATURE 32
 #define NUMAV_STIF_INTEGRATION_METHOD NUMAV_GAUSS_QUADRATURE
 #define NUMAV_MASS_INTEGRATION_METHOD NUMAV_ANALYTIC
+#define NUMAV_DAMP_INTEGRATION_METHOD NUMAV_ANALYTIC
 
 #define NUMAV_MKL_OPTIONS \
     MKL_DSS_MSG_LVL_WARNING + \

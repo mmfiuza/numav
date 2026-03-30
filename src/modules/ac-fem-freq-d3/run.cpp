@@ -22,8 +22,6 @@ namespace numav {
 
 // constants
 static constexpr size_t DIM = DIM_COUNT<Dimension::D3>;
-static constexpr double AREA_REF_TRIG = 1.0 / 2.0;
-static constexpr double VOL_REF_TET = 1.0 / 6.0;
 static constexpr double PENALTY_METHOD_CONSTANT = 1e12;
 
 template<ElementOrder O> constexpr size_t NGP_FORC = [] {
@@ -203,8 +201,8 @@ shape_func_sfc_gradient<ElementOrder::O1>(
     (void)xi0;
     (void)xi1;
     return Eigen::Matrix<double, 2, NODES_IN_SFC_ELEM<ElementOrder::O1>> {
-        {1, 0, -1},
-        {0, 1, -1}
+        {+1, +0, -1},
+        {+0, +1, -1}
     };
 }
 
@@ -275,9 +273,9 @@ shape_func_vol_gradient<ElementOrder::O1>(
     (void)xi1;
     (void)xi2;
     return Eigen::Matrix<double, DIM, NODES_IN_VOL_ELEM<ElementOrder::O1>> {
-        {1, 0, 0, -1},
-        {0, 1, 0, -1},
-        {0, 0, 1, -1}
+        {+1, +0, +0, -1},
+        {+0, +1, +0, -1},
+        {+0, +0, +1, -1}
     };
 }
 
@@ -372,36 +370,60 @@ MASS_MATRIX_CONST_PART = [] {
     if constexpr (O == ElementOrder::O1) {
         return 
         Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,NODES_IN_VOL_ELEM<O>> {
-            {1.0/10.0, 1.0/20.0, 1.0/20.0, 1.0/20.0},
-            {1.0/20.0, 1.0/10.0, 1.0/20.0, 1.0/20.0},
-            {1.0/20.0, 1.0/20.0, 1.0/10.0, 1.0/20.0},
-            {1.0/20.0, 1.0/20.0, 1.0/20.0, 1.0/10.0}
+            {+1.0/10.0, +1.0/20.0, +1.0/20.0, +1.0/20.0},
+            {+1.0/20.0, +1.0/10.0, +1.0/20.0, +1.0/20.0},
+            {+1.0/20.0, +1.0/20.0, +1.0/10.0, +1.0/20.0},
+            {+1.0/20.0, +1.0/20.0, +1.0/20.0, +1.0/10.0}
         };
     }
     if constexpr (O == ElementOrder::O2) {
         return 
-            Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,NODES_IN_VOL_ELEM<O>> {
-                { +1.0/70.0, +1.0/420.0, +1.0/420.0, +1.0/420.0, -1.0/105.0,
-                    -1.0/105.0, -1.0/105.0,  -1.0/70.0,  -1.0/70.0,  -1.0/70.0},
-                {+1.0/420.0,  +1.0/70.0, +1.0/420.0, +1.0/420.0, -1.0/105.0,
-                    -1.0/70.0,  -1.0/70.0, -1.0/105.0, -1.0/105.0,  -1.0/70.0},
-                {+1.0/420.0, +1.0/420.0,  +1.0/70.0, +1.0/420.0,  -1.0/70.0,
-                    -1.0/105.0,  -1.0/70.0, -1.0/105.0,  -1.0/70.0, -1.0/105.0},
-                {+1.0/420.0, +1.0/420.0, +1.0/420.0,  +1.0/70.0,  -1.0/70.0,
-                    -1.0/70.0, -1.0/105.0,  -1.0/70.0, -1.0/105.0, -1.0/105.0},
-                {-1.0/105.0, -1.0/105.0,  -1.0/70.0,  -1.0/70.0, +8.0/105.0,
-                    +4.0/105.0, +4.0/105.0, +4.0/105.0, +4.0/105.0, +2.0/105.0},
-                {-1.0/105.0,  -1.0/70.0, -1.0/105.0,  -1.0/70.0, +4.0/105.0,
-                    +8.0/105.0, +4.0/105.0, +4.0/105.0, +2.0/105.0, +4.0/105.0},
-                {-1.0/105.0,  -1.0/70.0,  -1.0/70.0, -1.0/105.0, +4.0/105.0,
-                    +4.0/105.0, +8.0/105.0, +2.0/105.0, +4.0/105.0, +4.0/105.0},
-                { -1.0/70.0, -1.0/105.0, -1.0/105.0,  -1.0/70.0, +4.0/105.0,
-                    +4.0/105.0, +2.0/105.0, +8.0/105.0, +4.0/105.0, +4.0/105.0},
-                { -1.0/70.0, -1.0/105.0,  -1.0/70.0, -1.0/105.0, +4.0/105.0,
-                    +2.0/105.0, +4.0/105.0, +4.0/105.0, +8.0/105.0, +4.0/105.0},
-                { -1.0/70.0,  -1.0/70.0, -1.0/105.0, -1.0/105.0, +2.0/105.0,
-                    +4.0/105.0, +4.0/105.0, +4.0/105.0, +4.0/105.0, +8.0/105.0}
-            };
+        Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,NODES_IN_VOL_ELEM<O>> {
+            { +1.0/70.0, +1.0/420.0, +1.0/420.0, +1.0/420.0, -1.0/105.0,
+                -1.0/105.0, -1.0/105.0,  -1.0/70.0,  -1.0/70.0,  -1.0/70.0},
+            {+1.0/420.0,  +1.0/70.0, +1.0/420.0, +1.0/420.0, -1.0/105.0,
+                 -1.0/70.0,  -1.0/70.0, -1.0/105.0, -1.0/105.0,  -1.0/70.0},
+            {+1.0/420.0, +1.0/420.0,  +1.0/70.0, +1.0/420.0,  -1.0/70.0,
+                -1.0/105.0,  -1.0/70.0, -1.0/105.0,  -1.0/70.0, -1.0/105.0},
+            {+1.0/420.0, +1.0/420.0, +1.0/420.0,  +1.0/70.0,  -1.0/70.0,
+                 -1.0/70.0, -1.0/105.0,  -1.0/70.0, -1.0/105.0, -1.0/105.0},
+            {-1.0/105.0, -1.0/105.0,  -1.0/70.0,  -1.0/70.0, +8.0/105.0,
+                +4.0/105.0, +4.0/105.0, +4.0/105.0, +4.0/105.0, +2.0/105.0},
+            {-1.0/105.0,  -1.0/70.0, -1.0/105.0,  -1.0/70.0, +4.0/105.0,
+                +8.0/105.0, +4.0/105.0, +4.0/105.0, +2.0/105.0, +4.0/105.0},
+            {-1.0/105.0,  -1.0/70.0,  -1.0/70.0, -1.0/105.0, +4.0/105.0,
+                +4.0/105.0, +8.0/105.0, +2.0/105.0, +4.0/105.0, +4.0/105.0},
+            { -1.0/70.0, -1.0/105.0, -1.0/105.0,  -1.0/70.0, +4.0/105.0,
+                +4.0/105.0, +2.0/105.0, +8.0/105.0, +4.0/105.0, +4.0/105.0},
+            { -1.0/70.0, -1.0/105.0,  -1.0/70.0, -1.0/105.0, +4.0/105.0,
+                +2.0/105.0, +4.0/105.0, +4.0/105.0, +8.0/105.0, +4.0/105.0},
+            { -1.0/70.0,  -1.0/70.0, -1.0/105.0, -1.0/105.0, +2.0/105.0,
+                +4.0/105.0, +4.0/105.0, +4.0/105.0, +4.0/105.0, +8.0/105.0}
+        };
+    }
+}();
+
+template<ElementOrder O>
+Eigen::Matrix<double,NODES_IN_SFC_ELEM<O>,NODES_IN_SFC_ELEM<O>> 
+DAMP_MATRIX_CONST_PART = [] {
+    if constexpr (O == ElementOrder::O1) {
+        return 
+        Eigen::Matrix<double,NODES_IN_SFC_ELEM<O>,NODES_IN_SFC_ELEM<O>> {
+            { +1.0/6.0, +1.0/12.0, +1.0/12.0},
+            {+1.0/12.0,  +1.0/6.0, +1.0/12.0},
+            {+1.0/12.0, +1.0/12.0,  +1.0/6.0}
+        };
+    }
+    if constexpr (O == ElementOrder::O2) {
+        return
+        Eigen::Matrix<double,NODES_IN_SFC_ELEM<O>,NODES_IN_SFC_ELEM<O>> {
+        { +1.0/30.0, -1.0/180.0, -1.0/180.0,      +0.0,      +0.0, -1.0/45.0},
+        {-1.0/180.0,  +1.0/30.0, -1.0/180.0,      +0.0, -1.0/45.0,      +0.0},
+        {-1.0/180.0, -1.0/180.0,  +1.0/30.0, -1.0/45.0,      +0.0,      +0.0},
+        {      +0.0,       +0.0,  -1.0/45.0, +8.0/45.0, +4.0/45.0, +4.0/45.0},
+        {      +0.0,  -1.0/45.0,       +0.0, +4.0/45.0, +8.0/45.0, +4.0/45.0},
+        { -1.0/45.0,       +0.0,       +0.0, +4.0/45.0, +4.0/45.0, +8.0/45.0}
+        };
     }
 }();
 
@@ -820,9 +842,8 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
                         btb * det_jac * GAUSS_WEIGHTS_VOL<NGP_STIF<O>>[gpi];
 
                 for (size_t nci=0; nci!=COMBS_VOL.size(); ++nci) {
-                    _ivpg_to_stif_fi_part[ivpg][fipi_vol[nci]] += btb_detj_w(
-                        COMBS_VOL[nci][0], COMBS_VOL[nci][1]
-                    );
+                    _ivpg_to_stif_fi_part[ivpg][fipi_vol[nci]] +=
+                        btb_detj_w(COMBS_VOL[nci][0], COMBS_VOL[nci][1]);
                 }
             }
         #elif NUMAV_STIF_INTEGRATION_METHOD == NUMAV_ANALYTIC
@@ -835,9 +856,8 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
                 stif_fi_part = stif_matrix_const_part / (36*tet_volume);
 
             for (size_t nci=0; nci!=COMBS_VOL.size(); ++nci) {
-                _ivpg_to_stif_fi_part[ivpg][fipi_vol[nci]] += stif_fi_part(
-                    COMBS_VOL[nci][0], COMBS_VOL[nci][1]
-                );
+                _ivpg_to_stif_fi_part[ivpg][fipi_vol[nci]] +=
+                    stif_fi_part(COMBS_VOL[nci][0], COMBS_VOL[nci][1]);
             }
         #endif
 
@@ -877,24 +897,22 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
                         nnt * det_jac * GAUSS_WEIGHTS_VOL<NGP_MASS<O>>[gpi];
                 
                 for (size_t nci=0; nci!=COMBS_VOL.size(); ++nci) {
-                    _ivpg_to_mass_fi_part[ivpg][fipi_vol[nci]] += nnt_detj_w(
-                        COMBS_VOL[nci][0], COMBS_VOL[nci][1]
-                    );
+                    _ivpg_to_mass_fi_part[ivpg][fipi_vol[nci]] +=
+                        nnt_detj_w(COMBS_VOL[nci][0], COMBS_VOL[nci][1]);
                 }
             }
         #elif NUMAV_MASS_INTEGRATION_METHOD == NUMAV_ANALYTIC
             const 
             Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,NODES_IN_VOL_ELEM<O>>
                 mass_matrix_const_part = MASS_MATRIX_CONST_PART<O>;
-                    
+            
             const
             Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,NODES_IN_VOL_ELEM<O>>
                 mass_fi_part = mass_matrix_const_part * tet_volume;
             
             for (size_t nci=0; nci!=COMBS_VOL.size(); ++nci) {
-                _ivpg_to_mass_fi_part[ivpg][fipi_vol[nci]] += mass_fi_part(
-                    COMBS_VOL[nci][0], COMBS_VOL[nci][1]
-                );
+                _ivpg_to_mass_fi_part[ivpg][fipi_vol[nci]] +=
+                    mass_fi_part(COMBS_VOL[nci][0], COMBS_VOL[nci][1]);
             }
         #endif
     }
@@ -989,7 +1007,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_impedance()
                 _a_vals.begin() + ptrdiff;
         }
 
-        #if NUMAV_TRIANGLE_INTEGRATION_METHOD == NUMAV_JACOBIAN_DETERMINANT
+        #if NUMAV_DAMP_INTEGRATION_METHOD == NUMAV_GAUSS_QUADRATURE
             // coordinates matrix
             std::array<Eigen::Vector3d, NODES_IN_SFC_ELEM<O>> triangle_3d;
             for (size_t eni=0; eni!=NODES_IN_SFC_ELEM<O>; ++eni) {
@@ -1007,7 +1025,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_impedance()
                 coords_matrix(eni,0) = triangle_2d[eni](0);
                 coords_matrix(eni,1) = triangle_2d[eni](1);
             }
-        #elif NUMAV_TRIANGLE_INTEGRATION_METHOD == NUMAV_TRIANGLE_AREA
+        #elif NUMAV_DAMP_INTEGRATION_METHOD == NUMAV_ANALYTIC
             // Calculate triangle area
             std::array<std::array<double,DIM>,3> triangle_coords;
             for (size_t eni=0; eni!=3; ++eni) {
@@ -1018,20 +1036,17 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_impedance()
                     _ni_to_coords[ni][2]
                 });
             }
-            const double det_jac = 
-                get_triangle_area(triangle_coords) / AREA_REF_TRIG;
+            const double triangle_area = get_triangle_area(triangle_coords);
         #else
-            static_assert(
-                false, "Invalid NUMAV_TRIANGLE_INTEGRATION_METHOD."
-            );
+            static_assert(false, "Invalid NUMAV_DAMP_INTEGRATION_METHOD.");
         #endif
 
         // damping matrix
-        constexpr std::array<std::array<double,2>,NGP_DAMP<O>>
-            GAUSS_POINTS_DAMP = GAUSS_POINTS_SFC<NGP_DAMP<O>>;
-        for (size_t gpi=0; gpi!=NGP_DAMP<O>; ++gpi)
-        {
-            #if NUMAV_TRIANGLE_INTEGRATION_METHOD == NUMAV_JACOBIAN_DETERMINANT
+        #if NUMAV_DAMP_INTEGRATION_METHOD == NUMAV_GAUSS_QUADRATURE
+            constexpr std::array<std::array<double,2>,NGP_DAMP<O>>
+                GAUSS_POINTS_DAMP = GAUSS_POINTS_SFC<NGP_DAMP<O>>;
+            for (size_t gpi=0; gpi!=NGP_DAMP<O>; ++gpi)
+            {
                 const Eigen::Matrix<double,2,NODES_IN_SFC_ELEM<O>> nabla_n =
                     shape_func_sfc_gradient<O>(
                         GAUSS_POINTS_DAMP[gpi][0], GAUSS_POINTS_DAMP[gpi][1]
@@ -1039,30 +1054,44 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_impedance()
                 const Eigen::Matrix<double,2,2> jac_matrix =
                     nabla_n * coords_matrix;
                 const double det_jac = std::abs(jac_matrix.determinant());
-            #endif
-
-            const Eigen::Matrix<double,NODES_IN_SFC_ELEM<O>,1> n =
+                
+                const Eigen::Matrix<double,NODES_IN_SFC_ELEM<O>,1> n =
                 shape_func_sfc<O>(
                     GAUSS_POINTS_DAMP[gpi][0], GAUSS_POINTS_DAMP[gpi][1]
                 );
+                
+                const
+                Eigen::Matrix<double,NODES_IN_SFC_ELEM<O>,NODES_IN_SFC_ELEM<O>>
+                    nnt = n * n.transpose();
+                
+                // todo: multiply detj and w without creating another matrix
+                const
+                Eigen::Matrix<double,NODES_IN_SFC_ELEM<O>,NODES_IN_SFC_ELEM<O>>
+                    nnt_detj_w =
+                        nnt * det_jac * GAUSS_WEIGHTS_SFC<NGP_DAMP<O>>[gpi];
+                
+                for (size_t nci=0; nci!=COMBS_SFC.size(); ++nci) {
+                    _ispgi_to_damp_fi_part[ispgi][fipi_damp[nci]] += 
+                        nnt_detj_w(COMBS_SFC[nci][0], COMBS_SFC[nci][1]);
+                }
+            }
+        #elif NUMAV_DAMP_INTEGRATION_METHOD == NUMAV_ANALYTIC
+            const 
+            Eigen::Matrix<double,NODES_IN_SFC_ELEM<O>,NODES_IN_SFC_ELEM<O>>
+                damp_matrix_const_part = DAMP_MATRIX_CONST_PART<O>;
             
             const
             Eigen::Matrix<double,NODES_IN_SFC_ELEM<O>,NODES_IN_SFC_ELEM<O>>
-                nnt = n * n.transpose();
-
-            // todo: multiply detj and w without creating another eigen matrix
-            const
-            Eigen::Matrix<double,NODES_IN_SFC_ELEM<O>,NODES_IN_SFC_ELEM<O>>
-                nnt_detj_w =
-                    nnt * det_jac * GAUSS_WEIGHTS_SFC<NGP_DAMP<O>>[gpi];
+                damp_fi_part = damp_matrix_const_part * triangle_area;
             
             for (size_t nci=0; nci!=COMBS_SFC.size(); ++nci) {
-                _ispgi_to_damp_fi_part[ispgi][fipi_damp[nci]] += nnt_detj_w(
-                    COMBS_SFC[nci][0], COMBS_SFC[nci][1]
-                );
+                _ispgi_to_damp_fi_part[ispgi][fipi_damp[nci]] +=
+                    damp_fi_part(COMBS_SFC[nci][0], COMBS_SFC[nci][1]);
             }
+        #else
+            static_assert(false, "Invalid NUMAV_DAMP_INTEGRATION_METHOD.");
+        #endif
         }
-    }
     ispgi_to_map_to_fipi.free();
 }
 
