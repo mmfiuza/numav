@@ -427,6 +427,21 @@ DAMP_MATRIX_CONST_PART = [] {
     }
 }();
 
+template<ElementOrder O>
+Eigen::Matrix<double,NODES_IN_SFC_ELEM<O>,1> 
+FORC_VECTOR_CONST_PART = [] {
+    if constexpr (O == ElementOrder::O1) {
+        return Eigen::Matrix<double,NODES_IN_SFC_ELEM<O>,1> {
+            1.0/3.0, 1.0/3.0, 1.0/3.0
+        };
+    }
+    if constexpr (O == ElementOrder::O2) {
+        return Eigen::Matrix<double,NODES_IN_SFC_ELEM<O>,1> {
+            0.0, 0.0, 0.0, 1.0/3.0, 1.0/3.0, 1.0/3.0
+        };
+    }
+}();
+
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::_check_if_it_can_run() {
     _check_if_mesh_is_defined();
@@ -1026,7 +1041,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_impedance()
                 coords_matrix(eni,1) = triangle_2d[eni](1);
             }
         #elif NUMAV_DAMP_INTEGRATION_METHOD == NUMAV_ANALYTIC
-            // Calculate triangle area
+            // calculate triangle area
             std::array<std::array<double,DIM>,3> triangle_coords;
             for (size_t eni=0; eni!=3; ++eni) {
                 const size_t ni = _sei_to_ni[sei][eni];
@@ -1165,50 +1180,84 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_velocity()
                 _b_vals.begin() + ptrdiff;
         }
 
-        // 2D coordinates matrix
-        std::array<Eigen::Vector3d, NODES_IN_SFC_ELEM<O>> triangle_3d;
-        for (size_t eni=0; eni!=NODES_IN_SFC_ELEM<O>; ++eni) {
-            const size_t node_idx = _sei_to_ni[sei][eni];
-            triangle_3d[eni] = Eigen::Vector3d(
-                _ni_to_coords[node_idx][0],
-                _ni_to_coords[node_idx][1],
-                _ni_to_coords[node_idx][2]
-            );
-        }
-        std::array<Eigen::Vector2d, NODES_IN_SFC_ELEM<O>> triangle_2d =
-            project_triangle_to_2d<O>(triangle_3d);
-        Eigen::Matrix<double,NODES_IN_SFC_ELEM<O>,2> coords_matrix;
-        for (size_t eni=0; eni!=NODES_IN_SFC_ELEM<O>; ++eni) {
-            coords_matrix(eni,0) = triangle_2d[eni](0);
-            coords_matrix(eni,1) = triangle_2d[eni](1);
-        }
+        #if NUMAV_FORC_INTEGRATION_METHOD == NUMAV_GAUSS_QUADRATURE
+            // coordinates matrix
+            std::array<Eigen::Vector3d, NODES_IN_SFC_ELEM<O>> triangle_3d;
+            for (size_t eni=0; eni!=NODES_IN_SFC_ELEM<O>; ++eni) {
+                const size_t node_idx = _sei_to_ni[sei][eni];
+                triangle_3d[eni] = Eigen::Vector3d(
+                    _ni_to_coords[node_idx][0],
+                    _ni_to_coords[node_idx][1],
+                    _ni_to_coords[node_idx][2]
+                );
+            }
+            std::array<Eigen::Vector2d, NODES_IN_SFC_ELEM<O>> triangle_2d =
+                project_triangle_to_2d<O>(triangle_3d);
+            Eigen::Matrix<double,NODES_IN_SFC_ELEM<O>,2> coords_matrix;
+            for (size_t eni=0; eni!=NODES_IN_SFC_ELEM<O>; ++eni) {
+                coords_matrix(eni,0) = triangle_2d[eni](0);
+                coords_matrix(eni,1) = triangle_2d[eni](1);
+            }
+        #elif NUMAV_FORC_INTEGRATION_METHOD == NUMAV_ANALYTIC
+            // calculate triangle area
+            std::array<std::array<double,DIM>,3> triangle_coords;
+            for (size_t eni=0; eni!=3; ++eni) {
+                const size_t ni = _sei_to_ni[sei][eni];
+                triangle_coords[eni] = std::array<double,DIM>({
+                    _ni_to_coords[ni][0],
+                    _ni_to_coords[ni][1],
+                    _ni_to_coords[ni][2]
+                });
+            }
+            const double triangle_area = get_triangle_area(triangle_coords);
+        #else
+            static_assert(false, "Invalid NUMAV_FORC_INTEGRATION_METHOD.");
+        #endif
 
         // elementary force vector
-        constexpr std::array<std::array<double,2>,NGP_FORC<O>>
-            GAUSS_POINTS_FORC = GAUSS_POINTS_SFC<NGP_FORC<O>>;
-        for (size_t gpi=0; gpi!=NGP_FORC<O>; ++gpi)
-        {
-            const Eigen::Matrix<double,2,NODES_IN_SFC_ELEM<O>> nabla_n =
-                shape_func_sfc_gradient<O>(
-                    GAUSS_POINTS_FORC[gpi][0], GAUSS_POINTS_FORC[gpi][1]
-                ); // todo: try putting constexpr here
-            const Eigen::Matrix<double,2,2> jac_matrix =
-                nabla_n * coords_matrix;
-            const double det_jac = jac_matrix.determinant();
+        #if NUMAV_FORC_INTEGRATION_METHOD == NUMAV_GAUSS_QUADRATURE
+            constexpr std::array<std::array<double,2>,NGP_FORC<O>>
+                GAUSS_POINTS_FORC = GAUSS_POINTS_SFC<NGP_FORC<O>>;
+            for (size_t gpi=0; gpi!=NGP_FORC<O>; ++gpi)
+            {
+                const Eigen::Matrix<double,2,NODES_IN_SFC_ELEM<O>> nabla_n =
+                    shape_func_sfc_gradient<O>(
+                        GAUSS_POINTS_FORC[gpi][0], GAUSS_POINTS_FORC[gpi][1]
+                    ); // todo: try putting constexpr here
+                const Eigen::Matrix<double,2,2> jac_matrix =
+                    nabla_n * coords_matrix;
+                const double det_jac = jac_matrix.determinant();
 
-            const Eigen::Matrix<double,NODES_IN_SFC_ELEM<O>,1> n =
-                shape_func_sfc<O>(
-                    GAUSS_POINTS_FORC[gpi][0], GAUSS_POINTS_FORC[gpi][1]
-                );
+                const Eigen::Matrix<double,NODES_IN_SFC_ELEM<O>,1> n =
+                    shape_func_sfc<O>(
+                        GAUSS_POINTS_FORC[gpi][0], GAUSS_POINTS_FORC[gpi][1]
+                    );
 
-            // todo: multiply detj and w without creating another eigen matrix
-            const Eigen::Matrix<double,NODES_IN_SFC_ELEM<O>,1> n_detj_w =
-                n * det_jac * GAUSS_WEIGHTS_SFC<NGP_FORC<O>>[gpi];
+                // todo: multiply detj and w without creating another matrix
+                const Eigen::Matrix<double,NODES_IN_SFC_ELEM<O>,1> n_detj_w =
+                    n * det_jac * GAUSS_WEIGHTS_SFC<NGP_FORC<O>>[gpi];
+                
+                for (size_t eni=0; eni!=NODES_IN_SFC_ELEM<O>; ++eni) {
+                    _ispgv_to_forc_fi_part[ispgv][fipi_forc[eni]] +=
+                        n_detj_w(eni);
+                }
+            }
+        #elif NUMAV_FORC_INTEGRATION_METHOD == NUMAV_ANALYTIC
+            const 
+            Eigen::Matrix<double,NODES_IN_SFC_ELEM<O>,1>
+                forc_vector_const_part = FORC_VECTOR_CONST_PART<O>;
+            
+            const
+            Eigen::Matrix<double,NODES_IN_SFC_ELEM<O>,1>
+                forc_fi_part = forc_vector_const_part * triangle_area;
             
             for (size_t eni=0; eni!=NODES_IN_SFC_ELEM<O>; ++eni) {
-                _ispgv_to_forc_fi_part[ispgv][fipi_forc[eni]] += n_detj_w(eni);
+                _ispgv_to_forc_fi_part[ispgv][fipi_forc[eni]] +=
+                    forc_fi_part(eni);
             }
-        }
+        #else
+            static_assert(false, "Invalid NUMAV_FORC_INTEGRATION_METHOD.");
+        #endif
     }
     ispgv_to_map_to_fipi.free();
 }
