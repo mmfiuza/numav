@@ -993,11 +993,11 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_impedance()
             // coordinates matrix
             std::array<Eigen::Vector3d, NODES_IN_SFC_ELEM<O>> triangle_3d;
             for (size_t eni=0; eni!=NODES_IN_SFC_ELEM<O>; ++eni) {
-                const size_t node_idx = _sei_to_ni[sei][eni];
+                const size_t ni = _sei_to_ni[sei][eni];
                 triangle_3d[eni] = Eigen::Vector3d(
-                    _ni_to_coords[node_idx][0],
-                    _ni_to_coords[node_idx][1],
-                    _ni_to_coords[node_idx][2]
+                    _ni_to_coords[ni][0],
+                    _ni_to_coords[ni][1],
+                    _ni_to_coords[ni][2]
                 );
             }
             std::array<Eigen::Vector2d, NODES_IN_SFC_ELEM<O>> triangle_2d =
@@ -1010,12 +1010,12 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_impedance()
         #elif NUMAV_TRIANGLE_INTEGRATION_METHOD == NUMAV_TRIANGLE_AREA
             // Calculate triangle area
             std::array<std::array<double,DIM>,3> triangle_coords;
-            for (size_t ni=0; ni!=3; ++ni) {
-                const size_t node_idx = _sei_to_ni[sei][ni];
-                triangle_coords[ni] = std::array<double,DIM>({
-                    _ni_to_coords[node_idx][0],
-                    _ni_to_coords[node_idx][1],
-                    _ni_to_coords[node_idx][2]
+            for (size_t eni=0; eni!=3; ++eni) {
+                const size_t ni = _sei_to_ni[sei][eni];
+                triangle_coords[eni] = std::array<double,DIM>({
+                    _ni_to_coords[ni][0],
+                    _ni_to_coords[ni][1],
+                    _ni_to_coords[ni][2]
                 });
             }
             const double det_jac = 
