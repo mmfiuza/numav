@@ -25,7 +25,7 @@ template<ElementOrder O> constexpr size_t EXTRA_NODES_IN_VOL_ELEM = [] {
 }();
 
 // dimension count in space (not the dimension of mesh elements)
-static constexpr size_t DIM = 3; // TODO: review static keyword
-static constexpr double PENALTY_METHOD_CONSTANT = 1e12; // TODO: review static
+constexpr size_t DIM = 3;
+constexpr double PENALTY_METHOD_CONSTANT = 1e12;
 
 } // namespace numav
