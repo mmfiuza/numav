@@ -108,19 +108,6 @@ SimulationAcFemFreqD3<O>::Impl& SimulationAcFemFreqD3<O>::Impl::operator=(
 ) noexcept = default;
 
 // explicit instantiation declarations
-template class Simulation<
-    Phenomenon::ACOUSTIC,
-    NumericalMethod::FEM,
-    Domain::FREQUENCY,
-    Dimension::D3,
-    ElementOrder::O1
->;
-template class Simulation<
-    Phenomenon::ACOUSTIC,
-    NumericalMethod::FEM,
-    Domain::FREQUENCY,
-    Dimension::D3,
-    ElementOrder::O2
->;
+INSTANTIATE_SIMULATION_CLASS
 
 } // namespace numav

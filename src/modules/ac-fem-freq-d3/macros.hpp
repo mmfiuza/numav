@@ -30,3 +30,20 @@
     MKL_DSS_MSG_LVL_WARNING + \
     MKL_DSS_TERM_LVL_ERROR + \
     MKL_DSS_ZERO_BASED_INDEXING
+
+// explicit instantiation declarations
+#define INSTANTIATE_SIMULATION_CLASS \
+    template class Simulation< \
+        Phenomenon::ACOUSTIC, \
+        NumericalMethod::FEM, \
+        Domain::FREQUENCY, \
+        Dimension::D3, \
+        ElementOrder::O1 \
+    >; \
+    template class Simulation< \
+        Phenomenon::ACOUSTIC, \
+        NumericalMethod::FEM, \
+        Domain::FREQUENCY, \
+        Dimension::D3, \
+        ElementOrder::O2 \
+    >;

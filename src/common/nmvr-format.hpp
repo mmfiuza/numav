@@ -1,5 +1,10 @@
 // Copyright (c) 2025 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
+#include <fstream>
+#include <array>
+
+#include "numav/numav.hpp"
+
 namespace numav::nmvr {
 
 inline constexpr uint64_t SIGNATURE_SIZE = 8;
@@ -103,4 +108,11 @@ SIM_TYPE_FEM_ORDER =
     }
 }();
 
-} // namespace numav
+void write_data_chunk(
+    std::ofstream&,
+    const std::array<char,CHUNK_ID_SIZE>&,
+    const uint64_t&,
+    const void* const
+);
+
+} // namespace numav::nmvr

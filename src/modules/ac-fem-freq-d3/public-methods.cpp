@@ -316,20 +316,43 @@ void SimulationAcFemFreqD3<O>::Impl::add_surface_specific_acoustic_impedance(
     add_surface_specific_acoustic_impedance(espg, impedance);
 }
 
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::Impl::_check_if_it_can_run() {
+    _check_if_mesh_is_defined();
+    if (!_is_any_source_defined){
+        error("No sound source was defined."
+            " Call add_sound_source to do so.");
+    }
+    if (!_is_freq_range_defined){
+        error("Simulation frequency range was not defined."
+            " Call set_frequency_range to do so.");
+    }
+    for (auto& evpg : _existing_evpg) {
+        if (!_evpg_to_volprop.contains(evpg)) {
+            error("Volume tag {} was not assigned."
+            " Call add_volume_material to do so.", evpg);
+        }
+    }
+    if (_did_run) {
+        error("This Simulation has already been run.");
+    }
+}
+
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::Impl::run()
+{
+    _check_if_it_can_run();
+    log::print_opening();
+    log::print_opening_ac_fem_freq_d3();
+    _define_freq_vector();
+    _organize_physical_group_data();
+    _assemble_freq_independent_parts();
+    _solve_systems();
+}
+
+// TODO: move export_result to here
+
 // explicit instantiation declarations
-template class Simulation<
-    Phenomenon::ACOUSTIC,
-    NumericalMethod::FEM,
-    Domain::FREQUENCY,
-    Dimension::D3,
-    ElementOrder::O1
->;
-template class Simulation<
-    Phenomenon::ACOUSTIC,
-    NumericalMethod::FEM,
-    Domain::FREQUENCY,
-    Dimension::D3,
-    ElementOrder::O2
->;
+INSTANTIATE_SIMULATION_CLASS
 
 } // namespace numav

@@ -4,6 +4,7 @@
 #include "common/aliases.hpp"
 #include "common/debug-macros.hpp"
 #include "modules/ac-fem-freq-d3/macros.hpp"
+#include "modules/ac-fem-freq-d3/constants.hpp"
 
 #include <unordered_map>
 #include <unordered_set>
@@ -16,33 +17,6 @@
 #include "SafePtr.hpp"
 
 namespace numav {
-
-template<Dimension D> constexpr size_t DIM_COUNT = [] {
-    if constexpr (D == Dimension::D1) { return 1; }
-    if constexpr (D == Dimension::D2) { return 2; }
-    if constexpr (D == Dimension::D3) { return 3; }
-    return 0;
-}();
-
-template<ElementOrder O> constexpr size_t NODES_IN_SFC_ELEM = [] {
-    if constexpr (O == ElementOrder::O1) { return 3; }
-    if constexpr (O == ElementOrder::O2) { return 6; }
-    return 0;
-}();
-
-template<ElementOrder O> constexpr size_t EXTRA_NODES_IN_SFC_ELEM = [] {
-    return NODES_IN_SFC_ELEM<O> - NODES_IN_SFC_ELEM<ElementOrder::O1>;
-}();
-
-template<ElementOrder O> constexpr size_t NODES_IN_VOL_ELEM = [] {
-    if constexpr (O == ElementOrder::O1) { return 4;  }
-    if constexpr (O == ElementOrder::O2) { return 10; }
-    return 0;
-}();
-
-template<ElementOrder O> constexpr size_t EXTRA_NODES_IN_VOL_ELEM = [] {
-    return NODES_IN_VOL_ELEM<O> - NODES_IN_VOL_ELEM<ElementOrder::O1>;
-}();
 
 template<ElementOrder O>
 class SimulationAcFemFreqD3<O>::Impl
@@ -153,14 +127,15 @@ public:
     void _organize_impedance_physical_group_data();
     void _organize_velocity_physical_group_data();
     void _organize_physical_group_data();
-    void _allocate_a_and_b();
+    void _allocate_a();
+    void _allocate_b();
     void _assemble_fi_part_for_point_velocity();
     void _assemble_fi_part_for_sfc_velocity();
     void _assemble_fi_part_for_sfc_impedance();
     void _assemble_fi_part_for_vol_elements();
     void _assemble_fi_part_for_pressure();
     void _assemble_freq_independent_parts();
-    void _solve();
+    void _solve_systems();
 
 private:
     bool _is_mesh_defined;
@@ -172,7 +147,7 @@ private:
     double _freq_max;
     fz::SafePtr<double> _freq_steps;
 
-    fz::SafePtr<std::array<double,3>> _ni_to_coords;
+    fz::SafePtr<std::array<double,DIM>> _ni_to_coords;
     fz::SafePtr<std::array<size_t,NODES_IN_SFC_ELEM<O>>> _sei_to_ni;
     fz::SafePtr<std::array<size_t,NODES_IN_VOL_ELEM<O>>> _vei_to_ni;
 
