@@ -106,7 +106,7 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
         #if NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
             solve_using_eigen(
                 _a_vals, _nnz_rowcol_idx_pairs, _b_vals, _b_row_idx,
-                _cmplx_pressure_amp._data.data() + fi*_ni_count
+                _ni_count, _cmplx_pressure_amp.data() + fi*_ni_count
             );
         #elif NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
             solve_using_onemkl(
