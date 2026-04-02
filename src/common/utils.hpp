@@ -7,9 +7,10 @@
 
 #include <string_view>
 #include <charconv>
-#include <stdexcept>
 #include <tuple>
 #include <fstream>
+
+namespace numav {
 
 void trim_right_whitespace(std::string_view& sv);
 
@@ -23,6 +24,10 @@ T parse(std::string_view str) {
     }
     return value;
 }
+
+_FuncRealToCmplx convert_table_to_real_to_cmplx_func(
+    const char* const impedance_text_file
+);
 
 template<typename T>
 std::tuple<T,T> make_ascending_tuple(const T& a, const T& b) {
@@ -65,3 +70,5 @@ void write_matrix(const T& matrix, const std::string& filename) {
         );
     }
 }
+
+} // namespace numav

@@ -8,13 +8,9 @@
 namespace numav {
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::Impl::export_result(
+void SimulationAcFemFreqD3<O>::Impl::_write_nmvr(
     const char* const path_to_result
 ) {
-    if (!_did_run) {
-        error("The Simulation needs to run before the result is exported."
-            " Call the run method first.");
-    }
     std::ofstream file(path_to_result, std::ios::binary);
     if (!file) {
         error("Failed to open file: {}", path_to_result);

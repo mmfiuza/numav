@@ -136,6 +136,7 @@ public:
     void _assemble_fi_part_for_pressure();
     void _assemble_freq_independent_parts();
     void _solve_systems();
+    void _write_nmvr(const char* const);
 
 private:
     bool _is_mesh_defined;
