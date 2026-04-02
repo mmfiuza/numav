@@ -65,46 +65,46 @@ void SimulationAcFemFreqD3<O>::Impl::_load_bdf(const char* const path_to_mesh)
         fz::SafePtr<std::array<size_t,NODES_IN_VOL_ELEM<O>>>(_vei_count);
     _sei_to_espg = fz::SafePtr<size_t>(_sei_count);
     _vei_to_evpg = fz::SafePtr<size_t>(_vei_count);
-    auto it_ni_to_coords = _ni_to_coords.begin();
-    auto it_sfc_elem_node_idx = _sei_to_ni.begin();
-    auto it_vol_elem_node_idx = _vei_to_ni.begin();
-    auto it_elem_idx_to_espg = _sei_to_espg.begin();
-    auto it_elem_idx_to_evpg = _vei_to_evpg.begin();
+    auto it_sei_to_ni = _sei_to_ni.begin();
+    auto it_vei_to_ni = _vei_to_ni.begin();
+    auto it_sei_to_espg = _sei_to_espg.begin();
+    auto it_vei_to_evpg = _vei_to_evpg.begin();
     file.clear();
     file.seekg(0, std::ios::beg);
     while (std::getline(file, line)) {
+        // all minus one are for zero base indexing conversion
         if (line.starts_with("GRID")) {
-            *it_ni_to_coords = {
+            const size_t ni = parse<double>(line.substr(8,8)) - 1;
+            _ni_to_coords[ni] = {
                 parse<double>(line.substr(24,8)),
                 parse<double>(line.substr(32,8)),
                 parse<double>(line.substr(40,8))
             };
-            ++it_ni_to_coords;
         }
         else if (line.starts_with("CTRIA3")) {
             const size_t espg = parse<size_t>(line.substr(16,8));
             _existing_espg.insert(espg);
-            *it_elem_idx_to_espg = espg;
-            ++it_elem_idx_to_espg;
-            *it_sfc_elem_node_idx = { // minus one for zero base indexing
+            *it_sei_to_espg = espg;
+            ++it_sei_to_espg;
+            *it_sei_to_ni = {
                 parse<size_t>(line.substr(24,8)) - 1,
                 parse<size_t>(line.substr(32,8)) - 1,
                 parse<size_t>(line.substr(40,8)) - 1
             };
-            ++it_sfc_elem_node_idx;
+            ++it_sei_to_ni;
         }
         else if (line.starts_with("CTETRA")) {
             const size_t evpg = parse<size_t>(line.substr(16,8));
             _existing_evpg.insert(evpg);
-            *it_elem_idx_to_evpg = evpg;
-            ++it_elem_idx_to_evpg;
-            *it_vol_elem_node_idx = { // minus one for zero base indexing
+            *it_vei_to_evpg = evpg;
+            ++it_vei_to_evpg;
+            *it_vei_to_ni = { // minus one for zero base indexing
                 parse<size_t>(line.substr(24,8)) - 1,
                 parse<size_t>(line.substr(32,8)) - 1,
                 parse<size_t>(line.substr(40,8)) - 1,
                 parse<size_t>(line.substr(48,8)) - 1
             };
-            ++it_vol_elem_node_idx;
+            ++it_vei_to_ni;
         }
         else if (line.starts_with("ENDDATA")) {
             break;
