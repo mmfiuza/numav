@@ -96,7 +96,7 @@ inline std::ostream &write_duration(std::ostream &os, std::chrono::nanoseconds n
   auto s = duration_cast<seconds>(ns);
   if (d.count() > 0)
     os << setw(2) << d.count() << "d:";
-  if (h.count() > 0)
+  if (true)
     os << setw(2) << h.count() << "h:";
   os << setw(2) << m.count() << "m:" << setw(2) << s.count() << 's';
   os.fill(fill);

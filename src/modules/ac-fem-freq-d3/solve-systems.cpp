@@ -26,17 +26,17 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
     auto start_time = std::chrono::system_clock::now();
     auto time_t_start = std::chrono::system_clock::to_time_t(start_time);
     std::cout << "Solver started at: "
-        << std::put_time(std::localtime(&time_t_start), "%H:%M:%S") << "\n";
+        << std::put_time(std::localtime(&time_t_start), "%Hh:%Mm:%Ss") << "\n";
 
     // create progress bar
     indicators::show_console_cursor(false);
     indicators::ProgressBar bar {
-        indicators::option::BarWidth{47},
-        indicators::option::Start{" ["},
-        indicators::option::Fill{"#"},
-        indicators::option::Lead{"#"},
-        indicators::option::Remainder{"-"},
-        indicators::option::End{"]"},
+        indicators::option::BarWidth{37},
+        indicators::option::Start{" |"},
+        indicators::option::Fill{"="},
+        indicators::option::Lead{"="},
+        indicators::option::Remainder{" "},
+        indicators::option::End{"|"},
         indicators::option::PrefixText{"Running"},
         indicators::option::ForegroundColor{indicators::Color::unspecified},
         indicators::option::ShowPercentage{true},
@@ -44,7 +44,9 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
         indicators::option::ShowRemainingTime{true},
         indicators::option::FontStyles{
             std::vector<indicators::FontStyle>{indicators::FontStyle::bold}
-        }
+        },
+        indicators::option::MinProgress{0},
+        indicators::option::MaxProgress{_freq_count}
     };
 
     for (size_t fi=0; fi!=_freq_count; ++fi)
@@ -130,9 +132,7 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
         #endif
         
         // progress bar tick
-        const double percentage =
-            100.0 * static_cast<double>(fi) / static_cast<double>(_freq_count);
-        bar.set_progress(static_cast<size_t>(percentage));
+        bar.set_progress(static_cast<size_t>(fi+1));
     }
     _did_run = true;
     #if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
@@ -142,14 +142,13 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
     #endif
 
     // end progress bar
-    bar.set_progress(100);
     indicators::show_console_cursor(true);
 
     // print finish
     auto end_time = std::chrono::system_clock::now();
     auto time_t_end = std::chrono::system_clock::to_time_t(end_time);
     std::cout << "Solver ended at: " <<
-        std::put_time(std::localtime(&time_t_end), "%H:%M:%S") << "\n";
+        std::put_time(std::localtime(&time_t_end), "%Hh:%Mm:%Ss") << "\n";
 }
 
 // explicit instantiation declarations

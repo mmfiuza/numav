@@ -15,11 +15,15 @@ namespace numav::log {
     }
 
     void print_opening() {
-        std::cout << "----------------------------------------\n";
-        std::cout << "Numav Solver\n";
-        std::cout << "Copyright (c) 2025 Numav\n";
-        std::cout << "All rights reserved.\n";
-        std::cout << "----------------------------------------\n";
+        std::cout << std::string(80,'-') << "\n";
+        std::cout << std::string(34,' ') <<
+            "Numav Solver" << std::string(34,' ') << "\n";
+        std::cout << std::string(20,' ') <<
+            "Copyright (c) 2025 Matheus Machado Fiuza" <<
+            std::string(20,' ') << "\n";
+        std::cout << std::string(30,' ') << "All rights reserved." << 
+            std::string(30,' ') << "\n";
+        std::cout << std::string(80, '-') << "\n";
     }
 
     void print_opening_ac_fem_freq_d3() {

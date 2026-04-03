@@ -230,7 +230,7 @@ private:
         get_value<details::ProgressBarOption::max_progress>();
 
     if (get_value<details::ProgressBarOption::show_percentage>()) {
-      os << " "
+      os << " " << std::setw(3) << std::setfill(' ')
          << (std::min)(static_cast<size_t>(static_cast<float>(progress_) /
                                          max_progress * 100),
                      size_t(100))
@@ -250,7 +250,7 @@ private:
 
     if (get_value<details::ProgressBarOption::show_remaining_time>()) {
       if (get_value<details::ProgressBarOption::show_elapsed_time>())
-        os << "<";
+        os << " - ";
       else
         os << " [";
 
