@@ -1,8 +1,8 @@
 # Copyright (c) 2025 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
 # start from debian:bookworm-slim
-FROM debian@sha256:\
-df52e55e3361a81ac1bead266f3373ee55d29aa50cf0975d440c2be3483d8ed3
+ARG DEB_DIGEST=df52e55e3361a81ac1bead266f3373ee55d29aa50cf0975d440c2be3483d8ed3
+FROM debian@sha256:${DEB_DIGEST}
 
 # install dependencies
 RUN apt-get update && apt-get install -y \
