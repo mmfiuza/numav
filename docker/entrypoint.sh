@@ -1,4 +1,6 @@
 #!/bin/bash
+# Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
+
 set -e
 
 # Get UID and GID from environment (set by start_container.sh or .env)

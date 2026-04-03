@@ -1,4 +1,4 @@
-# Copyright (c) 2025 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
+# Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 #
 # READ_NMVR Read NUMAV Result (.nmvr) file format
 #   data = read_nmvr(filename) reads the .nmvr file and returns a

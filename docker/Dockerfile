@@ -1,4 +1,4 @@
-# Copyright (c) 2025 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
+# Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
 # start from debian:bookworm-slim
 ARG DEB_DIGEST=df52e55e3361a81ac1bead266f3373ee55d29aa50cf0975d440c2be3483d8ed3

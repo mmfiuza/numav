@@ -1,3 +1,5 @@
+// Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
+
 // Define box dimensions
 L = 5; // Length (x-direction)
 W = 4; // Width (y-direction)

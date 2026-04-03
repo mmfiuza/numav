@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
+// Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
 #include "common/exception.hpp"
 #include "modules/ac-fem-freq-d3/onemkl-solver.hpp"

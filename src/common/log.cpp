@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
+// Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
 #include "common/log.hpp"
 
@@ -19,7 +19,7 @@ namespace numav::log {
         std::cout << std::string(34,' ') <<
             "Numav Solver" << std::string(34,' ') << "\n";
         std::cout << std::string(20,' ') <<
-            "Copyright (c) 2025 Matheus Machado Fiuza" <<
+            "Copyright (c) 2026 Matheus Machado Fiuza" <<
             std::string(20,' ') << "\n";
         std::cout << std::string(30,' ') << "All rights reserved." << 
             std::string(30,' ') << "\n";
