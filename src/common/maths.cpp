@@ -22,6 +22,21 @@ fz::SafePtr<double> linspace(
     return result;
 }
 
+fz::SafePtr<double> cubespace(
+    const double& start, const double& finish, const size_t& num_points
+) {
+    assert(num_points!=0 && num_points!=1);
+    fz::SafePtr<double> x = linspace(0.0, 1.0, num_points);
+    const double& a3 = std::pow(start, 3);
+    const double& b3 = std::pow(finish, 3);
+    fz::SafePtr<double> result(num_points);
+    for (size_t i=0; i!=num_points; ++i) {
+        result[i] = std::pow(a3 + (b3 - a3) * x[i], 1.0/3.0);
+    }
+    x.free();
+    return result;
+}
+
 double get_triangle_area(const std::array<std::array<double,3>,3>& coords)
 {
     const double a = std::sqrt(

@@ -16,7 +16,7 @@ namespace numav {
 
 template <ElementOrder O>
 size_t SimulationAcFemFreqD3<O>::Impl::_get_closest_point(
-    const std::array<double,3>& point_coords
+    const std::array<double,DIM>& point_coords
 ) {
     double minimum_distance_squared = std::numeric_limits<double>::max();
     size_t ni_closest = std::numeric_limits<size_t>::max();

@@ -15,6 +15,10 @@ fz::SafePtr<double> linspace(
     const double& start, const double& finish, const size_t& num_points
 );
 
+fz::SafePtr<double> cubespace(
+    const double& start, const double& finish, const size_t& num_points
+);
+
 double get_triangle_area(const std::array<std::array<double,3>,3>& coords);
 
 double get_tetrahedron_volume(const std::array<std::array<double,3>,4>& coords);
