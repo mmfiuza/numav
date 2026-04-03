@@ -2,20 +2,14 @@
 
 #include "modules/ac-fem-freq-d3/impl.hpp"
 
-#include <tuple>
 #include <cmath>
 #include <numbers>
-#include <algorithm>
-#include <limits>
-#include <chrono>
-#include <iomanip>
 
-#include "common/exception.hpp"
-#include "common/hash-functions.hpp"
-#include "common/maths.hpp"
-#include "common/utils.hpp"
 #include "modules/ac-fem-freq-d3/onemkl-solver.hpp"
 #include "modules/ac-fem-freq-d3/eigen-solver.hpp"
+
+#include <indicators/progress_bar.hpp>
+#include <indicators/cursor_control.hpp>
 
 namespace numav {
 
@@ -28,12 +22,30 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
             _ni_count, _freq_count
         );
 
-    // start timer
+    // print start time
     auto start_time = std::chrono::system_clock::now();
     auto time_t_start = std::chrono::system_clock::to_time_t(start_time);
     std::cout << "Solver started at: "
         << std::put_time(std::localtime(&time_t_start), "%H:%M:%S") << "\n";
-    std::cout << "Solution progress: 0%\n";
+
+    // create progress bar
+    indicators::show_console_cursor(false);
+    indicators::ProgressBar bar {
+        indicators::option::BarWidth{47},
+        indicators::option::Start{" ["},
+        indicators::option::Fill{"#"},
+        indicators::option::Lead{"#"},
+        indicators::option::Remainder{"-"},
+        indicators::option::End{"]"},
+        indicators::option::PrefixText{"Running"},
+        indicators::option::ForegroundColor{indicators::Color::unspecified},
+        indicators::option::ShowPercentage{true},
+        indicators::option::ShowElapsedTime{true},
+        indicators::option::ShowRemainingTime{true},
+        indicators::option::FontStyles{
+            std::vector<indicators::FontStyle>{indicators::FontStyle::bold}
+        }
+    };
 
     for (size_t fi=0; fi!=_freq_count; ++fi)
     {
@@ -116,32 +128,11 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
         #else
             static_assert(false, "Invalid NUMAV_SYSTEM_SOLVER.");
         #endif
-
-        // print the progress
-        std::cout << "\033[A"; // Moves the cursor up one line
-        std::cout << "\033[2K"; // Clears the entire line
-        double progress_percentage =
-            100.0*static_cast<double>(fi+1)/static_cast<double>(_freq_count);
-        std::cout << "Solution progress: " << std::fixed << 
-            std::setprecision(2) << progress_percentage << "%";
-
-        if (fi > 99) { // print the time left // todo: fix the time
-            auto current_time = std::chrono::system_clock::now();
-            auto time_taken_until_now =
-                std::chrono::duration_cast<std::chrono::seconds>(
-                    current_time - start_time
-                );
-            auto time_left = 
-                time_taken_until_now.count()/(fi+1)*(_freq_count-(fi+1));
-            
-            auto hours = time_left / 3600;
-            auto minutes = (time_left % 3600) / 60;
-            std::cout << " - estimated time left: " <<
-                hours << " h and " << minutes << " min\n";
-        }
-        else {
-            std::cout << "\n";
-        }
+        
+        // progress bar tick
+        const double percentage =
+            100.0 * static_cast<double>(fi) / static_cast<double>(_freq_count);
+        bar.set_progress(static_cast<size_t>(percentage));
     }
     _did_run = true;
     #if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
@@ -150,10 +141,15 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
         if (error_id != MKL_DSS_SUCCESS) { print_dss_error(error_id); }
     #endif
 
+    // end progress bar
+    bar.set_progress(100);
+    indicators::show_console_cursor(true);
+
     // print finish
     auto end_time = std::chrono::system_clock::now();
     auto time_t_end = std::chrono::system_clock::to_time_t(end_time);
-    std::cout << "Solver ended at: " << std::put_time(std::localtime(&time_t_end), "%H:%M:%S") << "\n";
+    std::cout << "Solver ended at: " <<
+        std::put_time(std::localtime(&time_t_end), "%H:%M:%S") << "\n";
 }
 
 // explicit instantiation declarations

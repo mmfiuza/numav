@@ -33,6 +33,7 @@ target_include_directories(numav
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${CMAKE_CURRENT_SOURCE_DIR}/third-party/safe-ptr/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/third-party/indicators/include
         ${MKLROOT}/include
 )
 

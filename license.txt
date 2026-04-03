@@ -15,4 +15,8 @@ Numav incorporates components from the following third-party projects:
     https://eigen.tuxfamily.org/index.php?title=Main_Page#Contributing_to_Eigen
   - License: MPL2 License
 
+  * indicators - <https://github.com/p-ranav/indicators>
+  - Copyright: 2019 Pranav
+  - License: MIT
+
 License texts are in the "license-text/" directory.
