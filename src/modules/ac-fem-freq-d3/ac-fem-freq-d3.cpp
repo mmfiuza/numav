@@ -5,11 +5,39 @@
 namespace numav {
 
 template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::set_maximum_frequency(
+    const double& freq_max
+) {
+    pimpl->set_maximum_frequency(freq_max);
+}
+
+template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::set_frequency_range(
     const double& freq_min,
     const double& freq_max
 ) {
     pimpl->set_frequency_range(freq_min, freq_max);
+}
+
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::set_frequency_steps_count(
+    const size_t& frequency_steps_count
+) {
+    pimpl->set_frequency_steps_count(frequency_steps_count);
+}
+
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::set_frequency_sampling_density(
+    const FrequencySamplingDensity& frequency_sampling_density
+) {
+    pimpl->set_frequency_sampling_density(frequency_sampling_density);
+}
+
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::set_frequency_steps(
+    const std::vector<double>& frequency_steps
+) {
+    pimpl->set_frequency_steps(frequency_steps);
 }
 
 template <ElementOrder O>

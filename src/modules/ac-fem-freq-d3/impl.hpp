@@ -29,9 +29,21 @@ public:
     Impl(Impl&&) noexcept;
     Impl& operator=(Impl&&) noexcept;
 
+    void set_maximum_frequency(
+        const double&
+    );
     void set_frequency_range(
         const double&,
         const double&
+    );
+    void set_frequency_steps_count(
+        const size_t&
+    );
+    void set_frequency_sampling_density(
+        const FrequencySamplingDensity&
+    );
+    void set_frequency_steps(
+        const std::vector<double>&
     );
     void load_mesh(
         const char* const
@@ -138,14 +150,22 @@ public:
     void _solve_systems();
     void _write_nmvr(const char* const);
 
-private:
+    enum class FreqTypeDefinedByUser {
+        UNDEFINED,
+        MAXIMUM,
+        RANGE,
+        STEPS
+    };
+    
+private: // TODO: review what sould be public or private
     bool _is_mesh_defined;
     bool _is_any_source_defined;
-    bool _is_freq_range_defined;
     bool _did_run;
     
     double _freq_min;
     double _freq_max;
+    FrequencySamplingDensity _frequency_sampling_density;
+    FreqTypeDefinedByUser _freq_type_defined_by_user;
     fz::SafePtr<double> _freq_steps;
 
     fz::SafePtr<std::array<double,DIM>> _ni_to_coords;

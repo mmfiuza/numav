@@ -57,6 +57,13 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
         const double omega = 2*std::numbers::pi*freq;
         const double omega_squared = std::pow(omega, 2);
 
+        if (freq == 0) {
+            for (size_t ni=0; ni!=_ni_count; ++ni) {
+                _cmplx_pressure_amp(ni,fi) = _cmplx_t(0.0, 0.0);
+            }
+            continue;
+        }
+
         // add point volume velocity to b vector
         for (size_t pvni=0; pvni!=_pvni_count; ++pvni)
         {

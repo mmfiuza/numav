@@ -15,7 +15,7 @@ fz::SafePtr<double> linspace(
     const double& start, const double& finish, const size_t& num_points
 );
 
-fz::SafePtr<double> cubespace(
+fz::SafePtr<double> cubspace(
     const double& start, const double& finish, const size_t& num_points
 );
 

@@ -22,7 +22,7 @@ fz::SafePtr<double> linspace(
     return result;
 }
 
-fz::SafePtr<double> cubespace(
+fz::SafePtr<double> cubspace(
     const double& start, const double& finish, const size_t& num_points
 ) {
     assert(num_points!=0 && num_points!=1);

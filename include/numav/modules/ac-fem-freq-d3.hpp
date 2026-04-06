@@ -5,8 +5,14 @@
 #include <functional>
 #include <complex>
 #include <memory>
+#include <vector>
 
 namespace numav {
+
+enum class FrequencySamplingDensity {
+    CONSTANT,
+    QUADRATIC
+};
 
 template<ElementOrder O>
 class Simulation<
@@ -24,9 +30,21 @@ public:
     Simulation(Simulation&&) noexcept;
     Simulation& operator=(Simulation&&) noexcept;
     
+    void set_maximum_frequency(
+        const double&
+    );
     void set_frequency_range(
         const double&,
         const double&
+    );
+    void set_frequency_steps_count(
+        const size_t&
+    );
+    void set_frequency_sampling_density(
+        const FrequencySamplingDensity&
+    );
+    void set_frequency_steps(
+        const std::vector<double>&
     );
     void load_mesh(
         const char* const
