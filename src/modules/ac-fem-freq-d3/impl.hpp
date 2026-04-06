@@ -103,6 +103,8 @@ public:
     void run();
     void export_result(const char* const);
 
+private:
+    
     // volume element properties
     struct _VolProp {
         _FuncRealToCmplx density;
@@ -157,7 +159,6 @@ public:
         STEPS
     };
     
-private: // TODO: review what sould be public or private
     bool _is_mesh_defined;
     bool _is_any_source_defined;
     bool _did_run;
