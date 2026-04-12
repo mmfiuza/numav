@@ -1,4 +1,4 @@
-# Copyright (c) 2025 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
+# Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
 cmake_minimum_required(VERSION 3.5)
 project(numav LANGUAGES CXX)
@@ -33,6 +33,7 @@ target_include_directories(numav
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${CMAKE_CURRENT_SOURCE_DIR}/third-party/safe-ptr/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/third-party/indicators/include
         ${MKLROOT}/include
 )
 

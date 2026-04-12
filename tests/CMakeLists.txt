@@ -1,4 +1,4 @@
-# Copyright (c) 2025 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
+# Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
 set(TESTS_BIN_DIR "${CMAKE_BINARY_DIR}/tests_bin")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${TESTS_BIN_DIR})

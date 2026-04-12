@@ -1,9 +1,10 @@
-// Copyright (c) 2025 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
+// Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
 #include "numav/numav.hpp"
 #include "common/aliases.hpp"
 #include "common/debug-macros.hpp"
 #include "modules/ac-fem-freq-d3/macros.hpp"
+#include "modules/ac-fem-freq-d3/constants.hpp"
 
 #include <unordered_map>
 #include <unordered_set>
@@ -17,33 +18,6 @@
 
 namespace numav {
 
-template<Dimension D> constexpr size_t DIM_COUNT = [] {
-    if constexpr (D == Dimension::D1) { return 1; }
-    if constexpr (D == Dimension::D2) { return 2; }
-    if constexpr (D == Dimension::D3) { return 3; }
-    return 0;
-}();
-
-template<ElementOrder O> constexpr size_t NODES_IN_SFC_ELEM = [] {
-    if constexpr (O == ElementOrder::O1) { return 3; }
-    if constexpr (O == ElementOrder::O2) { return 6; }
-    return 0;
-}();
-
-template<ElementOrder O> constexpr size_t EXTRA_NODES_IN_SFC_ELEM = [] {
-    return NODES_IN_SFC_ELEM<O> - NODES_IN_SFC_ELEM<ElementOrder::O1>;
-}();
-
-template<ElementOrder O> constexpr size_t NODES_IN_VOL_ELEM = [] {
-    if constexpr (O == ElementOrder::O1) { return 4;  }
-    if constexpr (O == ElementOrder::O2) { return 10; }
-    return 0;
-}();
-
-template<ElementOrder O> constexpr size_t EXTRA_NODES_IN_VOL_ELEM = [] {
-    return NODES_IN_VOL_ELEM<O> - NODES_IN_VOL_ELEM<ElementOrder::O1>;
-}();
-
 template<ElementOrder O>
 class SimulationAcFemFreqD3<O>::Impl
 {
@@ -55,9 +29,21 @@ public:
     Impl(Impl&&) noexcept;
     Impl& operator=(Impl&&) noexcept;
 
+    void set_maximum_frequency(
+        const double&
+    );
     void set_frequency_range(
         const double&,
         const double&
+    );
+    void set_frequency_steps_count(
+        const size_t&
+    );
+    void set_frequency_sampling_density(
+        const FrequencySamplingDensity&
+    );
+    void set_frequency_steps(
+        const std::vector<double>&
     );
     void load_mesh(
         const char* const
@@ -67,6 +53,21 @@ public:
         const std::function<_cmplx_t(const double&)>&,
         const std::function<_cmplx_t(const double&)>&
     );
+    void add_volume_material(
+        const size_t&,
+        const char* const,
+        const std::function<_cmplx_t(const double&)>&
+    );
+    void add_volume_material(
+        const size_t&,
+        const std::function<_cmplx_t(const double&)>&,
+        const char* const
+    );
+    void add_volume_material(
+        const size_t&,
+        const char* const,
+        const char* const
+    );
     void add_sound_source(
         const TypeOfSource&,
         const std::array<double,3>&,
@@ -75,9 +76,21 @@ public:
     );
     void add_sound_source(
         const TypeOfSource&,
+        const std::array<double,3>&,
+        const PhysicalQuantity&,
+        const char* const
+    );
+    void add_sound_source(
+        const TypeOfSource&,
         const size_t&,
         const PhysicalQuantity&,
         const std::function<_cmplx_t(const double&)>&
+    );
+    void add_sound_source(
+        const TypeOfSource&,
+        const size_t&,
+        const PhysicalQuantity&,
+        const char* const
     );
     void add_surface_specific_acoustic_impedance(
         const size_t&,
@@ -90,6 +103,8 @@ public:
     void run();
     void export_result(const char* const);
 
+private:
+    
     // volume element properties
     struct _VolProp {
         _FuncRealToCmplx density;
@@ -118,6 +133,7 @@ public:
     void _generate_extra_nodes();
     size_t _get_closest_point(const std::array<double,3>&);
     void _check_if_mesh_is_defined();
+    void _validate_espg(const size_t&);
     void _check_if_it_can_run();
     void _define_freq_vector();
     void _organize_volume_physical_group_data();
@@ -125,26 +141,35 @@ public:
     void _organize_impedance_physical_group_data();
     void _organize_velocity_physical_group_data();
     void _organize_physical_group_data();
-    void _allocate_a_and_b();
+    void _allocate_a();
+    void _allocate_b();
     void _assemble_fi_part_for_point_velocity();
     void _assemble_fi_part_for_sfc_velocity();
     void _assemble_fi_part_for_sfc_impedance();
     void _assemble_fi_part_for_vol_elements();
     void _assemble_fi_part_for_pressure();
     void _assemble_freq_independent_parts();
-    void _solve();
+    void _solve_systems();
+    void _write_nmvr(const char* const);
 
-private:
+    enum class FreqTypeDefinedByUser {
+        UNDEFINED,
+        MAXIMUM,
+        RANGE,
+        STEPS
+    };
+    
     bool _is_mesh_defined;
     bool _is_any_source_defined;
-    bool _is_freq_range_defined;
     bool _did_run;
     
     double _freq_min;
     double _freq_max;
+    FrequencySamplingDensity _frequency_sampling_density;
+    FreqTypeDefinedByUser _freq_type_defined_by_user;
     fz::SafePtr<double> _freq_steps;
 
-    fz::SafePtr<std::array<double,3>> _ni_to_coords;
+    fz::SafePtr<std::array<double,DIM>> _ni_to_coords;
     fz::SafePtr<std::array<size_t,NODES_IN_SFC_ELEM<O>>> _sei_to_ni;
     fz::SafePtr<std::array<size_t,NODES_IN_VOL_ELEM<O>>> _vei_to_ni;
 

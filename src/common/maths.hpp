@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
+// Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
 #pragma once
 
@@ -12,6 +12,10 @@
 namespace numav {
 
 fz::SafePtr<double> linspace(
+    const double& start, const double& finish, const size_t& num_points
+);
+
+fz::SafePtr<double> cubspace(
     const double& start, const double& finish, const size_t& num_points
 );
 

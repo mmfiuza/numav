@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
+// Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
 #include "numav/numav.hpp"
 
@@ -19,9 +19,8 @@ int main()
     s.load_mesh("build/tests_bin/test1.bdf");
 
     // determine simulation frequency range
-    double freq_min = 20;
     double freq_max = 100;
-    s.set_frequency_range(freq_min, freq_max);
+    s.set_maximum_frequency(freq_max);
 
     s.add_volume_material(
         1,

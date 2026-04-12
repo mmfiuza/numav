@@ -1,7 +1,8 @@
-# Copyright (c) 2025 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
+# Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
 # start from debian:bookworm-slim
-FROM debian@sha256:df52e55e3361a81ac1bead266f3373ee55d29aa50cf0975d440c2be3483d8ed3
+ARG DEB_DIGEST=df52e55e3361a81ac1bead266f3373ee55d29aa50cf0975d440c2be3483d8ed3
+FROM debian@sha256:${DEB_DIGEST}
 
 # install dependencies
 RUN apt-get update && apt-get install -y \
@@ -21,20 +22,35 @@ RUN apt-get update && apt-get install -y \
     tree=2.1.0-1
 
 # install intel oneMKL
-RUN wget https://registrationcenter-download.intel.com/akdlm/IRC_NAS/47c7d946-fca1-441a-b0df-b094e3f045ea/intel-onemkl-2025.2.0.629_offline.sh
+RUN wget https://registrationcenter-download.intel.com/akdlm/IRC_NAS/\
+47c7d946-fca1-441a-b0df-b094e3f045ea/intel-onemkl-2025.2.0.629_offline.sh
 RUN sh ./intel-onemkl-2025.2.0.629_offline.sh -a --silent --eula accept
 RUN rm intel-onemkl-2025.2.0.629_offline.sh
 
 # install Julia
-RUN curl -fsSL https://install.julialang.org | sh -s -- --yes
-ENV PATH="/root/.juliaup/bin:$PATH"
-RUN juliaup add 1.11
-RUN juliaup default 1.11
+ARG JULIA_VERSION="1.12.5"
+ARG JULIAUP_VERSION="1.19.9"
+ENV JULIA_DEPOT_PATH=/usr/local/share/julia
+ENV JULIAUP_DEPOT_PATH=/usr/local/share
+RUN case "$(uname -m)" in \
+        x86_64)    JULIAUP_ARCH="x86_64" ;; \
+        aarch64)   JULIAUP_ARCH="aarch64" ;; \
+        i386|i686) JULIAUP_ARCH="i686" ;; \
+        *)         echo "Unsupported arch: $(uname -m)" && exit 1 ;; \
+    esac && \
+curl -fsSL "https://github.com/JuliaLang/juliaup/releases/download/\
+v${JULIAUP_VERSION}/juliaup-${JULIAUP_VERSION}-${JULIAUP_ARCH}\
+-unknown-linux-musl-portable.tar.gz" | tar -xz -C /usr/local/bin
+RUN juliaup add ${JULIA_VERSION}
+RUN juliaup default ${JULIA_VERSION}
+RUN chmod -R 777 ${JULIAUP_DEPOT_PATH}/juliaup
 
 # install Julia packages
-RUN julia +1.11 -e 'using Pkg; Pkg.add([ \
-    PackageSpec(name="Plots", version="1.40") \
+RUN julia +${JULIA_VERSION} -e 'using Pkg; Pkg.add([ \
+    PackageSpec(name="Plots", version="1.41.6"), \
+    PackageSpec(name="Symbolics", version="7.17.0") \
 ])'
+RUN chmod -R 777 ${JULIA_DEPOT_PATH}
 
 # Set the entrypoint
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh

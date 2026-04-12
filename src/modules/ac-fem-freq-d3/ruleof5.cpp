@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
+// Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
 #include "modules/ac-fem-freq-d3/impl.hpp"
 
@@ -29,9 +29,11 @@ SimulationAcFemFreqD3<O>::Impl::Impl() {
     log::set_level();
     log::set_pattern();
     _is_mesh_defined = false;
-    _is_freq_range_defined = false;
     _is_any_source_defined = false;
     _did_run = false;
+    _freq_type_defined_by_user = FreqTypeDefinedByUser::UNDEFINED;
+    _frequency_sampling_density = FrequencySamplingDensity::QUADRATIC;
+    _freq_count = 4096;
     _ivpg_count = 0;
     _ispgi_count = 0;
     _pvni_count = 0;
@@ -108,19 +110,6 @@ SimulationAcFemFreqD3<O>::Impl& SimulationAcFemFreqD3<O>::Impl::operator=(
 ) noexcept = default;
 
 // explicit instantiation declarations
-template class Simulation<
-    Phenomenon::ACOUSTIC,
-    NumericalMethod::FEM,
-    Domain::FREQUENCY,
-    Dimension::D3,
-    ElementOrder::O1
->;
-template class Simulation<
-    Phenomenon::ACOUSTIC,
-    NumericalMethod::FEM,
-    Domain::FREQUENCY,
-    Dimension::D3,
-    ElementOrder::O2
->;
+INSTANTIATE_SIMULATION_CLASS
 
 } // namespace numav

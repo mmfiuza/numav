@@ -1,8 +1,8 @@
-// Copyright (c) 2025 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
+// Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
 #pragma once
 
-// define the llinear system solver
+// define the linear system solver
 #define NUMAV_EIGEN 01
 #define NUMAV_ONEMKL 02
 #define NUMAV_SYSTEM_SOLVER NUMAV_ONEMKL
@@ -18,18 +18,32 @@
     static_assert(false, "Invalid NUMAV_SYSTEM_SOLVER.");
 #endif
 
-// define the integration method for trianglar elements
-#define NUMAV_JACOBIAN_DETERMINANT 21
-#define NUMAV_TRIANGLE_AREA 22
-#define NUMAV_TRIANGLE_INTEGRATION_METHOD NUMAV_JACOBIAN_DETERMINANT
-
-// define the integration method for the mass matrices
-#define NUMAV_ANALYTIC 31
-#define NUMAV_GAUSS_QUADRATURE 32
+// define the integration method for the matrices
+#define NUMAV_ANALYTIC 21
+#define NUMAV_GAUSS_QUADRATURE 22
 #define NUMAV_STIF_INTEGRATION_METHOD NUMAV_GAUSS_QUADRATURE
 #define NUMAV_MASS_INTEGRATION_METHOD NUMAV_ANALYTIC
+#define NUMAV_DAMP_INTEGRATION_METHOD NUMAV_ANALYTIC
+#define NUMAV_FORC_INTEGRATION_METHOD NUMAV_ANALYTIC
 
 #define NUMAV_MKL_OPTIONS \
     MKL_DSS_MSG_LVL_WARNING + \
     MKL_DSS_TERM_LVL_ERROR + \
     MKL_DSS_ZERO_BASED_INDEXING
+
+// explicit instantiation declarations
+#define INSTANTIATE_SIMULATION_CLASS \
+    template class Simulation< \
+        Phenomenon::ACOUSTIC, \
+        NumericalMethod::FEM, \
+        Domain::FREQUENCY, \
+        Dimension::D3, \
+        ElementOrder::O1 \
+    >; \
+    template class Simulation< \
+        Phenomenon::ACOUSTIC, \
+        NumericalMethod::FEM, \
+        Domain::FREQUENCY, \
+        Dimension::D3, \
+        ElementOrder::O2 \
+    >;

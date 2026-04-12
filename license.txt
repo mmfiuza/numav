@@ -1,4 +1,4 @@
-Copyright (c) 2025 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
+Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
 All rights reserved.
 No modification or redistribution allowed.
@@ -7,12 +7,16 @@ Commercial use is prohibited unless explicitly licensed.
 Numav incorporates components from the following third-party projects:
 
   * SafePtr - <https://github.com/mmfiuza/safe-ptr>
-  - Copyright: 2025 Matheus Machado Fiuza
+  - Copyright: 2026 Matheus Machado Fiuza
   - License: AGPL3
 
   * Eigen - <https://gitlab.com/libeigen/eigen>
   - Copyright: 2006 The Eigen Authors, listed in:
     https://eigen.tuxfamily.org/index.php?title=Main_Page#Contributing_to_Eigen
   - License: MPL2 License
+
+  * indicators - <https://github.com/p-ranav/indicators>
+  - Copyright: 2019 Pranav
+  - License: MIT
 
 License texts are in the "license-text/" directory.

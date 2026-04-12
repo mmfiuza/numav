@@ -1,9 +1,9 @@
-// Copyright (c) 2025 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
+// Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
-#include "numav.hpp"
+#include "numav/numav.hpp"
 
-int main() {
-
+int main()
+{
     using namespace numav;
 
     // create the simulation object with some numerical method
@@ -12,55 +12,58 @@ int main() {
         NumericalMethod::FEM,
         Domain::FREQUENCY,
         Dimension::D3,
-        ElementOrder::O2
+        ElementOrder::O1
     >();
 
     // load the mesh
-    s.load_mesh("./build/examples_bin/mesh1.bdff");
+    s.load_mesh("build/tests_bin/test1.bdf");
 
     // determine simulation frequency range
-    double freq_min = 0;
     double freq_max = 100;
-    s.set_freq_range(freq_min, freq_max);
+    s.set_maximum_frequency(freq_max);
 
-    auto rho_air = [](auto f) { return 1.20; };
-    auto c_air = [](auto f) { return 343; };
     s.add_volume_material(
-        1, // id in mesh file
-        rho_air,
-        c_air
+        1,
+        [](auto f) { return 1.2; },
+        [](auto f) { return std::complex<double>(343,0); }
+    );
+    s.add_volume_material(
+        2,
+        [](auto f) { return 1.2; },
+        [](auto f) { return std::complex<double>(343,5); }
     );
 
     // add volume velocity sources
-    auto q =[](auto f) { return 1/f; };
-    s.add_source(
-        TypeOfSource::POINT, {1.0, 1.5, 2.0}, // x,y,z
+    auto q = [](auto f) { return 1/f; };
+    s.add_sound_source(
+        TypeOfSource::POINT, {3.0, 2.0, 1.0},
         PhysicalQuantity::VOLUME_VELOCITY, q
     );
-    s.add_source(
-        TypeOfSource::SURFACE, 2, // id in mesh file
-        PhysicalQuantity::VOLUME_VELOCITY, q
+    auto u = [](auto f) { return 1/f; };
+    s.add_sound_source(
+        TypeOfSource::SURFACE, 2,
+        PhysicalQuantity::PARTICLE_VELOCITY, u
     );
 
     // add pressure sources
-    auto p =[](auto f) { return 1/f; };
-    s.add_source(
-        TypeOfSource::POINT, {2.0, 2.5, 1.0}, // x,y,z
-        PhysicalQuantity::PRESSURE, p
+    auto p0 = [](auto f) { return 1; };
+    s.add_sound_source(
+        TypeOfSource::POINT, {4.0, 1.0, 0.5},
+        PhysicalQuantity::PRESSURE, p0
     );
-    const size_t id_surface_source_2 = 3;
-    s.add_source(
-        TypeOfSource::SURFACE, 3, // id in mesh file
-        PhysicalQuantity::PRESSURE, p
+    auto p1 = [](auto f) { return 2; };
+    s.add_sound_source(
+        TypeOfSource::SURFACE, 3,
+        PhysicalQuantity::PRESSURE, p1
     );
-
+ 
     // add specific surface acoustic impedance
-    auto Z = [](auto f) { return std::complex<double>(f,2); };
-    s.add_surface_specific_acoustic_impedance(
-        4, // id in mesh file
-        Z
-    );
+    auto Z = [](auto f) { return std::complex<double>(4000, 4000); };
+    s.add_surface_specific_acoustic_impedance(5, Z);
 
     // run the simulation
-    auto result = s.run();
+    s.run();
+
+    // export the result to binary
+    s.export_result("result.nmvr");
 }
