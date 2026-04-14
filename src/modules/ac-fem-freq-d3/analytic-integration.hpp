@@ -71,7 +71,8 @@ get_stif_matrix_const_part<ElementOrder::O2>(
     const std::array<std::array<double,3>,4>& coords
 ) {
     // TODO
-    error("Analytic intgration for second order stifness matrix is not done.");
+    error("Numav doesn't support second order analytic intgration for stifness"
+        " matrices yet");
 
     (void) coords;
 

@@ -113,7 +113,7 @@ public:
 
 private:
     class Impl;
-    std::unique_ptr<Impl> pimpl; // TODO: rename to _pimpl
+    std::unique_ptr<Impl> _pimpl;
 };
 
 // alias for simulation type

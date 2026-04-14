@@ -8,7 +8,7 @@ namespace numav {
 
 template <ElementOrder O>
 SimulationAcFemFreqD3<O>::Simulation() {
-    pimpl = std::make_unique<Impl>();
+    _pimpl = std::make_unique<Impl>();
 }
 
 template <ElementOrder O>
