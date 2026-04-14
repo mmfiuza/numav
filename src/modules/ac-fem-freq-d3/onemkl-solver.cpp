@@ -55,8 +55,13 @@ namespace numav {
         // define the non-zero structure of the matrix
         const MKL_INT symmetry_type = MKL_DSS_SYMMETRIC_COMPLEX;
         error_id = dss_define_structure(
-            dss_handle, symmetry_type, a_row_ptr.data(),
-            node_count, node_count, a_col_idx.data(), nnz_count
+            dss_handle,
+            symmetry_type,
+            a_row_ptr.data(),
+            node_count,
+            node_count,
+            a_col_idx.data(),
+            nnz_count
         );
         if (error_id != MKL_DSS_SUCCESS) { print_dss_error(error_id); }
         
@@ -85,7 +90,8 @@ namespace numav {
         // factor the matrix
         constexpr MKL_INT positive_definiteness = MKL_DSS_INDEFINITE;
         error_id = dss_factor_complex(
-            dss_handle, positive_definiteness,
+            dss_handle,
+            positive_definiteness,
             reinterpret_cast<const double*>(a_vals.data())
         );
         if (error_id != MKL_DSS_SUCCESS) { print_dss_error(error_id); }
@@ -99,8 +105,11 @@ namespace numav {
         constexpr MKL_INT options = NUMAV_MKL_OPTIONS;
         constexpr MKL_INT num_of_b = 1;
         error_id = dss_solve_complex(
-            dss_handle, options, reinterpret_cast<const double*>(b_dense.data()),
-            num_of_b, reinterpret_cast<double*>(x_out)
+            dss_handle,
+            options,
+            reinterpret_cast<const double*>(b_dense.data()),
+            num_of_b,
+            reinterpret_cast<double*>(x_out)
         );
         if (error_id != MKL_DSS_SUCCESS) { print_dss_error(error_id); }
     }

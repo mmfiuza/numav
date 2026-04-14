@@ -92,6 +92,9 @@ public:
         const PhysicalQuantity&,
         const char* const
     );
+    void add_receiver(
+        const std::array<double,DIM>&
+    );
     void add_surface_specific_acoustic_impedance(
         const size_t&,
         const std::function<_cmplx_t(const double&)>&
@@ -128,6 +131,8 @@ private:
     size_t _pvi_count;
 
     size_t _freq_count;
+
+    size_t _ri_count;
     
     void _load_bdf(const char* const);
     void _generate_extra_nodes();
@@ -150,9 +155,10 @@ private:
     void _assemble_fi_part_for_pressure();
     void _assemble_freq_independent_parts();
     void _solve_systems();
+    void _post_process();
     void _write_nmvr(const char* const);
 
-    enum class FreqTypeDefinedByUser {
+    enum class _FreqTypeDefinedByUser {
         UNDEFINED,
         MAXIMUM,
         RANGE,
@@ -166,7 +172,7 @@ private:
     double _freq_min;
     double _freq_max;
     FrequencySamplingDensity _frequency_sampling_density;
-    FreqTypeDefinedByUser _freq_type_defined_by_user;
+    _FreqTypeDefinedByUser _freq_type_defined_by_user;
     fz::SafePtr<double> _freq_steps;
 
     fz::SafePtr<std::array<double,DIM>> _ni_to_coords;
@@ -225,6 +231,8 @@ private:
     fz::SafePtr<_FuncRealToCmplx> _pvi_to_pressure;
     fz::SafePtr<fz::SafePtr<_cmplx_t*>> _pvi_to_ptr_in_a;
     fz::SafePtr<fz::SafePtr<_cmplx_t*>> _pvi_to_ptr_in_b;
+
+    std::vector<std::array<double,DIM>> _receiver_points;
 
     Eigen::Matrix<_cmplx_t,Eigen::Dynamic,Eigen::Dynamic> _cmplx_pressure_amp;
 

@@ -91,8 +91,10 @@ void SimulationAcFemFreqD3<O>::add_sound_source(
     const _FuncRealToCmplx& physical_quantity_value
 ) {
     pimpl->add_sound_source(
-        type_of_source, point_coordinates,
-        physical_quantity_type, physical_quantity_value
+        type_of_source,
+        point_coordinates,
+        physical_quantity_type,
+        physical_quantity_value
     );
 }
 
@@ -104,8 +106,10 @@ void SimulationAcFemFreqD3<O>::add_sound_source(
     const char* const physical_quantity_value_text_file
 ) {
     pimpl->add_sound_source(
-        type_of_source, point_coordinates,
-        physical_quantity_type, physical_quantity_value_text_file
+        type_of_source,
+        point_coordinates,
+        physical_quantity_type,
+        physical_quantity_value_text_file
     );
 }
 
@@ -117,8 +121,10 @@ void SimulationAcFemFreqD3<O>::add_sound_source(
     const _FuncRealToCmplx& physical_quantity_value
 ) {
     pimpl->add_sound_source(
-        type_of_source, espg,
-        physical_quantity_type, physical_quantity_value
+        type_of_source,
+        espg,
+        physical_quantity_type,
+        physical_quantity_value
     );
 }
 
@@ -130,9 +136,18 @@ void SimulationAcFemFreqD3<O>::add_sound_source(
     const char* const physical_quantity_value_text_file
 ) {
     pimpl->add_sound_source(
-        type_of_source, espg,
-        physical_quantity_type, physical_quantity_value_text_file
+        type_of_source,
+        espg,
+        physical_quantity_type,
+        physical_quantity_value_text_file
     );
+}
+
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::add_receiver(
+    const std::array<double,3>& point_coordinates
+) {
+    pimpl->add_receiver(point_coordinates);
 }
 
 template <ElementOrder O>

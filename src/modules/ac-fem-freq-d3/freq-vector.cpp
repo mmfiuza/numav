@@ -8,10 +8,10 @@ namespace numav {
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::_define_freq_vector() {
-    if(_freq_type_defined_by_user == FreqTypeDefinedByUser::MAXIMUM) {
+    if(_freq_type_defined_by_user == _FreqTypeDefinedByUser::MAXIMUM) {
         _freq_min = 0;
     }
-    if (_freq_type_defined_by_user != FreqTypeDefinedByUser::STEPS) {
+    if (_freq_type_defined_by_user != _FreqTypeDefinedByUser::STEPS) {
         switch(_frequency_sampling_density) {
             case FrequencySamplingDensity::CONSTANT:
                 _freq_steps = linspace(_freq_min, _freq_max, _freq_count);

@@ -27,11 +27,11 @@ void SimulationAcFemFreqD3<O>::Impl::set_maximum_frequency(
     if (freq_max == 0) {
         error("Maximum frequency should not be zero.");
     }
-    if (_freq_type_defined_by_user != FreqTypeDefinedByUser::UNDEFINED) {
+    if (_freq_type_defined_by_user != _FreqTypeDefinedByUser::UNDEFINED) {
         error("Simulation frequency is already defined.");
     }
     _freq_max = freq_max;
-    _freq_type_defined_by_user = FreqTypeDefinedByUser::MAXIMUM;
+    _freq_type_defined_by_user = _FreqTypeDefinedByUser::MAXIMUM;
 }
 
 template <ElementOrder O>
@@ -48,23 +48,23 @@ void SimulationAcFemFreqD3<O>::Impl::set_frequency_range(
     if (freq_min >= freq_max) {
         error("Upper frequency should be greater than the lower.");
     }
-    if (_freq_type_defined_by_user != FreqTypeDefinedByUser::UNDEFINED) {
+    if (_freq_type_defined_by_user != _FreqTypeDefinedByUser::UNDEFINED) {
         error("Simulation frequency is already defined.");
     }
     _freq_min = freq_min;
     _freq_max = freq_max;
-    _freq_type_defined_by_user = FreqTypeDefinedByUser::RANGE;
+    _freq_type_defined_by_user = _FreqTypeDefinedByUser::RANGE;
 }
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::set_frequency_steps_count(
     const size_t& frequency_steps_count
 ) {
-    if (_freq_type_defined_by_user == FreqTypeDefinedByUser::UNDEFINED) {
+    if (_freq_type_defined_by_user == _FreqTypeDefinedByUser::UNDEFINED) {
         error("Simulation frequency was not defined."
             " Call set_maximum_frequency to do so.");
     }
-    if (_freq_type_defined_by_user == FreqTypeDefinedByUser::STEPS) {
+    if (_freq_type_defined_by_user == _FreqTypeDefinedByUser::STEPS) {
         error("Simulation frequency steps already defined.");
     }
     _freq_count = frequency_steps_count;
@@ -74,11 +74,11 @@ template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::set_frequency_sampling_density(
     const FrequencySamplingDensity& frequency_sampling_density
 ) {
-    if (_freq_type_defined_by_user == FreqTypeDefinedByUser::UNDEFINED) {
+    if (_freq_type_defined_by_user == _FreqTypeDefinedByUser::UNDEFINED) {
         error("Simulation frequency was not defined."
             " Call set_maximum_frequency to do so.");
     }
-    if (_freq_type_defined_by_user == FreqTypeDefinedByUser::STEPS) {
+    if (_freq_type_defined_by_user == _FreqTypeDefinedByUser::STEPS) {
         error("Simulation frequency steps already defined.");
     }
     _frequency_sampling_density = frequency_sampling_density;
@@ -88,7 +88,7 @@ template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::set_frequency_steps(
     const std::vector<double>& frequency_steps
 ) {
-    if (_freq_type_defined_by_user != FreqTypeDefinedByUser::UNDEFINED) {
+    if (_freq_type_defined_by_user != _FreqTypeDefinedByUser::UNDEFINED) {
         error("Simulation frequency is already defined.");
     }
     _freq_count = frequency_steps.size();
@@ -98,7 +98,7 @@ void SimulationAcFemFreqD3<O>::Impl::set_frequency_steps(
     for (size_t i=0; i!=_freq_count; ++i) {
         _freq_steps[i] = frequency_steps[i];
     }
-    _freq_type_defined_by_user = FreqTypeDefinedByUser::STEPS;
+    _freq_type_defined_by_user = _FreqTypeDefinedByUser::STEPS;
 
 }
 
@@ -190,6 +190,7 @@ void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
     const _FuncRealToCmplx& physical_quantity_value
 ) {
     _check_if_mesh_is_defined();
+    // TODO: check if the point is outside the mesh
     if (type_of_source != TypeOfSource::POINT) {
         error("Tried to assign coordinates to a surface sound source.");
     }
@@ -296,6 +297,19 @@ void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
 }
 
 template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::Impl::add_receiver(
+    const std::array<double,DIM>& point_coordinates
+) {
+    _check_if_mesh_is_defined();
+    // TODO: check if the point is outside the mesh
+    const double& x = point_coordinates[0];
+    const double& y = point_coordinates[1];
+    const double& z = point_coordinates[2];
+    _receiver_points.emplace_back(std::array<double,DIM>{x, y, z});
+    ++_ri_count;
+}
+
+template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_surface_specific_acoustic_impedance(
     const size_t& espg,
     const _FuncRealToCmplx& impedance
@@ -326,7 +340,7 @@ void SimulationAcFemFreqD3<O>::Impl::_check_if_it_can_run() {
         error("No sound source was defined."
             " Call add_sound_source to do so.");
     }
-    if (_freq_type_defined_by_user == FreqTypeDefinedByUser::UNDEFINED){
+    if (_freq_type_defined_by_user == _FreqTypeDefinedByUser::UNDEFINED){
         error("Simulation frequency was not defined."
             " Call set_maximum_frequency to do so.");
     }
@@ -351,6 +365,7 @@ void SimulationAcFemFreqD3<O>::Impl::run()
     _organize_physical_group_data();
     _assemble_freq_independent_parts();
     _solve_systems();
+    _post_process();
 }
 
 template <ElementOrder O>

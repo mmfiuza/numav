@@ -31,15 +31,16 @@ SimulationAcFemFreqD3<O>::Impl::Impl() {
     _is_mesh_defined = false;
     _is_any_source_defined = false;
     _did_run = false;
-    _freq_type_defined_by_user = FreqTypeDefinedByUser::UNDEFINED;
+    _freq_type_defined_by_user = _FreqTypeDefinedByUser::UNDEFINED;
     _frequency_sampling_density = FrequencySamplingDensity::QUADRATIC;
-    _freq_count = 4096;
+    _freq_count = NUMAV_DEFAULT_FREQ_STEPS_COUNT;
     _ivpg_count = 0;
     _ispgi_count = 0;
     _pvni_count = 0;
     _ispgv_count = 0;
     _ppni_count = 0;
     _ispgp_count = 0;
+    _ri_count = 0;
 }
 
 template<ElementOrder O>

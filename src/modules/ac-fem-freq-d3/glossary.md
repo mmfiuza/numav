@@ -46,3 +46,5 @@
 - PPNI (Point Pressure Node Index)
 
 - PVI (Pressure Value Index)
+
+- RI (Receiver index)
