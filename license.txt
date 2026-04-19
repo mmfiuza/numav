@@ -10,15 +10,21 @@ Numav incorporates components from the following third-party projects:
   - Copyright: 2026 Matheus Machado Fiuza
   - License: AGPL3
 
+  * LDLT Solver - <https://github.com/mmfiuza/ldlt-solver>
+  - Copyright: 2026 Matheus Machado Fiuza
+  - License: None
+
   * Eigen - <https://gitlab.com/libeigen/eigen>
   - Copyright: 2006 The Eigen Authors, listed in:
     https://eigen.tuxfamily.org/index.php?title=Main_Page#Contributing_to_Eigen
   - License: MPL2 License
 
+  * spdlog - <https://github.com/gabime/spdlog>
+  - Copyright: 2016-present Gabi Melman and spdlog contributors
+  - License: MIT
+
   * indicators - <https://github.com/p-ranav/indicators>
   - Copyright: 2019 Pranav
   - License: MIT
-
-  TODO: include spdlog and ldlt-solver
 
 License texts are in the "license-text/" directory.
