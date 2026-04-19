@@ -19,4 +19,6 @@ Numav incorporates components from the following third-party projects:
   - Copyright: 2019 Pranav
   - License: MIT
 
+  TODO: include spdlog and ldlt-solver
+
 License texts are in the "license-text/" directory.

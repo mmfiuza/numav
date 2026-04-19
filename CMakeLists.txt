@@ -14,9 +14,12 @@ option(GDB "Build with debug symbols for gdb" OFF)
 find_package(Eigen3 3.4 REQUIRED)
 find_package(spdlog REQUIRED)
 
-# Set MKL paths (adjust versions if needed)
+# Set MKL paths
 set(MKLROOT "/opt/intel/oneapi/mkl/2025.2")
 set(MKL_COMPILER_ROOT "/opt/intel/oneapi/compiler/2025.2")
+
+# add third-party subdirectories
+add_subdirectory(third-party/ldlt-solver)
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build/lib")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build/lib")
@@ -32,8 +35,8 @@ target_include_directories(numav
         ${CMAKE_CURRENT_SOURCE_DIR}/include
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
-        ${CMAKE_CURRENT_SOURCE_DIR}/third-party/safe-ptr/include
         ${CMAKE_CURRENT_SOURCE_DIR}/third-party/indicators/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/third-party/safe-ptr/include
         ${MKLROOT}/include
 )
 
@@ -54,6 +57,7 @@ endif()
 target_link_libraries(numav PRIVATE
     Eigen3::Eigen
     spdlog::spdlog_header_only
+    ldlt_solver
     -Wl,--start-group
     ${MKLROOT}/lib/libmkl_gf_ilp64.a 
     ${MKLROOT}/lib/libmkl_gnu_thread.a

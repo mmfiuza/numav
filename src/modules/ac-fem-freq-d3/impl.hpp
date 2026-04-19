@@ -10,7 +10,9 @@
 #include <unordered_set>
 
 #include "Eigen/Eigen"
-#if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
+#if NUMAV_SYSTEM_SOLVER == NUMAV_LDLT_SOLVER
+    #include "ldlt-solver.hpp"
+#elif NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
     #include "mkl_dss.h"
     #include "mkl_types.h"
 #endif
@@ -236,7 +238,11 @@ private:
 
     Eigen::Matrix<_cmplx_t,Eigen::Dynamic,Eigen::Dynamic> _cmplx_pressure_amp;
 
-    #if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
+    #if NUMAV_SYSTEM_SOLVER == NUMAV_LDLT_SOLVER
+        LdltSolver<_cmplx_t> _solver;
+        fz::SafePtr<_cmplx_t> _b_dense;
+        fz::SafePtr<_cmplx_t> _a_diag;
+    #elif NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
         _MKL_DSS_HANDLE_t _dss_handle;
         fz::SafePtr<_cmplx_t> _b_dense;
     #endif

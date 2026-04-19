@@ -98,7 +98,7 @@ void SimulationAcFemFreqD3<O>::Impl::_load_bdf(const char* const path_to_mesh)
             _existing_evpg.insert(evpg);
             *it_vei_to_evpg = evpg;
             ++it_vei_to_evpg;
-            *it_vei_to_ni = { // minus one for zero base indexing
+            *it_vei_to_ni = {
                 parse<size_t>(line.substr(24,8)) - 1,
                 parse<size_t>(line.substr(32,8)) - 1,
                 parse<size_t>(line.substr(40,8)) - 1,

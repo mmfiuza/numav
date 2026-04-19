@@ -47,4 +47,6 @@
 
 - PVI (Pressure Value Index)
 
-- RI (Receiver index)
+- RI (Receiver Index)
+
+- NZI (Non-Zero Index)

@@ -9,6 +9,7 @@
 #include "modules/ac-fem-freq-d3/shape-functions.hpp"
 #include "modules/ac-fem-freq-d3/analytic-integration.hpp"
 #include "modules/ac-fem-freq-d3/gauss-quadrature.hpp"
+#include "modules/ac-fem-freq-d3/ldlt-solver-solver.hpp"
 #include "modules/ac-fem-freq-d3/onemkl-solver.hpp"
 
 #include <set>
@@ -17,14 +18,16 @@ namespace numav {
 
 template<typename T>
 bool compare_pair(const std::pair<T,T>& a, const std::pair<T,T>& b) {
-    #if NUMAV_GLOBAL_MATRIX_STORAGE_ORDER == NUMAV_UPPER_COL_MAJOR
+    #if NUMAV_GLOBAL_MATRIX_STORAGE_ORDER == NUMAV_UPPER_COL_MAJOR || \
+        NUMAV_GLOBAL_MATRIX_STORAGE_ORDER == NUMAV_LOWER_COL_MAJOR
         if (a.second != b.second) {
             return a.second < b.second;
         }
         else {
             return a.first < b.first;
         }
-    #elif NUMAV_GLOBAL_MATRIX_STORAGE_ORDER == NUMAV_UPPER_ROW_MAJOR
+    #elif NUMAV_GLOBAL_MATRIX_STORAGE_ORDER == NUMAV_UPPER_ROW_MAJOR || \
+          NUMAV_GLOBAL_MATRIX_STORAGE_ORDER == NUMAV_LOWER_ROW_MAJOR
         if (a.first != b.first) {
             return a.first < b.first;
         }
@@ -32,7 +35,20 @@ bool compare_pair(const std::pair<T,T>& a, const std::pair<T,T>& b) {
             return a.second < b.second;
         }
     #else
-        static_assert(false, "Invalid GLOBAL_MATRIX_STORAGE_ORDER.");
+        static_assert(false, "Invalid NUMAV_GLOBAL_MATRIX_STORAGE_ORDER.");
+    #endif
+}
+
+template<typename T>
+std::pair<T,T> make_ordered_rowcol_pair(const T& a, const T& b) {
+    #if NUMAV_GLOBAL_MATRIX_STORAGE_ORDER == NUMAV_UPPER_ROW_MAJOR || \
+        NUMAV_GLOBAL_MATRIX_STORAGE_ORDER == NUMAV_UPPER_COL_MAJOR
+        return a<b ? std::make_pair(a,b) : std::make_pair(b,a);
+    #elif NUMAV_GLOBAL_MATRIX_STORAGE_ORDER == NUMAV_LOWER_ROW_MAJOR || \
+          NUMAV_GLOBAL_MATRIX_STORAGE_ORDER == NUMAV_LOWER_COL_MAJOR
+        return a<b ? std::make_pair(b,a) : std::make_pair(a,b);
+    #else
+        static_assert(false, "Invalid NUMAV_GLOBAL_MATRIX_STORAGE_ORDER.");
     #endif
 }
 
@@ -45,8 +61,11 @@ void SimulationAcFemFreqD3<O>::Impl::_allocate_a()
     std::unordered_set<std::pair<size_t,size_t>> existing_pairs;
     for (size_t vei=0; vei!=_vei_count; ++vei) {
         for (const auto& c : COMBS_VOL) {
-            existing_pairs.insert( 
-                make_ascending_pair(
+            #if NUMAV_SYSTEM_SOLVER == NUMAV_LDLT_SOLVER
+                if (c[0] == c[1]) { continue; }
+            #endif
+            existing_pairs.insert(
+                make_ordered_rowcol_pair(
                     _vei_to_ni[vei][c[0]], _vei_to_ni[vei][c[1]]
                 )
             );
@@ -66,6 +85,9 @@ void SimulationAcFemFreqD3<O>::Impl::_allocate_a()
         compare_pair<size_t>
     );
     _a_vals = fz::SafePtr<_cmplx_t>(_nnz_rowcol_idx_pairs.size());
+    #if NUMAV_SYSTEM_SOLVER == NUMAV_LDLT_SOLVER
+        _a_diag = fz::SafePtr<_cmplx_t>(_ni_count);
+    #endif
 }
 
 template <ElementOrder O>
@@ -117,7 +139,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
     {
         const size_t ivpg = _vei_to_ivpg[vei];
         for (const auto& c : COMBS_VOL) {
-            const std::pair<size_t,size_t> pair = make_ascending_pair(
+            const std::pair<size_t,size_t> pair = make_ordered_rowcol_pair(
                 _vei_to_ni[vei][c[0]], _vei_to_ni[vei][c[1]]
             );
             if (!ivpg_to_map_to_fipi[ivpg].contains(pair)) {
@@ -150,12 +172,21 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
         // Create _ivpg_to_ptr_in_a
         for (size_t nci=0; nci!=COMBS_VOL.size(); ++nci)
         {
-            const std::pair<size_t,size_t> pair = make_ascending_pair(
+            const std::pair<size_t,size_t> pair = make_ordered_rowcol_pair(
                 _vei_to_ni[vei][COMBS_VOL[nci][0]],
                 _vei_to_ni[vei][COMBS_VOL[nci][1]]
             );
             fipi_vol[nci] = ivpg_to_map_to_fipi[ivpg].at(pair);
-            
+
+            #if NUMAV_SYSTEM_SOLVER == NUMAV_LDLT_SOLVER
+                if(pair.first == pair.second) {
+                    const size_t ni = pair.first;
+                    _ivpg_to_ptr_in_a[ivpg][fipi_vol[nci]] =
+                        _a_diag.data() + ni;
+                    continue;
+                }
+            #endif
+
             const std::pair<size_t,size_t>* const pair_ptr = std::lower_bound(
                 _nnz_rowcol_idx_pairs.begin(),
                 _nnz_rowcol_idx_pairs.end(),
@@ -343,7 +374,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_impedance()
         const size_t ispgi = _isei_to_ispgi[isei];
         const size_t sei = _isei_to_sei[isei];
         for (const auto& c : COMBS_SFC) {
-            const std::pair<size_t,size_t> pair = make_ascending_pair(
+            const std::pair<size_t,size_t> pair = make_ordered_rowcol_pair(
                 _sei_to_ni[sei][c[0]], _sei_to_ni[sei][c[1]]
             );
             if (!ispgi_to_map_to_fipi[ispgi].contains(pair)) {
@@ -374,12 +405,21 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_impedance()
         // Create _ispgi_to_ptr_in_a
         for (size_t nci=0; nci!=COMBS_SFC.size(); ++nci)
         {
-            const std::pair<size_t,size_t> pair = make_ascending_pair(
+            const std::pair<size_t,size_t> pair = make_ordered_rowcol_pair(
                 _sei_to_ni[sei][COMBS_SFC[nci][0]],
                 _sei_to_ni[sei][COMBS_SFC[nci][1]]
             );
             fipi_damp[nci] = ispgi_to_map_to_fipi[ispgi].at(pair);
             
+            #if NUMAV_SYSTEM_SOLVER == NUMAV_LDLT_SOLVER
+                if(pair.first == pair.second) {
+                    const size_t ni = pair.first;
+                    _ispgi_to_ptr_in_a[ispgi][fipi_damp[nci]] =
+                        _a_diag.data() + ni;
+                    continue;
+                }
+            #endif
+
             const std::pair<size_t,size_t>* const pair_ptr = std::lower_bound(
                 _nnz_rowcol_idx_pairs.begin(),
                 _nnz_rowcol_idx_pairs.end(),
@@ -720,27 +760,41 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_pressure()
         _pvi_to_ptr_in_b[pvi] = fz::SafePtr<_cmplx_t*>(ni_vector.size());
         size_t fipi = 0;
         for (const auto& ni : ni_vector) {
-            // _pvi_to_ptr_in_a
-            const std::pair<size_t,size_t> pair = std::make_pair(ni, ni);
-            const std::pair<size_t,size_t>* const pair_ptr =
-                std::lower_bound(
-                    _nnz_rowcol_idx_pairs.begin(),
-                    _nnz_rowcol_idx_pairs.end(),
-                    pair,
-                    compare_pair<size_t>
+            
+            #if NUMAV_SYSTEM_SOLVER == NUMAV_LDLT_SOLVER
+                // _pvi_to_ptr_in_a
+                _pvi_to_ptr_in_a[pvi][fipi] = _a_diag.data() + ni;
+                const size_t* const ni_ptr = std::lower_bound(
+                    _b_row_idx.begin(), _b_row_idx.end(), ni
                 );
-            const ptrdiff_t ptrdiff_a = 
-                pair_ptr - _nnz_rowcol_idx_pairs.begin();
-            _pvi_to_ptr_in_a[pvi][fipi] = _a_vals.begin() + ptrdiff_a;
-            
-            // _pvi_to_ptr_in_b
-            const size_t* const ni_ptr = std::lower_bound(
-                _b_row_idx.begin(), _b_row_idx.end(), ni
-            );
-            const ptrdiff_t ptrdiff_b = ni_ptr - _b_row_idx.begin();
-            _pvi_to_ptr_in_b[pvi][fipi] = _b_vals.begin() + ptrdiff_b;
-            
-            ++fipi;
+                // _pvi_to_ptr_in_b
+                const ptrdiff_t ptrdiff_b = ni_ptr - _b_row_idx.begin();
+                _pvi_to_ptr_in_b[pvi][fipi] = _b_vals.begin() + ptrdiff_b;
+                ++fipi;
+                continue;
+            #else
+                // _pvi_to_ptr_in_a
+                const std::pair<size_t,size_t> pair = std::make_pair(ni, ni);
+                const std::pair<size_t,size_t>* const pair_ptr =
+                    std::lower_bound(
+                        _nnz_rowcol_idx_pairs.begin(),
+                        _nnz_rowcol_idx_pairs.end(),
+                        pair,
+                        compare_pair<size_t>
+                    );
+                const ptrdiff_t ptrdiff_a = 
+                    pair_ptr - _nnz_rowcol_idx_pairs.begin();
+                _pvi_to_ptr_in_a[pvi][fipi] = _a_vals.begin() + ptrdiff_a;
+                
+                // _pvi_to_ptr_in_b
+                const size_t* const ni_ptr = std::lower_bound(
+                    _b_row_idx.begin(), _b_row_idx.end(), ni
+                );
+                const ptrdiff_t ptrdiff_b = ni_ptr - _b_row_idx.begin();
+                _pvi_to_ptr_in_b[pvi][fipi] = _b_vals.begin() + ptrdiff_b;
+                
+                ++fipi;
+            #endif
         }
         ++pvi;
     }
@@ -751,9 +805,21 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_freq_independent_parts()
 {   
     _allocate_a();
     _allocate_b();
-    #if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
+    #if NUMAV_SYSTEM_SOLVER == NUMAV_LDLT_SOLVER
+        define_ldlt_solver_sparsity_pattern(
+            _solver,
+            _a_diag,
+            _nnz_rowcol_idx_pairs,
+            _a_vals,
+            _b_dense,
+            _ni_count
+        );
+    #elif NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
         define_onemkl_sparsity_pattern(
-            _dss_handle, _nnz_rowcol_idx_pairs, _ni_count, _b_dense
+            _dss_handle,
+            _nnz_rowcol_idx_pairs,
+            _ni_count,
+            _b_dense
         );
     #endif
     _assemble_fi_part_for_vol_elements();
