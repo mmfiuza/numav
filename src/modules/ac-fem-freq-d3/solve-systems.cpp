@@ -5,6 +5,7 @@
 #include <cmath>
 #include <numbers>
 
+#include "modules/ac-fem-freq-d3/ldlt-solver-solver.hpp"
 #include "modules/ac-fem-freq-d3/onemkl-solver.hpp"
 #include "modules/ac-fem-freq-d3/eigen-solver.hpp"
 
@@ -53,6 +54,9 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
     {
         _a_vals.fill(_cmplx_t(0.0, 0.0));
         _b_vals.fill(_cmplx_t(0.0, 0.0));
+        #if NUMAV_SYSTEM_SOLVER == NUMAV_LDLT_SOLVER
+            _a_diag.fill(_cmplx_t(0.0, 0.0));
+        #endif
         const double freq = _freq_steps[fi];
         const double omega = 2*std::numbers::pi*freq;
         const double omega_squared = std::pow(omega, 2);
@@ -123,15 +127,35 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
             }
         }
 
+        // _a_diag.print("_a_diag");
+        // _a_vals.print("_a_vals");
+        // _b_vals.print("_b_vals");
+
         // solve
-        #if NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
+        #if NUMAV_SYSTEM_SOLVER == NUMAV_LDLT_SOLVER
+            solve_using_ldlt_solver(
+                _solver,
+                _b_vals,
+                _b_row_idx,
+                _b_dense,
+                _cmplx_pressure_amp.data() + fi*_ni_count
+            );
+        #elif NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
             solve_using_eigen(
-                _a_vals, _nnz_rowcol_idx_pairs, _b_vals, _b_row_idx,
-                _ni_count, _cmplx_pressure_amp.data() + fi*_ni_count
+                _a_vals,
+                _nnz_rowcol_idx_pairs,
+                _b_vals,
+                _b_row_idx,
+                _ni_count,
+                _cmplx_pressure_amp.data() + fi*_ni_count
             );
         #elif NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
             solve_using_onemkl(
-                _dss_handle, _a_vals, _b_vals, _b_row_idx, _b_dense,
+                _dss_handle,
+                _a_vals,
+                _b_vals,
+                _b_row_idx,
+                _b_dense,
                 _cmplx_pressure_amp.data() + fi*_ni_count
             );
         #else

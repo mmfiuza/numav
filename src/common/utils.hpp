@@ -34,11 +34,6 @@ std::tuple<T,T> make_ascending_tuple(const T& a, const T& b) {
     return a<b ? std::make_tuple(a,b) : std::make_tuple(b,a);
 }
 
-template<typename T>
-std::pair<T,T> make_ascending_pair(const T& a, const T& b) {
-    return a<b ? std::make_pair(a,b) : std::make_pair(b,a);
-}
-
 template<typename T, std::size_t... Sizes>
 constexpr auto concat_constexpr_arrays(const std::array<T, Sizes>&... arrays)
 {

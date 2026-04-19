@@ -5,6 +5,7 @@
 #include <functional>
 #include <complex>
 #include <memory>
+#include <array>
 #include <vector>
 
 namespace numav {
@@ -93,6 +94,9 @@ public:
         const PhysicalQuantity&,
         const char* const
     );
+    void add_receiver(
+        const std::array<double,3>&
+    );
     void add_surface_specific_acoustic_impedance(
         const size_t&,
         const std::function<std::complex<double>(const double&)>&
@@ -109,7 +113,7 @@ public:
 
 private:
     class Impl;
-    std::unique_ptr<Impl> pimpl;
+    std::unique_ptr<Impl> _pimpl;
 };
 
 // alias for simulation type
