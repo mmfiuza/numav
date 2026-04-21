@@ -6,6 +6,9 @@
 
 function data = read_nmvr(filename)
 
+% Convert string scalar to character vector if necessary
+filename = char(filename);
+
 last_5_chars = filename(end-4:end);
 if ~strcmp(last_5_chars, '.nmvr')
     warning('The file name does not end with .nmvr')
