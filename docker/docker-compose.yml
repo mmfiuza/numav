@@ -13,6 +13,6 @@ services:
       - ${HOME}/.gitconfig:/home/devuser/.gitconfig 
     environment:
       - SSH_AUTH_SOCK=/ssh-agent
-      - HOST_UID=${HOST_UID}
-      - HOST_GID=${HOST_GID}
+    env_file:
+      - ../.devcontainer/.env
     tty: true
