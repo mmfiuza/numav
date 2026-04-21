@@ -1,7 +1,9 @@
+# Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
+
+# Runs on the host before the container starts, writes the host user's UID and
+# GID into docker/.env so docker-compose can pass them to the container.
+
 #!/bin/bash
-# This script runs before the container starts.
-# It writes the host user's UID and GID into a .env file,
-# which docker-compose will automatically pick up.
 
 ENV_FILE="$(dirname "$0")/.env"
 
