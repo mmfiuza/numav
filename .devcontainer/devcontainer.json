@@ -1,3 +1,9 @@
+// Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
+
+// Configures VS Code's Dev Containers extension: uses docker-compose, attaches
+// to the 'numav' service, sets the workspace folder, runs initialize.sh before
+// creation, installs VS Code extensions, and specifies the remote user.
+
 {
   "name": "Numav Development Container",
   // Use your existing compose file

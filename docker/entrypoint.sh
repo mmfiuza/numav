@@ -1,5 +1,9 @@
-#!/bin/bash
 # Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
+
+# Adjusts container user to match host UID/GID (creates a non‑root user if
+# needed) and executes the command via gosu.
+
+#!/bin/bash
 
 set -e
 

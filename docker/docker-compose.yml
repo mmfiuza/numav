@@ -1,5 +1,8 @@
 # Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
+# Defines the 'numav' service: builds from Dockerfile, mounts the repo root and
+# SSH agent, passes host UID/GID, and keeps the container running with tty.
+
 services:
   numav:
     build: 
@@ -13,6 +16,6 @@ services:
       - ${HOME}/.gitconfig:/home/devuser/.gitconfig 
     environment:
       - SSH_AUTH_SOCK=/ssh-agent
-      - HOST_UID=${HOST_UID}
-      - HOST_GID=${HOST_GID}
+    env_file:
+      - ../.devcontainer/.env
     tty: true
