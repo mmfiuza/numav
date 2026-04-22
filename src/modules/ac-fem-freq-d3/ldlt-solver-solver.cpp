@@ -44,7 +44,7 @@ void define_ldlt_solver_sparsity_pattern(
 
     // allocate the null dense b vector
     b_dense = fz::SafePtr<_cmplx_t>(ni_count);
-    b_dense.fill(0.0);
+    b_dense.fill(_cmplx_t(0.0, 0.0));
     
     // define the non-zero structure of the matrix
     solver.define_sparsity_pattern(

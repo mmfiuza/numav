@@ -127,10 +127,6 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
             }
         }
 
-        // _a_diag.print("_a_diag");
-        // _a_vals.print("_a_vals");
-        // _b_vals.print("_b_vals");
-
         // solve
         #if NUMAV_SYSTEM_SOLVER == NUMAV_LDLT_SOLVER
             solve_using_ldlt_solver(
