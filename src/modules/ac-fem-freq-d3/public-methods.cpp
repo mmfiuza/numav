@@ -356,6 +356,16 @@ void SimulationAcFemFreqD3<O>::Impl::_check_if_it_can_run() {
 }
 
 template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::Impl::set_result_export_path(
+    const char* const path_to_result
+) {
+    if (!_nmvr_file_path.empty()) {
+        error("Result export path is already defined.");
+    }
+    _nmvr_file_path = path_to_result;
+}
+
+template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::run()
 {
     _check_if_it_can_run();
@@ -366,17 +376,6 @@ void SimulationAcFemFreqD3<O>::Impl::run()
     _assemble_freq_independent_parts();
     _solve_systems();
     _post_process();
-}
-
-template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::Impl::export_result(
-    const char* const path_to_result
-) {
-    if (!_did_run) {
-        error("The Simulation needs to run before the result is exported."
-            " Call the run method first.");
-    }
-    _write_nmvr(path_to_result);
 }
 
 // explicit instantiation declarations

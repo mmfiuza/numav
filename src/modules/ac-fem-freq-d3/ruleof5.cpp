@@ -95,10 +95,10 @@ SimulationAcFemFreqD3<O>::Impl::~Impl() {
     }
     _pvi_to_ptr_in_a.free();
     _pvi_to_ptr_in_b.free();
+    _x.free();
     #if NUMAV_SYSTEM_SOLVER == NUMAV_LDLT_SOLVER
         _b_dense.free();
         _a_diag.free();
-        _x_temp.free();
     #elif NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
         _b_dense.free();
     #endif

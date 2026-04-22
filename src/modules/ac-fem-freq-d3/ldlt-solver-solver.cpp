@@ -11,7 +11,7 @@ void define_ldlt_solver_sparsity_pattern(
     const fz::SafePtr<_cmplx_t>& a_diag,
     const fz::SafePtr<std::pair<size_t,size_t>>& nz_rowcol_idx_pairs,
     const fz::SafePtr<_cmplx_t>& a_vals,
-    fz::SafePtr<_cmplx_t>& _x_temp,
+    fz::SafePtr<_cmplx_t>& _x,
     fz::SafePtr<_cmplx_t>& b_dense,
     const size_t& ni_count
 ) {
@@ -52,7 +52,7 @@ void define_ldlt_solver_sparsity_pattern(
         a_row_idx.data(),
         a_col_idx.data(),
         a_vals.data(),
-        _x_temp.data(),
+        _x.data(),
         b_dense.data(),
         ni_count
     );

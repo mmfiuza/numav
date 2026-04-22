@@ -8,17 +8,18 @@
 namespace numav {
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::Impl::_write_nmvr(
-    const char* const path_to_result
+void SimulationAcFemFreqD3<O>::Impl::_begin_nmvr_file(
 ) {
-    std::ofstream file(path_to_result, std::ios::binary);
-    if (!file) {
-        error("Failed to open file: {}", path_to_result);
+    _nvmr_file = std::ofstream(_nmvr_file_path, std::ios::binary);
+    if (!_nvmr_file) {
+        error("Failed to open file: {}", _nmvr_file_path);
     }
+    _nvmr_file.write(nmvr::SIGNATURE.data(), nmvr::SIGNATURE_SIZE);
+}
 
-    // signature
-    file.write(nmvr::SIGNATURE.data(), nmvr::SIGNATURE_SIZE);
-
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::Impl::_write_simulation_inputs_to_nmvr_file(
+) {
     // chunk: simulation type
     constexpr uint64_t SIMULATION_TYPE_CHUNK_SIZE = // bytes
         nmvr::SIM_TYPE_PHENOMENON_SIZE +
@@ -36,7 +37,7 @@ void SimulationAcFemFreqD3<O>::Impl::_write_nmvr(
                 nmvr::SIM_TYPE_FEM_ORDER<O>
             );
     nmvr::write_data_chunk(
-        file,
+        _nvmr_file,
         nmvr::SIMULATION_TYPE_CHUNK_ID,
         SIMULATION_TYPE_CHUNK_SIZE,
         SIMULATION_TYPE_DATA.data()
@@ -44,7 +45,7 @@ void SimulationAcFemFreqD3<O>::Impl::_write_nmvr(
 
     // chunk: simulated frequency steps
     nmvr::write_data_chunk(
-        file,
+        _nvmr_file,
         nmvr::SIMULATED_FREQUENCY_STEPS_CHUNK_ID,
         _freq_count * sizeof(uint64_t),
         _freq_steps.data()
@@ -52,7 +53,7 @@ void SimulationAcFemFreqD3<O>::Impl::_write_nmvr(
 
     // chunk: node index to coordinates
     nmvr::write_data_chunk(
-        file,
+        _nvmr_file,
         nmvr::NODE_INDEX_TO_COORDINATES_CHUNK_ID,
         _ni_count * 3 * sizeof(double),
         _ni_to_coords.data()
@@ -60,7 +61,7 @@ void SimulationAcFemFreqD3<O>::Impl::_write_nmvr(
 
     // chunk: surface element index to node index
     nmvr::write_data_chunk(
-        file,
+        _nvmr_file,
         nmvr::SURFACE_ELEMENT_INDEX_TO_NODE_INDEX_CHUNK_ID,
         _sei_count * NODES_IN_SFC_ELEM<O> * sizeof(uint64_t),
         _sei_to_ni.data()
@@ -68,24 +69,18 @@ void SimulationAcFemFreqD3<O>::Impl::_write_nmvr(
 
     // chunk: volume element index to node index
     nmvr::write_data_chunk(
-        file,
+        _nvmr_file,
         nmvr::VOLUME_ELEMENT_INDEX_TO_NODE_INDEX_CHUNK_ID,
         _vei_count * NODES_IN_VOL_ELEM<O> * sizeof(uint64_t),
         _vei_to_ni.data()
     );
+}
 
-    //chunk: complex amplitude of sound pressure solution
-    nmvr::write_data_chunk(
-        file,
-        nmvr::COMPLEX_AMPLITUDE_OF_SOUND_PRESSURE_SOLUTION_CHUNK_ID,
-        _ni_count * _freq_count * sizeof(_cmplx_t),
-        _cmplx_pressure_amp.data()
-    );
-
-    // end of file
-    file.write(nmvr::END_OF_FILE.data(), nmvr::END_OF_FILE_SIZE);
-
-    file.close();
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::Impl::_end_nmvr_file(
+) {
+    _nvmr_file.write(nmvr::END_OF_FILE.data(), nmvr::END_OF_FILE_SIZE);
+    _nvmr_file.close();
 }
 
 // explicit instantiation declarations

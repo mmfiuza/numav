@@ -105,10 +105,10 @@ public:
         const size_t&,
         const char* const
     );
-    void run(
-    );
-    void export_result(
+    void set_result_export_path(
         const char* const
+    );
+    void run(
     );
 
 private:

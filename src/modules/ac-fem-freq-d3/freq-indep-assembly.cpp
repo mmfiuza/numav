@@ -124,6 +124,12 @@ void SimulationAcFemFreqD3<O>::Impl::_allocate_b()
     _b_vals = fz::SafePtr<_cmplx_t>(_b_row_idx.size());
 }
 
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::Impl::_allocate_x()
+{
+    _x = fz::SafePtr<_cmplx_t>(_ni_count);
+}
+
 template<ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
 {
@@ -805,14 +811,14 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_freq_independent_parts()
 {   
     _allocate_a();
     _allocate_b();
+    _allocate_x();
     #if NUMAV_SYSTEM_SOLVER == NUMAV_LDLT_SOLVER
-        _x_temp = fz::SafePtr<_cmplx_t>(_ni_count);
         define_ldlt_solver_sparsity_pattern(
             _solver,
             _a_diag,
             _nnz_rowcol_idx_pairs,
             _a_vals,
-            _x_temp,
+            _x,
             _b_dense,
             _ni_count
         );

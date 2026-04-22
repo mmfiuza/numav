@@ -114,5 +114,15 @@ void write_data_chunk(
     const uint64_t&,
     const void* const
 );
+void write_data_chunk_header(
+    std::ofstream&,
+    const std::array<char,CHUNK_ID_SIZE>&,
+    const uint64_t&
+);
+void write_data_chunk_body(
+    std::ofstream&,
+    const uint64_t&,
+    const void* const
+);
 
 } // namespace numav::nmvr

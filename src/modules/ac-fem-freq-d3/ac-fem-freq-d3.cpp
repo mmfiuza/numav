@@ -167,15 +167,15 @@ void SimulationAcFemFreqD3<O>::add_surface_specific_acoustic_impedance(
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::run() {
-    _pimpl->run();
+void SimulationAcFemFreqD3<O>::set_result_export_path(
+    const char* const path_to_result
+) {
+    _pimpl->set_result_export_path(path_to_result);
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::export_result(
-    const char* const path_to_result
-) {
-    _pimpl->export_result(path_to_result);
+void SimulationAcFemFreqD3<O>::run() {
+    _pimpl->run();
 }
 
 // explicit instantiation declarations

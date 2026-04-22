@@ -5,6 +5,7 @@
 #include <cmath>
 #include <numbers>
 
+#include "common/nmvr-format.hpp"
 #include "modules/ac-fem-freq-d3/ldlt-solver-solver.hpp"
 #include "modules/ac-fem-freq-d3/onemkl-solver.hpp"
 #include "modules/ac-fem-freq-d3/eigen-solver.hpp"
@@ -17,11 +18,13 @@ namespace numav {
 template<ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
 {
-    // allocate the result matrix
-    _cmplx_pressure_amp = 
-        Eigen::Matrix<_cmplx_t, Eigen::Dynamic, Eigen::Dynamic>(
-            _ni_count, _freq_count
-        );
+    _begin_nmvr_file();
+    _write_simulation_inputs_to_nmvr_file();
+    nmvr::write_data_chunk_header(
+        _nvmr_file,
+        nmvr::COMPLEX_AMPLITUDE_OF_SOUND_PRESSURE_SOLUTION_CHUNK_ID,
+        _ni_count * _freq_count * sizeof(_cmplx_t)
+    );
 
     // print start time
     auto start_time = std::chrono::system_clock::now();
@@ -52,21 +55,32 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
 
     for (size_t fi=0; fi!=_freq_count; ++fi)
     {
+        // reset values of A matrix and b vector
         _a_vals.fill(_cmplx_t(0.0, 0.0));
         _b_vals.fill(_cmplx_t(0.0, 0.0));
         #if NUMAV_SYSTEM_SOLVER == NUMAV_LDLT_SOLVER
             _a_diag.fill(_cmplx_t(0.0, 0.0));
         #endif
-        const double freq = _freq_steps[fi];
-        const double omega = 2*std::numbers::pi*freq;
-        const double omega_squared = std::pow(omega, 2);
 
+        // frequency calculations
+        const double freq = _freq_steps[fi];
         if (freq == 0) {
-            for (size_t ni=0; ni!=_ni_count; ++ni) {
-                _cmplx_pressure_amp(ni,fi) = _cmplx_t(0.0, 0.0);
-            }
+            _x.fill(_cmplx_t(0.0, 0.0));
+
+            // write solution to nmvr file
+            nmvr::write_data_chunk_body(
+                _nvmr_file,
+                _ni_count * sizeof(_cmplx_t),
+                _x.data()
+            );
+            
+            // progress bar tick
+            bar.set_progress(static_cast<size_t>(fi+1));
+
             continue;
         }
+        const double omega = 2*std::numbers::pi*freq;
+        const double omega_squared = omega * omega;
 
         // add point volume velocity to b vector
         for (size_t pvni=0; pvni!=_pvni_count; ++pvni)
@@ -135,11 +149,6 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
                 _b_row_idx,
                 _b_dense
             );
-            std::copy(
-                _x_temp.begin(),
-                _x_temp.end(),
-                _cmplx_pressure_amp.data() + fi*_ni_count
-            );
         #elif NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
             solve_using_eigen(
                 _a_vals,
@@ -147,7 +156,7 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
                 _b_vals,
                 _b_row_idx,
                 _ni_count,
-                _cmplx_pressure_amp.data() + fi*_ni_count
+                _x.data()
             );
         #elif NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
             solve_using_onemkl(
@@ -156,30 +165,39 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
                 _b_vals,
                 _b_row_idx,
                 _b_dense,
-                _cmplx_pressure_amp.data() + fi*_ni_count
+                _x.data()
             );
         #else
             static_assert(false, "Invalid NUMAV_SYSTEM_SOLVER.");
         #endif
+
+        // write solution to nmvr file
+        nmvr::write_data_chunk_body(
+            _nvmr_file,
+            _ni_count * sizeof(_cmplx_t),
+            _x.data()
+        );
         
         // progress bar tick
         bar.set_progress(static_cast<size_t>(fi+1));
     }
-    _did_run = true;
     #if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
         constexpr MKL_INT options = NUMAV_MKL_OPTIONS;
         _INTEGER_t error_id = dss_delete(_dss_handle, options);
         if (error_id != MKL_DSS_SUCCESS) { print_dss_error(error_id); }
     #endif
-
+    _end_nmvr_file();
+    
     // end progress bar
     indicators::show_console_cursor(true);
-
+    
     // print finish
     auto end_time = std::chrono::system_clock::now();
     auto time_t_end = std::chrono::system_clock::to_time_t(end_time);
     std::cout << "Solver ended at: " <<
         std::put_time(std::localtime(&time_t_end), "%Hh:%Mm:%Ss") << "\n";
+
+    _did_run = true;
 }
 
 // explicit instantiation declarations
