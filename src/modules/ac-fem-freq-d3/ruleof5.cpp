@@ -98,6 +98,7 @@ SimulationAcFemFreqD3<O>::Impl::~Impl() {
     #if NUMAV_SYSTEM_SOLVER == NUMAV_LDLT_SOLVER
         // _b_dense.free(); // TODO: check why this line crashes the program
         _a_diag.free();
+        _x_temp.free();
     #elif NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
         _b_dense.free();
     #endif

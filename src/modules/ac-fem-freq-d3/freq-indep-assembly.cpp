@@ -806,11 +806,13 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_freq_independent_parts()
     _allocate_a();
     _allocate_b();
     #if NUMAV_SYSTEM_SOLVER == NUMAV_LDLT_SOLVER
+        _x_temp = fz::SafePtr<_cmplx_t>(_ni_count);
         define_ldlt_solver_sparsity_pattern(
             _solver,
             _a_diag,
             _nnz_rowcol_idx_pairs,
             _a_vals,
+            _x_temp,
             _b_dense,
             _ni_count
         );

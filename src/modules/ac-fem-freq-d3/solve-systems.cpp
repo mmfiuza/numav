@@ -137,7 +137,11 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
                 _solver,
                 _b_vals,
                 _b_row_idx,
-                _b_dense,
+                _b_dense
+            );
+            std::copy(
+                _x_temp.begin(),
+                _x_temp.end(),
                 _cmplx_pressure_amp.data() + fi*_ni_count
             );
         #elif NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN

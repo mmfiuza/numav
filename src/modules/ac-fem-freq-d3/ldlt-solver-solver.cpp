@@ -11,6 +11,7 @@ void define_ldlt_solver_sparsity_pattern(
     const fz::SafePtr<_cmplx_t>& a_diag,
     const fz::SafePtr<std::pair<size_t,size_t>>& nz_rowcol_idx_pairs,
     const fz::SafePtr<_cmplx_t>& a_vals,
+    fz::SafePtr<_cmplx_t>& _x_temp,
     fz::SafePtr<_cmplx_t>& b_dense,
     const size_t& ni_count
 ) {
@@ -46,11 +47,12 @@ void define_ldlt_solver_sparsity_pattern(
     b_dense.fill(0.0);
     
     // define the non-zero structure of the matrix
-    solver.analyse_sparsity_pattern(
+    solver.define_sparsity_pattern(
         a_diag.data(),
         a_row_idx.data(),
         a_col_idx.data(),
         a_vals.data(),
+        _x_temp.data(),
         b_dense.data(),
         ni_count
     );
@@ -63,15 +65,14 @@ void solve_using_ldlt_solver(
     LdltSolver<_cmplx_t>& solver,
     const fz::SafePtr<_cmplx_t>& b_vals,
     const fz::SafePtr<size_t>& b_row_idx,
-    fz::SafePtr<_cmplx_t>& b_dense,
-    _cmplx_t* const x
+    fz::SafePtr<_cmplx_t>& b_dense
 ) {
     // dense b vector
     for (size_t i=0; i!=b_vals.size(); ++i) {
         b_dense[b_row_idx[i]] = b_vals[i];
     }
     
-    solver.solve(x);
+    solver.solve();
 }
 
 } // namespace numav

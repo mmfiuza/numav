@@ -47,7 +47,7 @@ target_compile_definitions(numav PUBLIC
 )
 
 if(NOT GDB)
-    target_compile_options(numav PRIVATE -Wall -Wextra -O3 -m64)
+    target_compile_options(numav PRIVATE -Wall -Wextra -O3 -m64 -ffast-math)
     target_link_options(numav PRIVATE -flto -m64)
 else()
     target_compile_options(numav PRIVATE -Wall -Wextra -g -O0 -fno-inline -m64)
