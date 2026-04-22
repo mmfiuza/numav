@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "common/debug-macros.hpp"
 #include "common/aliases.hpp"
 #include "SafePtr.hpp"
 #include "ldlt-solver.hpp"

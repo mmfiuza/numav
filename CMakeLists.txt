@@ -44,6 +44,7 @@ target_compile_definitions(numav PUBLIC
     MKL_ILP64
     EIGEN_DEFAULT_DENSE_INDEX_TYPE=int64_t
     FMT_HEADER_ONLY
+    SAFE_PTR_DEBUG
 )
 
 if(NOT GDB)

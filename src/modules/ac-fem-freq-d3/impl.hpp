@@ -2,7 +2,6 @@
 
 #include "numav/numav.hpp"
 #include "common/aliases.hpp"
-#include "common/debug-macros.hpp"
 #include "modules/ac-fem-freq-d3/macros.hpp"
 #include "modules/ac-fem-freq-d3/constants.hpp"
 
