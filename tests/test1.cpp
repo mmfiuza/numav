@@ -21,7 +21,9 @@ int main()
     // determine simulation frequency range
     double freq_max = 100;
     s.set_maximum_frequency(freq_max);
+    s.set_frequency_steps_count(1000);
 
+    // add volume materials
     s.add_volume_material(
         1,
         [](auto f) { return 1.2; },
@@ -61,9 +63,9 @@ int main()
     auto Z = [](auto f) { return std::complex<double>(4000, 4000); };
     s.add_surface_specific_acoustic_impedance(5, Z);
 
+    // set path for result file (.nmvr)
+    s.set_result_export_path("result.nmvr");
+
     // run the simulation
     s.run();
-
-    // export the result to binary
-    s.export_result("result.nmvr");
 }
