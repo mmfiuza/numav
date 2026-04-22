@@ -16,15 +16,15 @@ int main()
     >();
 
     // load the mesh
-    s.load_mesh("simulations/sala_config_05_PRATO/inputs/sala_CONFIG_5_versaoteste.bdf");
+    s.load_mesh("simulations/sala_config_04_PRATO/inputs/config_4_PRATO.bdf");
 
     // determine simulation frequency range
-    double freq_min = 25;
+    double freq_min = 30;
     double freq_max = 400;
     s.set_frequency_range(freq_min, freq_max);
 
     s.add_volume_material(
-        0,                          // id do volume (ar)
+        1,                          // id do volume (ar)
         [](auto f) { return 1.2; }, // densidade do ar
         [](auto f) { return std::complex<double>(343,0); } // velocidade do som no ar
     );
@@ -36,16 +36,12 @@ int main()
     //     TypeOfSource::POINT, {3.0, 2.0, 1.0},
     //     PhysicalQuantity::VOLUME_VELOCITY, q
     // );
-    auto u = [](auto f) { return 1/f; };
-    s.add_sound_source(
-        TypeOfSource::SURFACE, 6, // id da superfície
-        PhysicalQuantity::PARTICLE_VELOCITY, u
-    );
+    //auto u = [](auto f) { return 1/f; }; 
 
     // Sub-woofer cone
     s.add_sound_source(
-        TypeOfSource::SURFACE, 8, // id da superfície
-        PhysicalQuantity::PARTICLE_VELOCITY, u
+        TypeOfSource::SURFACE, 51, // id da superfície
+        PhysicalQuantity::PARTICLE_VELOCITY, "simulations/sala_config_04_PRATO/inputs/velocidade_sub_woofer.csv"
     );
 
     // add pressure sources
@@ -61,12 +57,12 @@ int main()
     // );
  
     // add specific surface acoustic impedance
-    s.add_surface_specific_acoustic_impedance(5, "simulations/sala_config_05_PRATO/inputs/Zs_DBMiki_sigma3714_L50mm.txt");
+    s.add_surface_specific_acoustic_impedance(40, "simulations/sala_config_04_PRATO/inputs/Zs_DBMiki_sigma3714_L50mm.txt");
 
 
     // run the simulation
     s.run();
 
     // export the result to binary
-    s.export_result("simulations/sala_config_05_PRATO/outputs/sala_config_5.nmvr");
+    s.export_result("simulations/sala_config_04_PRATO/outputs/sala_config_4.nmvr");
 }
