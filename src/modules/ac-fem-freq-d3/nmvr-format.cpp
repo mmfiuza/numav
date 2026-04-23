@@ -55,7 +55,7 @@ void SimulationAcFemFreqD3<O>::Impl::_write_simulation_inputs_to_nmvr_file(
     nmvr::write_data_chunk(
         _nvmr_file,
         nmvr::NODE_INDEX_TO_COORDINATES_CHUNK_ID,
-        _ni_count * 3 * sizeof(double),
+        _ni_count * 3UL * sizeof(double),
         _ni_to_coords.data()
     );
 

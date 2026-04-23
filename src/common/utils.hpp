@@ -39,7 +39,7 @@ constexpr auto concat_constexpr_arrays(const std::array<T, Sizes>&... arrays)
     constexpr std::size_t total_size = (Sizes + ...);
     std::array<T, total_size> result{};
     
-    std::size_t index = 0;
+    std::size_t index = 0UL;
     (
         (
             std::copy(arrays.begin(), arrays.end(), result.begin() + index), 

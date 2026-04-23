@@ -19,21 +19,21 @@ void define_ldlt_solver_sparsity_pattern(
     const size_t nzi_count = nz_rowcol_idx_pairs.size();
     
     // create a_col_idx and a_row_idx
-    fz::SafePtr<size_t> a_row_idx(ni_count + 1);
+    fz::SafePtr<size_t> a_row_idx(ni_count + 1UL);
     fz::SafePtr<size_t> a_col_idx(nzi_count);
     size_t* it_a_row_idx = a_row_idx.begin();
     size_t* it_a_col_idx = a_col_idx.begin();
     const std::pair<size_t,size_t>* it_nz_rowcol_idx_pairs =
         nz_rowcol_idx_pairs.begin();
     size_t current_ri = std::numeric_limits<size_t>::max();
-    for (size_t nzi=0; nzi!=nzi_count; ++nzi) {
+    for (size_t nzi = 0UL; nzi != nzi_count; ++nzi) {
         *it_a_col_idx = it_nz_rowcol_idx_pairs->second;
         ++it_a_col_idx;
         if (it_nz_rowcol_idx_pairs->first != current_ri) {
             const size_t previous_ri = current_ri;
             current_ri = it_nz_rowcol_idx_pairs->first;
             const size_t ri_increment = current_ri - previous_ri;
-            for (size_t i=0; i!=ri_increment; ++i) {
+            for (size_t i=0UL; i!=ri_increment; ++i) {
                 *it_a_row_idx = nzi;
                 ++it_a_row_idx;
             }
@@ -68,7 +68,7 @@ void solve_using_ldlt_solver(
     fz::SafePtr<_cmplx_t>& b_dense
 ) {
     // dense b vector
-    for (size_t i=0; i!=b_vals.size(); ++i) {
+    for (size_t i = 0UL; i != b_vals.size(); ++i) {
         b_dense[b_row_idx[i]] = b_vals[i];
     }
     

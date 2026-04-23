@@ -71,13 +71,13 @@ public:
     );
     void add_sound_source(
         const TypeOfSource&,
-        const std::array<double,3>&,
+        const std::array<double,3UL>&,
         const PhysicalQuantity&,
         const std::function<_cmplx_t(const double&)>&
     );
     void add_sound_source(
         const TypeOfSource&,
-        const std::array<double,3>&,
+        const std::array<double,3UL>&,
         const PhysicalQuantity&,
         const char* const
     );
@@ -137,7 +137,7 @@ private:
     
     void _load_bdf(const char* const);
     void _generate_extra_nodes();
-    size_t _get_closest_point(const std::array<double,3>&);
+    size_t _get_closest_point(const std::array<double,3UL>&);
     void _check_if_mesh_is_defined();
     void _validate_espg(const size_t&);
     void _check_if_it_can_run();

@@ -35,7 +35,7 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
     // create progress bar
     indicators::show_console_cursor(false);
     indicators::ProgressBar bar {
-        indicators::option::BarWidth{37},
+        indicators::option::BarWidth{37UL},
         indicators::option::Start{" |"},
         indicators::option::Fill{"="},
         indicators::option::Lead{"="},
@@ -49,11 +49,11 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
         indicators::option::FontStyles{
             std::vector<indicators::FontStyle>{indicators::FontStyle::bold}
         },
-        indicators::option::MinProgress{0},
+        indicators::option::MinProgress{0UL},
         indicators::option::MaxProgress{_freq_count}
     };
 
-    for (size_t fi=0; fi!=_freq_count; ++fi)
+    for (size_t fi = 0UL; fi != _freq_count; ++fi)
     {
         // reset values of A matrix and b vector
         _a_vals.fill(_cmplx_t(0.0, 0.0));
@@ -64,7 +64,7 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
 
         // frequency calculations
         const double freq = _freq_steps[fi];
-        if (freq == 0) {
+        if (freq == 0.0) {
             _x.fill(_cmplx_t(0.0, 0.0));
 
             // write solution to nmvr file
@@ -75,26 +75,27 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
             );
             
             // progress bar tick
-            bar.set_progress(static_cast<size_t>(fi+1));
+            bar.set_progress(static_cast<size_t>(fi + 1UL));
 
             continue;
         }
-        const double omega = 2*std::numbers::pi*freq;
+        const double omega = 2.0 * std::numbers::pi * freq;
         const double omega_squared = omega * omega;
 
         // add point volume velocity to b vector
-        for (size_t pvni=0; pvni!=_pvni_count; ++pvni)
+        for (size_t pvni = 0UL; pvni != _pvni_count; ++pvni)
         {
             const _cmplx_t volvel = (_pvni_to_forc_fi_part[pvni])(freq);
-            *_pvni_to_ptr_in_b[pvni] += _cmplx_t(0.0,-omega) * volvel;
+            *_pvni_to_ptr_in_b[pvni] += _cmplx_t(0.0, -omega) * volvel;
         }
 
         // add surface velocity to b vector
-        for (size_t ispgv=0; ispgv!=_ispgv_count; ++ispgv)
+        for (size_t ispgv = 0UL; ispgv != _ispgv_count; ++ispgv)
         {
             const _cmplx_t velocity = (_ispgv_to_velocity[ispgv])(freq);
-            const _cmplx_t fd_part = _cmplx_t(0.0,-omega) * velocity;
-            for (size_t fipi=0; fipi!=_ispgv_to_ptr_in_b[ispgv].size(); ++fipi)
+            const _cmplx_t fd_part = _cmplx_t(0.0, -omega) * velocity;
+            for (size_t fipi = 0UL;
+                fipi != _ispgv_to_ptr_in_b[ispgv].size(); ++fipi)
             {
                 *_ispgv_to_ptr_in_b[ispgv][fipi] +=
                     _ispgv_to_forc_fi_part[ispgv][fipi] * fd_part;
@@ -102,29 +103,31 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
         }
 
         // add damping matrix to a
-        for (size_t ispgi=0; ispgi!=_ispgi_count; ++ispgi) {
+        for (size_t ispgi = 0UL; ispgi != _ispgi_count; ++ispgi) {
             const _cmplx_t impedance_value = _ispgi_to_impedance[ispgi](freq);
-            const _cmplx_t damp_fd_part = _cmplx_t(0.0,omega)/impedance_value;
+            const _cmplx_t damp_fd_part = _cmplx_t(0.0, omega)/impedance_value;
             
-            for (size_t fipi=0; fipi!=_ispgi_to_ptr_in_a[ispgi].size(); ++fipi)
-            {
+            for (size_t fipi = 0UL;
+                fipi != _ispgi_to_ptr_in_a[ispgi].size(); ++fipi
+            ) {
                 *_ispgi_to_ptr_in_a[ispgi][fipi] +=
                     _ispgi_to_damp_fi_part[ispgi][fipi] * damp_fd_part;
             }
         }
 
         // add stiffness and mass matrix to a
-        for (size_t ivpg=0; ivpg!=_ivpg_count; ++ivpg) {
+        for (size_t ivpg = 0UL; ivpg != _ivpg_count; ++ivpg) {
             const _cmplx_t density_value =
                 (_ivpg_to_volprop[ivpg].density)(freq);
             const _cmplx_t soundspeed_value =
                 (_ivpg_to_volprop[ivpg].soundspeed)(freq);
 
-            const _cmplx_t stif_fd_part = 1.0 / density_value;
-            const _cmplx_t mass_fd_part =
-                - omega_squared / (density_value*std::pow(soundspeed_value,2));
+            const _cmplx_t stif_fd_part = _cmplx_t(1.0, 0.0) / density_value;
+            const _cmplx_t mass_fd_part = - omega_squared /
+                (density_value * std::pow(soundspeed_value, 2UL));
             
-            for (size_t fipi=0; fipi!=_ivpg_to_ptr_in_a[ivpg].size(); ++fipi) {
+            for (size_t fipi = 0UL;
+                fipi != _ivpg_to_ptr_in_a[ivpg].size(); ++fipi) {
                 *_ivpg_to_ptr_in_a[ivpg][fipi] +=
                     _ivpg_to_stif_fi_part[ivpg][fipi] * stif_fd_part +
                     _ivpg_to_mass_fi_part[ivpg][fipi] * mass_fd_part;
@@ -132,9 +135,11 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
         }
 
         // add pressure to a and b
-        for (size_t pvi=0; pvi!=_pvi_count; ++pvi) {
+        for (size_t pvi = 0UL; pvi != _pvi_count; ++pvi) {
             const _cmplx_t pressure = (_pvi_to_pressure[pvi])(freq);
-            for (size_t fipi=0; fipi!=_pvi_to_ptr_in_a[pvi].size(); ++fipi) {
+            for (size_t fipi = 0UL;
+                fipi != _pvi_to_ptr_in_a[pvi].size(); ++fipi
+            ) {
                 *_pvi_to_ptr_in_a[pvi][fipi] += PENALTY_METHOD_CONSTANT;
                 *_pvi_to_ptr_in_b[pvi][fipi] +=
                     PENALTY_METHOD_CONSTANT * pressure;
@@ -179,7 +184,7 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
         );
         
         // progress bar tick
-        bar.set_progress(static_cast<size_t>(fi+1));
+        bar.set_progress(static_cast<size_t>(fi + 1UL));
     }
     #if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
         constexpr MKL_INT options = NUMAV_MKL_OPTIONS;
