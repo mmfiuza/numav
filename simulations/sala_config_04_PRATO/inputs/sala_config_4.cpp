@@ -59,10 +59,9 @@ int main()
     // add specific surface acoustic impedance
     s.add_surface_specific_acoustic_impedance(40, "simulations/sala_config_04_PRATO/inputs/Zs_DBMiki_sigma3714_L50mm.txt");
 
+    // export the result to binary
+    s.set_result_export_path("simulations/sala_config_04_PRATO/outputs/sala_config_4.nmvr");
 
     // run the simulation
     s.run();
-
-    // export the result to binary
-    s.export_result("simulations/sala_config_04_PRATO/outputs/sala_config_4.nmvr");
 }
