@@ -7,12 +7,12 @@
 namespace numav {
 
 void define_ldlt_solver_sparsity_pattern(
-    LdltSolver<_cmplx_t>& solver,
-    const fz::SafePtr<_cmplx_t>& a_diag,
+    LdltSolver<Cmplx>& solver,
+    const fz::SafePtr<Cmplx>& a_diag,
     const fz::SafePtr<std::pair<size_t,size_t>>& nz_rowcol_idx_pairs,
-    const fz::SafePtr<_cmplx_t>& a_vals,
-    fz::SafePtr<_cmplx_t>& _x,
-    fz::SafePtr<_cmplx_t>& b_dense,
+    const fz::SafePtr<Cmplx>& a_vals,
+    fz::SafePtr<Cmplx>& _x,
+    fz::SafePtr<Cmplx>& b_dense,
     const size_t ni_count
 ) {
     // problem dimensions
@@ -43,8 +43,8 @@ void define_ldlt_solver_sparsity_pattern(
     *it_a_row_idx = nzi_count;
 
     // allocate the null dense b vector
-    b_dense = fz::SafePtr<_cmplx_t>(ni_count);
-    b_dense.fill(_cmplx_t(0.0, 0.0));
+    b_dense = fz::SafePtr<Cmplx>(ni_count);
+    b_dense.fill(Cmplx(0.0, 0.0));
     
     // define the non-zero structure of the matrix
     solver.define_sparsity_pattern(
@@ -62,10 +62,10 @@ void define_ldlt_solver_sparsity_pattern(
 }
 
 void solve_using_ldlt_solver(
-    LdltSolver<_cmplx_t>& solver,
-    const fz::SafePtr<_cmplx_t>& b_vals,
+    LdltSolver<Cmplx>& solver,
+    const fz::SafePtr<Cmplx>& b_vals,
     const fz::SafePtr<size_t>& b_row_idx,
-    fz::SafePtr<_cmplx_t>& b_dense
+    fz::SafePtr<Cmplx>& b_dense
 ) {
     // dense b vector
     for (size_t i = 0UL; i != b_vals.size(); ++i) {

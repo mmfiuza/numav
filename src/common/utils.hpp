@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "common/aliases.hpp"
+#include "numav/aliases.hpp"
 
 #include <string_view>
 #include <charconv>
@@ -25,7 +25,7 @@ T parse(std::string_view str) {
     return value;
 }
 
-_FuncRealToCmplx convert_table_to_real_to_cmplx_func(
+FuncFloatToCmplx convert_table_to_real_to_cmplx_func(
     const char* const impedance_text_file
 );
 

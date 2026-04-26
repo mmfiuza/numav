@@ -16,7 +16,7 @@ namespace numav {
         _MKL_DSS_HANDLE_t& dss_handle,
         const fz::SafePtr<std::pair<size_t,size_t>>& nnz_rowcol_idx_pairs,
         const size_t ni_count,
-        fz::SafePtr<_cmplx_t>& b_dense
+        fz::SafePtr<Cmplx>& b_dense
     ) {
         // problem dimensions
         const MKL_INT node_count = ni_count;
@@ -72,17 +72,17 @@ namespace numav {
         a_col_idx.free();
 
         // allocate the null dense b vector
-        b_dense = fz::SafePtr<_cmplx_t>(ni_count);
-        b_dense.fill(_cmplx_t(0.0, 0.0));
+        b_dense = fz::SafePtr<Cmplx>(ni_count);
+        b_dense.fill(Cmplx(0.0, 0.0));
     }
 
     void solve_using_onemkl(
         _MKL_DSS_HANDLE_t& dss_handle,
-        const fz::SafePtr<_cmplx_t>& a_vals,
-        const fz::SafePtr<_cmplx_t>& b_vals,
+        const fz::SafePtr<Cmplx>& a_vals,
+        const fz::SafePtr<Cmplx>& b_vals,
         const fz::SafePtr<size_t>& b_row_idx,
-        fz::SafePtr<_cmplx_t>& b_dense,
-        _cmplx_t* const x_out
+        fz::SafePtr<Cmplx>& b_dense,
+        Cmplx* const x_out
     ) {
         // error code
         _INTEGER_t error_id;
@@ -92,7 +92,7 @@ namespace numav {
         error_id = dss_factor_complex(
             dss_handle,
             positive_definiteness,
-            reinterpret_cast<const double*>(a_vals.data())
+            reinterpret_cast<const Float*>(a_vals.data())
         );
         if (error_id != MKL_DSS_SUCCESS) { print_dss_error(error_id); }
 
@@ -107,9 +107,9 @@ namespace numav {
         error_id = dss_solve_complex(
             dss_handle,
             options,
-            reinterpret_cast<const double*>(b_dense.data()),
+            reinterpret_cast<const Float*>(b_dense.data()),
             num_of_b,
-            reinterpret_cast<double*>(x_out)
+            reinterpret_cast<Float*>(x_out)
         );
         if (error_id != MKL_DSS_SUCCESS) { print_dss_error(error_id); }
     }

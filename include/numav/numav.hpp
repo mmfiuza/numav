@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "numav/aliases.hpp"
+
 namespace numav {
 
     enum class Phenomenon {

@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "common/aliases.hpp"
+#include "numav/aliases.hpp"
 
 #include "SafePtr.hpp"
 
@@ -10,20 +10,20 @@
 
 namespace numav {
 
-fz::SafePtr<double> linspace(
-    const double start, const double finish, const size_t num_points
+fz::SafePtr<Float> linspace(
+    const Float start, const Float finish, const size_t num_points
 );
 
-fz::SafePtr<double> cubspace(
-    const double start, const double finish, const size_t num_points
+fz::SafePtr<Float> cubspace(
+    const Float start, const Float finish, const size_t num_points
 );
 
-double get_triangle_area(
-    const std::array<std::array<double,3UL>,3UL> coords
+Float get_triangle_area(
+    const std::array<std::array<Float,3UL>,3UL> coords
 );
 
-double get_tetrahedron_volume(
-    const std::array<std::array<double,3UL>,4UL> coords
+Float get_tetrahedron_volume(
+    const std::array<std::array<Float,3UL>,4UL> coords
 );
 
 template<typename... T>

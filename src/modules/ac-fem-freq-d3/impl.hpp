@@ -1,7 +1,7 @@
 // Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
 #include "numav/numav.hpp"
-#include "common/aliases.hpp"
+#include "numav/aliases.hpp"
 #include "modules/ac-fem-freq-d3/macros.hpp"
 #include "modules/ac-fem-freq-d3/constants.hpp"
 
@@ -31,11 +31,11 @@ public:
     Impl& operator=(Impl&&) noexcept;
 
     void set_maximum_frequency(
-        const double
+        const Float
     );
     void set_frequency_range(
-        const double,
-        const double
+        const Float,
+        const Float
     );
     void set_frequency_steps_count(
         const size_t
@@ -44,24 +44,24 @@ public:
         const FrequencySamplingDensity
     );
     void set_frequency_steps(
-        const std::vector<double>&
+        const std::vector<Float>&
     );
     void load_mesh(
         const char* const
     );
     void add_volume_material(
         const size_t,
-        const std::function<_cmplx_t(const double&)>&,
-        const std::function<_cmplx_t(const double&)>&
+        const std::function<Cmplx(const Float&)>&,
+        const std::function<Cmplx(const Float&)>&
     );
     void add_volume_material(
         const size_t,
         const char* const,
-        const std::function<_cmplx_t(const double&)>&
+        const std::function<Cmplx(const Float&)>&
     );
     void add_volume_material(
         const size_t,
-        const std::function<_cmplx_t(const double&)>&,
+        const std::function<Cmplx(const Float&)>&,
         const char* const
     );
     void add_volume_material(
@@ -71,13 +71,13 @@ public:
     );
     void add_sound_source(
         const TypeOfSource,
-        const std::array<double,3UL>,
+        const std::array<Float,3UL>,
         const PhysicalQuantity,
-        const std::function<_cmplx_t(const double&)>&
+        const std::function<Cmplx(const Float&)>&
     );
     void add_sound_source(
         const TypeOfSource,
-        const std::array<double,3UL>,
+        const std::array<Float,3UL>,
         const PhysicalQuantity,
         const char* const
     );
@@ -85,7 +85,7 @@ public:
         const TypeOfSource,
         const size_t,
         const PhysicalQuantity,
-        const std::function<_cmplx_t(const double&)>&
+        const std::function<Cmplx(const Float&)>&
     );
     void add_sound_source(
         const TypeOfSource,
@@ -94,11 +94,11 @@ public:
         const char* const
     );
     void add_receiver(
-        const std::array<double,DIM>
+        const std::array<Float,DIM>
     );
     void add_surface_specific_acoustic_impedance(
         const size_t,
-        const std::function<_cmplx_t(const double&)>&
+        const std::function<Cmplx(const Float&)>&
     );
     void add_surface_specific_acoustic_impedance(
         const size_t,
@@ -113,8 +113,8 @@ private:
     
     // volume element properties
     struct _VolProp {
-        _FuncRealToCmplx density;
-        _FuncRealToCmplx soundspeed;
+        FuncFloatToCmplx density;
+        FuncFloatToCmplx soundspeed;
     };
 
     size_t _ni_count;
@@ -139,7 +139,7 @@ private:
     
     void _load_bdf(const char* const);
     void _generate_extra_nodes();
-    size_t _get_closest_point(const std::array<double,3UL>);
+    size_t _get_closest_point(const std::array<Float,3UL>);
     void _check_if_mesh_is_defined();
     void _validate_espg(const size_t);
     void _check_if_it_can_run();
@@ -177,18 +177,18 @@ private:
     
     std::string _nmvr_file_path;
 
-    double _freq_min;
-    double _freq_max;
+    Float _freq_min;
+    Float _freq_max;
     FrequencySamplingDensity _frequency_sampling_density;
     _FreqTypeDefinedByUser _freq_type_defined_by_user;
-    fz::SafePtr<double> _freq_steps;
+    fz::SafePtr<Float> _freq_steps;
 
-    fz::SafePtr<std::array<double,DIM>> _ni_to_coords;
+    fz::SafePtr<std::array<Float,DIM>> _ni_to_coords;
     fz::SafePtr<std::array<size_t,NODES_IN_SFC_ELEM<O>>> _sei_to_ni;
     fz::SafePtr<std::array<size_t,NODES_IN_VOL_ELEM<O>>> _vei_to_ni;
 
-    std::vector<std::tuple<size_t,_FuncRealToCmplx>> _point_volvel;
-    std::vector<std::tuple<size_t,_FuncRealToCmplx>> _point_pressure;
+    std::vector<std::tuple<size_t,FuncFloatToCmplx>> _point_volvel;
+    std::vector<std::tuple<size_t,FuncFloatToCmplx>> _point_pressure;
 
     std::unordered_set<size_t> _existing_evpg;
     std::unordered_set<size_t> _existing_espg;
@@ -197,9 +197,9 @@ private:
     fz::SafePtr<size_t> _vei_to_evpg;
     
     std::unordered_map<size_t,_VolProp> _evpg_to_volprop;
-    std::unordered_map<size_t,_FuncRealToCmplx> _espg_to_impedance;
-    std::unordered_map<size_t,_FuncRealToCmplx> _espg_to_velocity;
-    std::unordered_map<size_t,_FuncRealToCmplx> _espg_to_pressure;
+    std::unordered_map<size_t,FuncFloatToCmplx> _espg_to_impedance;
+    std::unordered_map<size_t,FuncFloatToCmplx> _espg_to_velocity;
+    std::unordered_map<size_t,FuncFloatToCmplx> _espg_to_pressure;
 
     std::unordered_map<size_t,size_t> _espg_to_ispg;
     std::unordered_map<size_t,size_t> _evpg_to_ivpg;
@@ -214,45 +214,45 @@ private:
     fz::SafePtr<size_t> _psei_to_ispgp;
 
     fz::SafePtr<std::pair<size_t,size_t>> _nnz_rowcol_idx_pairs;
-    fz::SafePtr<_cmplx_t> _a_vals;
+    fz::SafePtr<Cmplx> _a_vals;
     fz::SafePtr<size_t> _b_row_idx;
-    fz::SafePtr<_cmplx_t> _b_vals;
+    fz::SafePtr<Cmplx> _b_vals;
     
     fz::SafePtr<_VolProp> _ivpg_to_volprop;
-    fz::SafePtr<_FuncRealToCmplx> _ispgi_to_impedance;
-    fz::SafePtr<_FuncRealToCmplx> _ispgv_to_velocity;
-    fz::SafePtr<_FuncRealToCmplx> _ispgp_to_pressure;
+    fz::SafePtr<FuncFloatToCmplx> _ispgi_to_impedance;
+    fz::SafePtr<FuncFloatToCmplx> _ispgv_to_velocity;
+    fz::SafePtr<FuncFloatToCmplx> _ispgp_to_pressure;
 
-    fz::SafePtr<fz::SafePtr<double>> _ivpg_to_stif_fi_part;
-    fz::SafePtr<fz::SafePtr<double>> _ivpg_to_mass_fi_part;
-    fz::SafePtr<fz::SafePtr<_cmplx_t*>> _ivpg_to_ptr_in_a;
+    fz::SafePtr<fz::SafePtr<Float>> _ivpg_to_stif_fi_part;
+    fz::SafePtr<fz::SafePtr<Float>> _ivpg_to_mass_fi_part;
+    fz::SafePtr<fz::SafePtr<Cmplx*>> _ivpg_to_ptr_in_a;
 
-    fz::SafePtr<fz::SafePtr<double>> _ispgi_to_damp_fi_part;
-    fz::SafePtr<fz::SafePtr<_cmplx_t*>> _ispgi_to_ptr_in_a;
+    fz::SafePtr<fz::SafePtr<Float>> _ispgi_to_damp_fi_part;
+    fz::SafePtr<fz::SafePtr<Cmplx*>> _ispgi_to_ptr_in_a;
 
-    fz::SafePtr<_FuncRealToCmplx> _pvni_to_forc_fi_part;
-    fz::SafePtr<_cmplx_t*> _pvni_to_ptr_in_b;
+    fz::SafePtr<FuncFloatToCmplx> _pvni_to_forc_fi_part;
+    fz::SafePtr<Cmplx*> _pvni_to_ptr_in_b;
 
-    fz::SafePtr<fz::SafePtr<double>> _ispgv_to_forc_fi_part;
-    fz::SafePtr<fz::SafePtr<_cmplx_t*>> _ispgv_to_ptr_in_b;
+    fz::SafePtr<fz::SafePtr<Float>> _ispgv_to_forc_fi_part;
+    fz::SafePtr<fz::SafePtr<Cmplx*>> _ispgv_to_ptr_in_b;
     
-    fz::SafePtr<_FuncRealToCmplx> _pvi_to_pressure;
-    fz::SafePtr<fz::SafePtr<_cmplx_t*>> _pvi_to_ptr_in_a;
-    fz::SafePtr<fz::SafePtr<_cmplx_t*>> _pvi_to_ptr_in_b;
+    fz::SafePtr<FuncFloatToCmplx> _pvi_to_pressure;
+    fz::SafePtr<fz::SafePtr<Cmplx*>> _pvi_to_ptr_in_a;
+    fz::SafePtr<fz::SafePtr<Cmplx*>> _pvi_to_ptr_in_b;
 
-    std::vector<std::array<double,DIM>> _receiver_points;
+    std::vector<std::array<Float,DIM>> _receiver_points;
 
-    fz::SafePtr<_cmplx_t> _x;
+    fz::SafePtr<Cmplx> _x;
 
     std::ofstream _nvmr_file;
 
     #if NUMAV_SYSTEM_SOLVER == NUMAV_LDLT_SOLVER
-        LdltSolver<_cmplx_t> _solver;
-        fz::SafePtr<_cmplx_t> _b_dense;
-        fz::SafePtr<_cmplx_t> _a_diag;
+        LdltSolver<Cmplx> _solver;
+        fz::SafePtr<Cmplx> _b_dense;
+        fz::SafePtr<Cmplx> _a_diag;
     #elif NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
         _MKL_DSS_HANDLE_t _dss_handle;
-        fz::SafePtr<_cmplx_t> _b_dense;
+        fz::SafePtr<Cmplx> _b_dense;
     #endif
 };
 

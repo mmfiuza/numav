@@ -7,7 +7,8 @@
 
 namespace numav {
 
-    using _cmplx_t = typename std::complex<double>;
-    using _FuncRealToCmplx = typename std::function<_cmplx_t(const double&)>;
+    using Float = double;
+    using Cmplx = typename std::complex<Float>;
+    using FuncFloatToCmplx = typename std::function<Cmplx(const double&)>;
 
 } // namespace numav

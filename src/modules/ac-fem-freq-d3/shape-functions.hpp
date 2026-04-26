@@ -9,29 +9,29 @@
 namespace numav {
 
 template<ElementOrder O>
-Eigen::Matrix<double, NODES_IN_SFC_ELEM<O>, 1UL> shape_func_sfc(
-    const double,
-    const double
+Eigen::Matrix<Float, NODES_IN_SFC_ELEM<O>, 1UL> shape_func_sfc(
+    const Float,
+    const Float
 );
 
 template<ElementOrder O>
-Eigen::Matrix<double, 2UL, NODES_IN_SFC_ELEM<O>> shape_func_sfc_gradient(
-    const double,
-    const double
+Eigen::Matrix<Float, 2UL, NODES_IN_SFC_ELEM<O>> shape_func_sfc_gradient(
+    const Float,
+    const Float
 );
 
 template<ElementOrder O>
-Eigen::Matrix<double, NODES_IN_VOL_ELEM<O>, 1UL> shape_func_vol(
-    const double,
-    const double,
-    const double
+Eigen::Matrix<Float, NODES_IN_VOL_ELEM<O>, 1UL> shape_func_vol(
+    const Float,
+    const Float,
+    const Float
 );
 
 template<ElementOrder O>
-Eigen::Matrix<double, DIM, NODES_IN_VOL_ELEM<O>> shape_func_vol_gradient(
-    const double,
-    const double,
-    const double
+Eigen::Matrix<Float, DIM, NODES_IN_VOL_ELEM<O>> shape_func_vol_gradient(
+    const Float,
+    const Float,
+    const Float
 );
 
 } // namespace numav

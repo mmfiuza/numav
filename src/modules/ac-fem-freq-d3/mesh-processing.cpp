@@ -16,12 +16,12 @@ namespace numav {
 
 template <ElementOrder O>
 size_t SimulationAcFemFreqD3<O>::Impl::_get_closest_point(
-    const std::array<double,DIM> point_coords
+    const std::array<Float,DIM> point_coords
 ) {
-    double minimum_distance_squared = std::numeric_limits<double>::max();
+    Float minimum_distance_squared = std::numeric_limits<Float>::max();
     size_t ni_closest = std::numeric_limits<size_t>::max();
     for (size_t ni = 0UL; ni != _ni_count; ++ni) {
-        double distance_squared = 
+        Float distance_squared = 
             std::pow(_ni_to_coords[ni][0UL] - point_coords[0UL], 2UL) +
             std::pow(_ni_to_coords[ni][1UL] - point_coords[1UL], 2UL) +
             std::pow(_ni_to_coords[ni][2UL] - point_coords[2UL], 2UL)
@@ -58,7 +58,7 @@ void SimulationAcFemFreqD3<O>::Impl::_load_bdf(const char* const path_to_mesh)
     }
 
     // second pass: parse data
-    _ni_to_coords = fz::SafePtr<std::array<double,3UL>>(_ni_count);
+    _ni_to_coords = fz::SafePtr<std::array<Float,3UL>>(_ni_count);
     _sei_to_ni =
         fz::SafePtr<std::array<size_t,NODES_IN_SFC_ELEM<O>>>(_sei_count);
     _vei_to_ni =
@@ -74,11 +74,11 @@ void SimulationAcFemFreqD3<O>::Impl::_load_bdf(const char* const path_to_mesh)
     while (std::getline(file, line)) {
         // all minus one are for zero base indexing conversion
         if (line.starts_with("GRID    ")) {
-            const size_t ni = parse<double>(line.substr(8UL, 8UL)) - 1UL;
+            const size_t ni = parse<Float>(line.substr(8UL, 8UL)) - 1UL;
             _ni_to_coords[ni] = {
-                parse<double>(line.substr(24UL, 8UL)),
-                parse<double>(line.substr(32UL, 8UL)),
-                parse<double>(line.substr(40UL, 8UL))
+                parse<Float>(line.substr(24UL, 8UL)),
+                parse<Float>(line.substr(32UL, 8UL)),
+                parse<Float>(line.substr(40UL, 8UL))
             };
         }
         else if (line.starts_with("CTRIA3  ")) {
@@ -159,7 +159,7 @@ void SimulationAcFemFreqD3<ElementOrder::O2>::Impl::_generate_extra_nodes()
 
     // TODO: grow() here
     auto temp = std::move(_ni_to_coords);
-    _ni_to_coords = fz::SafePtr<std::array<double,3UL>>(_ni_count);
+    _ni_to_coords = fz::SafePtr<std::array<Float,3UL>>(_ni_count);
     std::copy(temp.begin(), temp.end(), _ni_to_coords.begin());
     temp.free();
     
@@ -173,15 +173,15 @@ void SimulationAcFemFreqD3<ElementOrder::O2>::Impl::_generate_extra_nodes()
                 _vei_to_ni[vei][VTX_PAIRS_VOL[i][0UL]],
                 _vei_to_ni[vei][VTX_PAIRS_VOL[i][1UL]]
             );
-            const double x = mean(
+            const Float x = mean(
                 _ni_to_coords[std::get<0UL>(tup)][0UL],
                 _ni_to_coords[std::get<1UL>(tup)][0UL]
             );
-            const double y = mean(
+            const Float y = mean(
                 _ni_to_coords[std::get<0UL>(tup)][1UL],
                 _ni_to_coords[std::get<1UL>(tup)][1UL]
             );
-            const double z = mean(
+            const Float z = mean(
                 _ni_to_coords[std::get<0UL>(tup)][2UL],
                 _ni_to_coords[std::get<1UL>(tup)][2UL]
             );

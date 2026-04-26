@@ -21,7 +21,7 @@ void SimulationAcFemFreqD3<O>::Impl::_organize_volume_physical_group_data()
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::_organize_impedance_physical_group_data()
 {
-    _ispgi_to_impedance = fz::SafePtr<_FuncRealToCmplx>(_ispgi_count);
+    _ispgi_to_impedance = fz::SafePtr<FuncFloatToCmplx>(_ispgi_count);
     for (const auto& [espg, impedance] : _espg_to_impedance) {
         const size_t ispgi = _espg_to_ispg.at(espg);
         _ispgi_to_impedance[ispgi] = impedance;
@@ -50,7 +50,7 @@ void SimulationAcFemFreqD3<O>::Impl::_organize_impedance_physical_group_data()
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::_organize_velocity_physical_group_data()
 {
-    _ispgv_to_velocity = fz::SafePtr<_FuncRealToCmplx>(_ispgv_count);
+    _ispgv_to_velocity = fz::SafePtr<FuncFloatToCmplx>(_ispgv_count);
     for (const auto& [espg, volvel] : _espg_to_velocity) {
         const size_t ispgv = _espg_to_ispg.at(espg);
         _ispgv_to_velocity[ispgv] = volvel;
@@ -79,7 +79,7 @@ void SimulationAcFemFreqD3<O>::Impl::_organize_velocity_physical_group_data()
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::_organize_pressure_physical_group_data()
 {
-    _ispgp_to_pressure = fz::SafePtr<_FuncRealToCmplx>(_ispgp_count);
+    _ispgp_to_pressure = fz::SafePtr<FuncFloatToCmplx>(_ispgp_count);
     for (const auto& [espg, pressure] : _espg_to_pressure) {
         const size_t ispgp = _espg_to_ispg.at(espg);
         _ispgp_to_pressure[ispgp] = pressure;

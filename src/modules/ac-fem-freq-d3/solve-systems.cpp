@@ -23,7 +23,7 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
     nmvr::write_data_chunk_header(
         _nvmr_file,
         nmvr::COMPLEX_AMPLITUDE_OF_SOUND_PRESSURE_SOLUTION_CHUNK_ID,
-        _ni_count * _freq_count * sizeof(_cmplx_t)
+        _ni_count * _freq_count * sizeof(Cmplx)
     );
 
     // print start time
@@ -56,21 +56,21 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
     for (size_t fi = 0UL; fi != _freq_count; ++fi)
     {
         // reset values of A matrix and b vector
-        _a_vals.fill(_cmplx_t(0.0, 0.0));
-        _b_vals.fill(_cmplx_t(0.0, 0.0));
+        _a_vals.fill(Cmplx(0.0, 0.0));
+        _b_vals.fill(Cmplx(0.0, 0.0));
         #if NUMAV_SYSTEM_SOLVER == NUMAV_LDLT_SOLVER
-            _a_diag.fill(_cmplx_t(0.0, 0.0));
+            _a_diag.fill(Cmplx(0.0, 0.0));
         #endif
 
         // frequency calculations
-        const double freq = _freq_steps[fi];
+        const Float freq = _freq_steps[fi];
         if (freq == 0.0) {
-            _x.fill(_cmplx_t(0.0, 0.0));
+            _x.fill(Cmplx(0.0, 0.0));
 
             // write solution to nmvr file
             nmvr::write_data_chunk_body(
                 _nvmr_file,
-                _ni_count * sizeof(_cmplx_t),
+                _ni_count * sizeof(Cmplx),
                 _x.data()
             );
             
@@ -79,21 +79,21 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
 
             continue;
         }
-        const double omega = 2.0 * std::numbers::pi * freq;
-        const double omega_squared = omega * omega;
+        const Float omega = 2.0 * std::numbers::pi * freq;
+        const Float omega_squared = omega * omega;
 
         // add point volume velocity to b vector
         for (size_t pvni = 0UL; pvni != _pvni_count; ++pvni)
         {
-            const _cmplx_t volvel = (_pvni_to_forc_fi_part[pvni])(freq);
-            *_pvni_to_ptr_in_b[pvni] += _cmplx_t(0.0, -omega) * volvel;
+            const Cmplx volvel = (_pvni_to_forc_fi_part[pvni])(freq);
+            *_pvni_to_ptr_in_b[pvni] += Cmplx(0.0, -omega) * volvel;
         }
 
         // add surface velocity to b vector
         for (size_t ispgv = 0UL; ispgv != _ispgv_count; ++ispgv)
         {
-            const _cmplx_t velocity = (_ispgv_to_velocity[ispgv])(freq);
-            const _cmplx_t fd_part = _cmplx_t(0.0, -omega) * velocity;
+            const Cmplx velocity = (_ispgv_to_velocity[ispgv])(freq);
+            const Cmplx fd_part = Cmplx(0.0, -omega) * velocity;
             for (size_t fipi = 0UL;
                 fipi != _ispgv_to_ptr_in_b[ispgv].size(); ++fipi)
             {
@@ -104,8 +104,8 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
 
         // add damping matrix to a
         for (size_t ispgi = 0UL; ispgi != _ispgi_count; ++ispgi) {
-            const _cmplx_t impedance_value = _ispgi_to_impedance[ispgi](freq);
-            const _cmplx_t damp_fd_part = _cmplx_t(0.0, omega)/impedance_value;
+            const Cmplx impedance_value = _ispgi_to_impedance[ispgi](freq);
+            const Cmplx damp_fd_part = Cmplx(0.0, omega)/impedance_value;
             
             for (size_t fipi = 0UL;
                 fipi != _ispgi_to_ptr_in_a[ispgi].size(); ++fipi
@@ -117,13 +117,13 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
 
         // add stiffness and mass matrix to a
         for (size_t ivpg = 0UL; ivpg != _ivpg_count; ++ivpg) {
-            const _cmplx_t density_value =
+            const Cmplx density_value =
                 (_ivpg_to_volprop[ivpg].density)(freq);
-            const _cmplx_t soundspeed_value =
+            const Cmplx soundspeed_value =
                 (_ivpg_to_volprop[ivpg].soundspeed)(freq);
 
-            const _cmplx_t stif_fd_part = _cmplx_t(1.0, 0.0) / density_value;
-            const _cmplx_t mass_fd_part = - omega_squared /
+            const Cmplx stif_fd_part = Cmplx(1.0, 0.0) / density_value;
+            const Cmplx mass_fd_part = - omega_squared /
                 (density_value * std::pow(soundspeed_value, 2UL));
             
             for (size_t fipi = 0UL;
@@ -137,7 +137,7 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
 
         // add pressure to a and b
         for (size_t pvi = 0UL; pvi != _pvi_count; ++pvi) {
-            const _cmplx_t pressure = (_pvi_to_pressure[pvi])(freq);
+            const Cmplx pressure = (_pvi_to_pressure[pvi])(freq);
             for (size_t fipi = 0UL;
                 fipi != _pvi_to_ptr_in_a[pvi].size(); ++fipi
             ) {
@@ -180,7 +180,7 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
         // write solution to nmvr file
         nmvr::write_data_chunk_body(
             _nvmr_file,
-            _ni_count * sizeof(_cmplx_t),
+            _ni_count * sizeof(Cmplx),
             _x.data()
         );
         

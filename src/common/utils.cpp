@@ -12,7 +12,7 @@ void trim_right_whitespace(std::string_view& sv) {
     sv = (end == std::string_view::npos) ? "" : sv.substr(0UL, end + 1UL);
 }
 
-_FuncRealToCmplx convert_table_to_real_to_cmplx_func(
+FuncFloatToCmplx convert_table_to_real_to_cmplx_func(
     const char* const impedance_text_file
 ) {
     // open file
@@ -29,9 +29,9 @@ _FuncRealToCmplx convert_table_to_real_to_cmplx_func(
     }
     file.clear();
     file.seekg(0UL, std::ios::beg);
-    std::vector<double> real_vec;
+    std::vector<Float> real_vec;
     real_vec.reserve(line_count);
-    std::vector<_cmplx_t> cmplx_vec;
+    std::vector<Cmplx> cmplx_vec;
     cmplx_vec.reserve(line_count);
 
     // second pass: read each line
@@ -44,7 +44,7 @@ _FuncRealToCmplx convert_table_to_real_to_cmplx_func(
         }
         std::string col1_str = line.substr(0UL, first_comma_pos);
         std::istringstream col1_input_string(col1_str);
-        double col1;
+        Float col1;
         col1_input_string >> col1;
         real_vec.push_back(col1);
         
@@ -56,21 +56,21 @@ _FuncRealToCmplx convert_table_to_real_to_cmplx_func(
         std::string col2_str =
             line.substr(first_comma_pos + 1UL, second_comma_pos);
         std::istringstream col2_input_string(col2_str);
-        double col2;
+        Float col2;
         col2_input_string >> col2;
         
         // read imaginary part of complex vector
         std::string col3_str = line.substr(second_comma_pos + 1UL);
         std::istringstream col3_input_string(col3_str);
-        double col3;
+        Float col3;
         col3_input_string >> col3;
         
         // write complex vector
-        cmplx_vec.push_back(_cmplx_t(col2, col3));
+        cmplx_vec.push_back(Cmplx(col2, col3));
     }
     
-    // create the _FuncRealToCmplx funciton
-    auto func_real_to_cmplx = [real_vec, cmplx_vec](double real) {
+    // create the FuncFloatToCmplx funciton
+    auto func_real_to_cmplx = [real_vec, cmplx_vec](Float real) {
         return interpolate(real_vec, cmplx_vec, real);
     };
 

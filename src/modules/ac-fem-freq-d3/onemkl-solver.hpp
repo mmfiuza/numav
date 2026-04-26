@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "common/aliases.hpp"
+#include "numav/aliases.hpp"
 
 #if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
     #include "mkl_dss.h"
@@ -20,16 +20,16 @@ namespace numav {
         _MKL_DSS_HANDLE_t&,
         const fz::SafePtr<std::pair<size_t,size_t>>&,
         const size_t,
-        fz::SafePtr<_cmplx_t>&
+        fz::SafePtr<Cmplx>&
     );
 
     void solve_using_onemkl(
         _MKL_DSS_HANDLE_t&,
-        const fz::SafePtr<_cmplx_t>&,
-        const fz::SafePtr<_cmplx_t>&,
+        const fz::SafePtr<Cmplx>&,
+        const fz::SafePtr<Cmplx>&,
         const fz::SafePtr<size_t>&,
-        fz::SafePtr<_cmplx_t>&,
-        _cmplx_t* const
+        fz::SafePtr<Cmplx>&,
+        Cmplx* const
     );
 
 #endif

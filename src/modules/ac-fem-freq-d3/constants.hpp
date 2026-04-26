@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "common/aliases.hpp"
+#include "numav/aliases.hpp"
 
 namespace numav {
 
@@ -28,7 +28,7 @@ template<ElementOrder O> constexpr size_t EXTRA_NODES_IN_VOL_ELEM = [] {
 
 // dimension count in space (not the dimension of mesh elements)
 constexpr size_t DIM = 3UL;
-constexpr _cmplx_t PENALTY_METHOD_CONSTANT = _cmplx_t(1e12, 0.0);
+constexpr Cmplx PENALTY_METHOD_CONSTANT = Cmplx(1e12, 0.0);
 constexpr size_t NUMAV_DEFAULT_FREQ_STEPS_COUNT = 4096UL;
 
 } // namespace numav

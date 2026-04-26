@@ -27,6 +27,7 @@ void SimulationAcFemFreqD3<O>::Impl::_write_simulation_inputs_to_nmvr_file(
         nmvr::SIM_TYPE_DOMAIN_SIZE +
         nmvr::SIM_TYPE_DIMENSION_SIZE +
         nmvr::SIM_TYPE_ELEMENT_ORDER_SIZE;
+    
     constexpr std::array<char, SIMULATION_TYPE_CHUNK_SIZE> 
         SIMULATION_TYPE_DATA =
             concat_constexpr_arrays(
@@ -36,6 +37,7 @@ void SimulationAcFemFreqD3<O>::Impl::_write_simulation_inputs_to_nmvr_file(
                 nmvr::SIM_TYPE_DIMENSION<Dimension::D3>,
                 nmvr::SIM_TYPE_FEM_ORDER<O>
             );
+    
     nmvr::write_data_chunk(
         _nvmr_file,
         nmvr::SIMULATION_TYPE_CHUNK_ID,
