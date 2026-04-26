@@ -51,10 +51,10 @@ void SimulationAcFemFreqD3<O>::Impl::_load_bdf(const char* const path_to_mesh)
     _sei_count = 0UL;
     _vei_count = 0UL;
     while (std::getline(file, line)) {
-        if      (line.starts_with("GRID"))    { ++_ni_count; }
-        else if (line.starts_with("CTRIA3"))  { ++_sei_count; }
-        else if (line.starts_with("CTETRA"))  { ++_vei_count; }
-        else if (line.starts_with("ENDDATA")) { break; }
+        if      (line.starts_with("GRID    ")) { ++_ni_count; }
+        else if (line.starts_with("CTRIA3  ")) { ++_sei_count; }
+        else if (line.starts_with("CTETRA  ")) { ++_vei_count; }
+        else if (line.starts_with("ENDDATA ")) { break; }
     }
 
     // second pass: parse data
@@ -73,7 +73,7 @@ void SimulationAcFemFreqD3<O>::Impl::_load_bdf(const char* const path_to_mesh)
     file.seekg(0UL, std::ios::beg);
     while (std::getline(file, line)) {
         // all minus one are for zero base indexing conversion
-        if (line.starts_with("GRID")) {
+        if (line.starts_with("GRID    ")) {
             const size_t ni = parse<double>(line.substr(8UL, 8UL)) - 1UL;
             _ni_to_coords[ni] = {
                 parse<double>(line.substr(24UL, 8UL)),
@@ -81,7 +81,7 @@ void SimulationAcFemFreqD3<O>::Impl::_load_bdf(const char* const path_to_mesh)
                 parse<double>(line.substr(40UL, 8UL))
             };
         }
-        else if (line.starts_with("CTRIA3")) {
+        else if (line.starts_with("CTRIA3  ")) {
             const size_t espg = parse<size_t>(line.substr(16UL, 8UL));
             _existing_espg.insert(espg);
             *it_sei_to_espg = espg;
@@ -93,7 +93,7 @@ void SimulationAcFemFreqD3<O>::Impl::_load_bdf(const char* const path_to_mesh)
             };
             ++it_sei_to_ni;
         }
-        else if (line.starts_with("CTETRA")) {
+        else if (line.starts_with("CTETRA  ")) {
             const size_t evpg = parse<size_t>(line.substr(16UL, 8UL));
             _existing_evpg.insert(evpg);
             *it_vei_to_evpg = evpg;
@@ -106,7 +106,7 @@ void SimulationAcFemFreqD3<O>::Impl::_load_bdf(const char* const path_to_mesh)
             };
             ++it_vei_to_ni;
         }
-        else if (line.starts_with("ENDDATA")) {
+        else if (line.starts_with("ENDDATA ")) {
             break;
         }
     }
