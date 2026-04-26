@@ -5,35 +5,35 @@
 namespace numav {
 
 template<ElementOrder O> constexpr size_t NGP_FORC = [] {
-    if constexpr (O == ElementOrder::O1) { return 1; }
-    if constexpr (O == ElementOrder::O2) { return 3; }
+    if constexpr (O == ElementOrder::O1) { return 1UL; }
+    if constexpr (O == ElementOrder::O2) { return 3UL; }
 }();
 
 template<ElementOrder O> constexpr size_t NGP_DAMP = [] {
-    if constexpr (O == ElementOrder::O1) { return 1; }
-    if constexpr (O == ElementOrder::O2) { return 3; }
+    if constexpr (O == ElementOrder::O1) { return 1UL; }
+    if constexpr (O == ElementOrder::O2) { return 3UL; }
 }();
 
 template<ElementOrder O> constexpr size_t NGP_STIF = [] {
-    if constexpr (O == ElementOrder::O1) { return 1; }
-    if constexpr (O == ElementOrder::O2) { return 4; }
+    if constexpr (O == ElementOrder::O1) { return 1UL; }
+    if constexpr (O == ElementOrder::O2) { return 4UL; }
 }();
 
 template<ElementOrder O> constexpr size_t NGP_MASS = [] {
-    if constexpr (O == ElementOrder::O1) { return 4;  }
-    if constexpr (O == ElementOrder::O2) { return 15; }
+    if constexpr (O == ElementOrder::O1) { return 4UL;  }
+    if constexpr (O == ElementOrder::O2) { return 15UL; }
 }();
 
 template<size_t N>
-constexpr std::array<std::array<double,2>,N> GAUSS_POINTS_SFC = [] {
-    if constexpr (N == 1) {
+constexpr std::array<std::array<double,2UL>,N> GAUSS_POINTS_SFC = [] {
+    if constexpr (N == 1UL) {
         constexpr double a = 1.0 / 3.0;
-        return std::array<std::array<double,2>,N>({ {a, a} });
+        return std::array<std::array<double,2UL>,N>({ {a, a} });
     }
-    if constexpr (N == 3) {
+    if constexpr (N == 3UL) {
         constexpr double a = 1.0 / 6.0;
         constexpr double b = 2.0 / 3.0;
-        return std::array<std::array<double,2>,N>{{
+        return std::array<std::array<double,2UL>,N>{{
             {a,a}, {b,a}, {a,b}
         }};
     }
@@ -41,18 +41,18 @@ constexpr std::array<std::array<double,2>,N> GAUSS_POINTS_SFC = [] {
 
 template<size_t N>
 constexpr std::array<std::array<double,DIM>,N> GAUSS_POINTS_VOL = [] {
-    if constexpr (N == 1) {
+    if constexpr (N == 1UL) {
         constexpr double a = 1.0 / 4.0;
         return std::array<std::array<double,DIM>,N>({ {a, a, a} });
     }
-    if constexpr (N == 4) {
+    if constexpr (N == 4UL) {
         constexpr double a = (5.0 -     std::sqrt(5.0)) / 20.0;
         constexpr double b = (5.0 + 3.0*std::sqrt(5.0)) / 20.0;
         return std::array<std::array<double,DIM>,N>{{
             {a,a,a}, {b,a,a}, {a,b,a}, {a,a,b}
         }};
     }
-    if constexpr (N == 5) {
+    if constexpr (N == 5UL) {
         constexpr double a = 1.0 / 4.0;
         constexpr double b = 1.0 / 6.0;
         constexpr double c = 1.0 / 2.0;
@@ -61,7 +61,7 @@ constexpr std::array<std::array<double,DIM>,N> GAUSS_POINTS_VOL = [] {
             {b,b,b}, {c,b,b}, {b,c,b}, {b,b,c}
         }};
     }
-    if constexpr (N == 11) {
+    if constexpr (N == 11UL) {
         constexpr double a =  1.0 / 4.0;
         constexpr double b =  1.0 / 14.0;
         constexpr double c = 11.0 / 14.0;
@@ -73,7 +73,7 @@ constexpr std::array<std::array<double,DIM>,N> GAUSS_POINTS_VOL = [] {
             {d,d,e}, {d,e,d}, {e,d,d}, {d,e,e}, {e,d,e}, {e,e,d}
         }};
     }
-    if constexpr (N == 15) {
+    if constexpr (N == 15UL) {
         constexpr double a = 1.0 / 4.0;
         constexpr double b = ( 7.0 +     std::sqrt(15.0)) / 34.0;
         constexpr double c = ( 7.0 -     std::sqrt(15.0)) / 34.0;
@@ -92,11 +92,11 @@ constexpr std::array<std::array<double,DIM>,N> GAUSS_POINTS_VOL = [] {
 
 template<size_t N>
 constexpr std::array<double,N> GAUSS_WEIGHTS_SFC = [] {
-    if constexpr (N == 1) {
+    if constexpr (N == 1UL) {
         constexpr double a = 1.0 / 2.0;
         return std::array<double,N>({a});
     }
-    if constexpr (N == 3) {
+    if constexpr (N == 3UL) {
         constexpr double a = 1.0 / 6.0;
         return std::array<double,N>({a,a,a});
     }
@@ -104,26 +104,26 @@ constexpr std::array<double,N> GAUSS_WEIGHTS_SFC = [] {
 
 template<size_t N>
 constexpr std::array<double,N> GAUSS_WEIGHTS_VOL = [] {
-    if constexpr (N == 1) {
+    if constexpr (N == 1UL) {
         constexpr double a = 1.0 / 6.0;
         return std::array<double,N>({a});
     }
-    if constexpr (N == 4) {
+    if constexpr (N == 4UL) {
         constexpr double a = 1.0 / 24.0;
         return std::array<double,N>({a,a,a,a});
     }
-    if constexpr (N == 5) {
+    if constexpr (N == 5UL) {
         constexpr double a = -2.0 / 15.0;
         constexpr double b = 3.0 / 40.0;
         return std::array<double,N>({a,b,b,b,b});
     }
-    if constexpr (N == 11) {
+    if constexpr (N == 11UL) {
         constexpr double a = -74.0 / 5625.0;
         constexpr double b = 343.0 / 45000.0;
         constexpr double c = 28.0 / 1125.0;
         return std::array<double,N>({a,b,b,b,b,c,c,c,c,c,c});
     }
-    if constexpr (N == 15) {
+    if constexpr (N == 15UL) {
         constexpr double a = 8.0 / 405.0;
         constexpr double b = (2665.0 - 14.0*std::sqrt(15.0)) / 226800.0;
         constexpr double c = (2665.0 + 14.0*std::sqrt(15.0)) / 226800.0;

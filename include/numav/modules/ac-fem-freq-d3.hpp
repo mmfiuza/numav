@@ -72,13 +72,13 @@ public:
     );
     void add_sound_source(
         const TypeOfSource&,
-        const std::array<double,3>&,
+        const std::array<double,3UL>&,
         const PhysicalQuantity&,
         const std::function<std::complex<double>(const double&)>&
     );
     void add_sound_source(
         const TypeOfSource&,
-        const std::array<double,3>&,
+        const std::array<double,3UL>&,
         const PhysicalQuantity&,
         const char* const
     );
@@ -95,7 +95,7 @@ public:
         const char* const
     );
     void add_receiver(
-        const std::array<double,3>&
+        const std::array<double,3UL>&
     );
     void add_surface_specific_acoustic_impedance(
         const size_t&,
@@ -105,10 +105,10 @@ public:
         const size_t&,
         const char* const
     );
-    void run(
-    );
-    void export_result(
+    void set_result_export_path(
         const char* const
+    );
+    void run(
     );
 
 private:

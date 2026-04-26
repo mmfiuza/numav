@@ -7,17 +7,17 @@
 
 namespace numav::nmvr {
 
-inline constexpr uint64_t SIGNATURE_SIZE = 8;
+inline constexpr uint64_t SIGNATURE_SIZE = 8UL;
 inline constexpr std::array<char, SIGNATURE_SIZE> SIGNATURE = {
     'n','u','m','a','v','r','s','t'
 };
 
-inline constexpr uint64_t END_OF_FILE_SIZE = 8;
+inline constexpr uint64_t END_OF_FILE_SIZE = 8UL;
 inline constexpr std::array<char, END_OF_FILE_SIZE> END_OF_FILE = {
     'n','u','m','a','v','e','o','f'
 };
 
-inline constexpr uint64_t CHUNK_ID_SIZE = 8;
+inline constexpr uint64_t CHUNK_ID_SIZE = 8UL;
 inline constexpr std::array<char, CHUNK_ID_SIZE>
     SIMULATION_TYPE_CHUNK_ID = {
         's','i','m','_','t','y','p','e'
@@ -43,19 +43,19 @@ inline constexpr std::array<char, CHUNK_ID_SIZE>
         'c','p','x','_','p','r','e','s'
     };
 
-inline constexpr uint64_t SIM_TYPE_PHENOMENON_SIZE = 8;
+inline constexpr uint64_t SIM_TYPE_PHENOMENON_SIZE = 8UL;
 inline constexpr std::array<char, SIM_TYPE_PHENOMENON_SIZE>
     SIM_TYPE_PHENOMENON = {
         'a','c','o','u','s','t','i','c'
     };
 
-inline constexpr uint64_t SIM_TYPE_NUMERICAL_METHOD_SIZE = 8;
+inline constexpr uint64_t SIM_TYPE_NUMERICAL_METHOD_SIZE = 8UL;
 inline constexpr std::array<char, SIM_TYPE_NUMERICAL_METHOD_SIZE>
     SIM_TYPE_NUMERICAL_METHOD = {
         'f','e','m','_','_','_','_','_'
     };
 
-inline constexpr uint64_t SIM_TYPE_DOMAIN_SIZE = 8;
+inline constexpr uint64_t SIM_TYPE_DOMAIN_SIZE = 8UL;
 template<Domain D>
 inline constexpr std::array<char, SIM_TYPE_DOMAIN_SIZE> SIM_TYPE_DOMAIN = [] {
     if constexpr (D == Domain::FREQUENCY) {
@@ -70,7 +70,7 @@ inline constexpr std::array<char, SIM_TYPE_DOMAIN_SIZE> SIM_TYPE_DOMAIN = [] {
     }
 }();
 
-inline constexpr uint64_t SIM_TYPE_DIMENSION_SIZE = 8;
+inline constexpr uint64_t SIM_TYPE_DIMENSION_SIZE = 8UL;
 template<Dimension D>
 inline constexpr std::array<char, SIM_TYPE_DIMENSION_SIZE> SIM_TYPE_DIMENSION =
 [] {
@@ -91,7 +91,7 @@ inline constexpr std::array<char, SIM_TYPE_DIMENSION_SIZE> SIM_TYPE_DIMENSION =
     }
 }();
 
-inline constexpr uint64_t SIM_TYPE_ELEMENT_ORDER_SIZE = 8;
+inline constexpr uint64_t SIM_TYPE_ELEMENT_ORDER_SIZE = 8UL;
 template<ElementOrder O>
 inline constexpr std::array<char, SIM_TYPE_ELEMENT_ORDER_SIZE>
 SIM_TYPE_FEM_ORDER =
@@ -111,6 +111,16 @@ SIM_TYPE_FEM_ORDER =
 void write_data_chunk(
     std::ofstream&,
     const std::array<char,CHUNK_ID_SIZE>&,
+    const uint64_t&,
+    const void* const
+);
+void write_data_chunk_header(
+    std::ofstream&,
+    const std::array<char,CHUNK_ID_SIZE>&,
+    const uint64_t&
+);
+void write_data_chunk_body(
+    std::ofstream&,
     const uint64_t&,
     const void* const
 );

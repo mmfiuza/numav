@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "common/debug-macros.hpp"
 #include "common/aliases.hpp"
 
 #include "SafePtr.hpp"
@@ -19,9 +18,13 @@ fz::SafePtr<double> cubspace(
     const double& start, const double& finish, const size_t& num_points
 );
 
-double get_triangle_area(const std::array<std::array<double,3>,3>& coords);
+double get_triangle_area(
+    const std::array<std::array<double,3UL>,3UL>& coords
+);
 
-double get_tetrahedron_volume(const std::array<std::array<double,3>,4>& coords);
+double get_tetrahedron_volume(
+    const std::array<std::array<double,3UL>,4UL>& coords
+);
 
 template<typename... T>
 auto mean(const T&... args) {
@@ -29,8 +32,8 @@ auto mean(const T&... args) {
 }
 
 template<size_t N> constexpr size_t FACTORIAL = [] {
-    size_t result = 1;
-    for(size_t i = 2; i<=N; ++i) {
+    size_t result = 1UL;
+    for(size_t i = 2UL; i <= N; ++i) {
         result *= i;
     }
     return result;
@@ -38,18 +41,18 @@ template<size_t N> constexpr size_t FACTORIAL = [] {
 
 template<size_t N, size_t K> constexpr size_t COMB_REP_SIZE = [] {
     // combination with repetition
-    return FACTORIAL<N+K-1> / (FACTORIAL<K> * FACTORIAL<N-1>);
+    return FACTORIAL<N+K-1UL> / (FACTORIAL<K> * FACTORIAL<N-1UL>);
 }();
 
 template<size_t N>
-constexpr std::array<std::array<size_t,2>, COMB_REP_SIZE<N,2>> 
+constexpr std::array<std::array<size_t,2UL>, COMB_REP_SIZE<N,2UL>> 
 COMBINATION_REP = [] { // todo: generalize for K!=2 (maybe)
-    constexpr size_t K = 2;
+    constexpr size_t K = 2UL;
     // combination with repetition in upper column major order
     std::array<std::array<size_t,K>, COMB_REP_SIZE<N,K>> result;
     auto it_result = result.begin();
-    for (size_t j=0; j!=N; ++j) {
-        for (size_t i=0; i!=j+1; ++i) {
+    for (size_t j = 0UL; j != N; ++j) {
+        for (size_t i = 0UL; i != j+1UL; ++i) {
             *it_result = {i,j};
             ++it_result;
         }
@@ -71,7 +74,7 @@ auto interpolate(
     auto y_begin = std::begin(y_array);
 
     // Input validation
-    if (x_size == 0 || y_size == 0)
+    if (x_size == 0UL || y_size == 0UL)
         throw std::invalid_argument("Vectors must not be empty.");
     if (x_size != y_size)
         throw std::invalid_argument(
@@ -79,7 +82,7 @@ auto interpolate(
         );
 
     // Check strict monotonicity of x_array
-    if (x_size >= 2) {
+    if (x_size >= 2UL) {
         auto prev = x_begin;
         auto curr = std::next(prev);
         while (curr != x_end) {
@@ -93,7 +96,7 @@ auto interpolate(
     }
 
     // Single point case
-    if (x_size == 1) {
+    if (x_size == 1UL) {
         if (x_value == *x_begin)
             return *y_begin;
         else

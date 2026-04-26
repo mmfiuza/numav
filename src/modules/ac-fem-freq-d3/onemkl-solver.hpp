@@ -3,7 +3,6 @@
 #pragma once
 
 #include "common/aliases.hpp"
-#include "common/debug-macros.hpp"
 
 #if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
     #include "mkl_dss.h"

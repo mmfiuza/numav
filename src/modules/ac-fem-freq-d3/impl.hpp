@@ -2,21 +2,20 @@
 
 #include "numav/numav.hpp"
 #include "common/aliases.hpp"
-#include "common/debug-macros.hpp"
 #include "modules/ac-fem-freq-d3/macros.hpp"
 #include "modules/ac-fem-freq-d3/constants.hpp"
 
 #include <unordered_map>
 #include <unordered_set>
+#include <fstream>
 
 #include "Eigen/Eigen"
-#if NUMAV_SYSTEM_SOLVER == NUMAV_LDLT_SOLVER
-    #include "ldlt-solver.hpp"
-#elif NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
+#include "SafePtr.hpp"
+#include "ldlt-solver.hpp"
+#if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
     #include "mkl_dss.h"
     #include "mkl_types.h"
 #endif
-#include "SafePtr.hpp"
 
 namespace numav {
 
@@ -72,13 +71,13 @@ public:
     );
     void add_sound_source(
         const TypeOfSource&,
-        const std::array<double,3>&,
+        const std::array<double,3UL>&,
         const PhysicalQuantity&,
         const std::function<_cmplx_t(const double&)>&
     );
     void add_sound_source(
         const TypeOfSource&,
-        const std::array<double,3>&,
+        const std::array<double,3UL>&,
         const PhysicalQuantity&,
         const char* const
     );
@@ -105,8 +104,8 @@ public:
         const size_t&,
         const char* const
     );
+    void set_result_export_path(const char* const);
     void run();
-    void export_result(const char* const);
 
 private:
     
@@ -138,7 +137,7 @@ private:
     
     void _load_bdf(const char* const);
     void _generate_extra_nodes();
-    size_t _get_closest_point(const std::array<double,3>&);
+    size_t _get_closest_point(const std::array<double,3UL>&);
     void _check_if_mesh_is_defined();
     void _validate_espg(const size_t&);
     void _check_if_it_can_run();
@@ -150,6 +149,7 @@ private:
     void _organize_physical_group_data();
     void _allocate_a();
     void _allocate_b();
+    void _allocate_x();
     void _assemble_fi_part_for_point_velocity();
     void _assemble_fi_part_for_sfc_velocity();
     void _assemble_fi_part_for_sfc_impedance();
@@ -158,7 +158,9 @@ private:
     void _assemble_freq_independent_parts();
     void _solve_systems();
     void _post_process();
-    void _write_nmvr(const char* const);
+    void _begin_nmvr_file();
+    void _write_simulation_inputs_to_nmvr_file();
+    void _end_nmvr_file();
 
     enum class _FreqTypeDefinedByUser {
         UNDEFINED,
@@ -171,6 +173,8 @@ private:
     bool _is_any_source_defined;
     bool _did_run;
     
+    std::string _nmvr_file_path;
+
     double _freq_min;
     double _freq_max;
     FrequencySamplingDensity _frequency_sampling_density;
@@ -236,7 +240,9 @@ private:
 
     std::vector<std::array<double,DIM>> _receiver_points;
 
-    Eigen::Matrix<_cmplx_t,Eigen::Dynamic,Eigen::Dynamic> _cmplx_pressure_amp;
+    fz::SafePtr<_cmplx_t> _x;
+
+    std::ofstream _nvmr_file;
 
     #if NUMAV_SYSTEM_SOLVER == NUMAV_LDLT_SOLVER
         LdltSolver<_cmplx_t> _solver;

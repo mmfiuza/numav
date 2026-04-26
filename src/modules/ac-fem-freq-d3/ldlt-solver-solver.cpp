@@ -11,6 +11,7 @@ void define_ldlt_solver_sparsity_pattern(
     const fz::SafePtr<_cmplx_t>& a_diag,
     const fz::SafePtr<std::pair<size_t,size_t>>& nz_rowcol_idx_pairs,
     const fz::SafePtr<_cmplx_t>& a_vals,
+    fz::SafePtr<_cmplx_t>& _x,
     fz::SafePtr<_cmplx_t>& b_dense,
     const size_t& ni_count
 ) {
@@ -18,21 +19,21 @@ void define_ldlt_solver_sparsity_pattern(
     const size_t nzi_count = nz_rowcol_idx_pairs.size();
     
     // create a_col_idx and a_row_idx
-    fz::SafePtr<size_t> a_row_idx(ni_count + 1);
+    fz::SafePtr<size_t> a_row_idx(ni_count + 1UL);
     fz::SafePtr<size_t> a_col_idx(nzi_count);
     size_t* it_a_row_idx = a_row_idx.begin();
     size_t* it_a_col_idx = a_col_idx.begin();
     const std::pair<size_t,size_t>* it_nz_rowcol_idx_pairs =
         nz_rowcol_idx_pairs.begin();
     size_t current_ri = std::numeric_limits<size_t>::max();
-    for (size_t nzi=0; nzi!=nzi_count; ++nzi) {
+    for (size_t nzi = 0UL; nzi != nzi_count; ++nzi) {
         *it_a_col_idx = it_nz_rowcol_idx_pairs->second;
         ++it_a_col_idx;
         if (it_nz_rowcol_idx_pairs->first != current_ri) {
             const size_t previous_ri = current_ri;
             current_ri = it_nz_rowcol_idx_pairs->first;
             const size_t ri_increment = current_ri - previous_ri;
-            for (size_t i=0; i!=ri_increment; ++i) {
+            for (size_t i=0UL; i!=ri_increment; ++i) {
                 *it_a_row_idx = nzi;
                 ++it_a_row_idx;
             }
@@ -43,14 +44,15 @@ void define_ldlt_solver_sparsity_pattern(
 
     // allocate the null dense b vector
     b_dense = fz::SafePtr<_cmplx_t>(ni_count);
-    b_dense.fill(0.0);
+    b_dense.fill(_cmplx_t(0.0, 0.0));
     
     // define the non-zero structure of the matrix
-    solver.analyse_sparsity_pattern(
+    solver.define_sparsity_pattern(
         a_diag.data(),
         a_row_idx.data(),
         a_col_idx.data(),
         a_vals.data(),
+        _x.data(),
         b_dense.data(),
         ni_count
     );
@@ -63,15 +65,14 @@ void solve_using_ldlt_solver(
     LdltSolver<_cmplx_t>& solver,
     const fz::SafePtr<_cmplx_t>& b_vals,
     const fz::SafePtr<size_t>& b_row_idx,
-    fz::SafePtr<_cmplx_t>& b_dense,
-    _cmplx_t* const x
+    fz::SafePtr<_cmplx_t>& b_dense
 ) {
     // dense b vector
-    for (size_t i=0; i!=b_vals.size(); ++i) {
+    for (size_t i = 0UL; i != b_vals.size(); ++i) {
         b_dense[b_row_idx[i]] = b_vals[i];
     }
     
-    solver.solve(x);
+    solver.solve();
 }
 
 } // namespace numav

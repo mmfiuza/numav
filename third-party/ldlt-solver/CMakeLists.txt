@@ -11,4 +11,4 @@ target_include_directories(ldlt_solver
         ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-target_compile_options(ldlt_solver PRIVATE -Wall -Wextra -O3)
+target_compile_options(ldlt_solver PRIVATE -Wall -Wextra -Ofast -ffast-math)

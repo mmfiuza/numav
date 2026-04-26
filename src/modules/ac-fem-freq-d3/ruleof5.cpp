@@ -34,13 +34,13 @@ SimulationAcFemFreqD3<O>::Impl::Impl() {
     _freq_type_defined_by_user = _FreqTypeDefinedByUser::UNDEFINED;
     _frequency_sampling_density = FrequencySamplingDensity::QUADRATIC;
     _freq_count = NUMAV_DEFAULT_FREQ_STEPS_COUNT;
-    _ivpg_count = 0;
-    _ispgi_count = 0;
-    _pvni_count = 0;
-    _ispgv_count = 0;
-    _ppni_count = 0;
-    _ispgp_count = 0;
-    _ri_count = 0;
+    _ivpg_count = 0UL;
+    _ispgi_count = 0UL;
+    _pvni_count = 0UL;
+    _ispgv_count = 0UL;
+    _ppni_count = 0UL;
+    _ispgp_count = 0UL;
+    _ri_count = 0UL;
 }
 
 template<ElementOrder O>
@@ -66,7 +66,7 @@ SimulationAcFemFreqD3<O>::Impl::~Impl() {
     _ispgi_to_impedance.free();
     _ispgv_to_velocity.free();
     _ispgp_to_pressure.free();
-    for (size_t ivpg=0; ivpg!=_ivpg_count; ++ivpg) {
+    for (size_t ivpg = 0UL; ivpg != _ivpg_count; ++ivpg) {
         _ivpg_to_stif_fi_part[ivpg].free();
         _ivpg_to_mass_fi_part[ivpg].free();
         _ivpg_to_ptr_in_a[ivpg].free();
@@ -74,7 +74,7 @@ SimulationAcFemFreqD3<O>::Impl::~Impl() {
     _ivpg_to_stif_fi_part.free();
     _ivpg_to_mass_fi_part.free();
     _ivpg_to_ptr_in_a.free();
-    for (size_t ispgi=0; ispgi!=_ispgi_count; ++ispgi) {
+    for (size_t ispgi = 0UL; ispgi != _ispgi_count; ++ispgi) {
         _ispgi_to_damp_fi_part[ispgi].free();
         _ispgi_to_ptr_in_a[ispgi].free();
     }
@@ -82,21 +82,22 @@ SimulationAcFemFreqD3<O>::Impl::~Impl() {
     _ispgi_to_ptr_in_a.free();
     _pvni_to_forc_fi_part.free();
     _pvni_to_ptr_in_b.free();
-    for (size_t ispgv=0; ispgv!=_ispgv_count; ++ispgv) {
+    for (size_t ispgv = 0UL; ispgv != _ispgv_count; ++ispgv) {
         _ispgv_to_forc_fi_part[ispgv].free();
         _ispgv_to_ptr_in_b[ispgv].free();
     }
     _ispgv_to_forc_fi_part.free();
     _ispgv_to_ptr_in_b.free();
     _pvi_to_pressure.free();
-    for (size_t pvi=0; pvi!=_pvi_count; ++pvi) {
+    for (size_t pvi = 0UL; pvi != _pvi_count; ++pvi) {
         _pvi_to_ptr_in_a[pvi].free();
         _pvi_to_ptr_in_b[pvi].free();
     }
     _pvi_to_ptr_in_a.free();
     _pvi_to_ptr_in_b.free();
+    _x.free();
     #if NUMAV_SYSTEM_SOLVER == NUMAV_LDLT_SOLVER
-        // _b_dense.free(); // TODO: check why this line crashes the program
+        _b_dense.free();
         _a_diag.free();
     #elif NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
         _b_dense.free();

@@ -86,7 +86,7 @@ void SimulationAcFemFreqD3<O>::add_volume_material(
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::add_sound_source(
     const TypeOfSource& type_of_source,
-    const std::array<double,3>& point_coordinates,
+    const std::array<double,3UL>& point_coordinates,
     const PhysicalQuantity& physical_quantity_type,
     const _FuncRealToCmplx& physical_quantity_value
 ) {
@@ -101,7 +101,7 @@ void SimulationAcFemFreqD3<O>::add_sound_source(
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::add_sound_source(
     const TypeOfSource& type_of_source,
-    const std::array<double,3>& point_coordinates,
+    const std::array<double,3UL>& point_coordinates,
     const PhysicalQuantity& physical_quantity_type,
     const char* const physical_quantity_value_text_file
 ) {
@@ -145,7 +145,7 @@ void SimulationAcFemFreqD3<O>::add_sound_source(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::add_receiver(
-    const std::array<double,3>& point_coordinates
+    const std::array<double,3UL>& point_coordinates
 ) {
     _pimpl->add_receiver(point_coordinates);
 }
@@ -167,15 +167,15 @@ void SimulationAcFemFreqD3<O>::add_surface_specific_acoustic_impedance(
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::run() {
-    _pimpl->run();
+void SimulationAcFemFreqD3<O>::set_result_export_path(
+    const char* const path_to_result
+) {
+    _pimpl->set_result_export_path(path_to_result);
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::export_result(
-    const char* const path_to_result
-) {
-    _pimpl->export_result(path_to_result);
+void SimulationAcFemFreqD3<O>::run() {
+    _pimpl->run();
 }
 
 // explicit instantiation declarations

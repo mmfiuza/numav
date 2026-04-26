@@ -19,7 +19,7 @@ void solve_using_eigen(
     // a matrix
     fz::SafePtr<Triplet> triplets_a(2*a_vals.size() - node_count);
     Triplet* it_triplets_a = triplets_a.begin();
-    for (size_t j=0; j!=a_vals.size(); ++j) {
+    for (size_t j=0UL; j!=a_vals.size(); ++j) {
         *it_triplets_a = Triplet(
             nnz_rowcol_idx_pairs[j].first,
             nnz_rowcol_idx_pairs[j].second,
@@ -46,7 +46,7 @@ void solve_using_eigen(
     // b vector
     fz::SafePtr<Triplet> triplets_b(node_count);
     Triplet* it_triplets_b = triplets_b.begin();
-    for (size_t j=0; j!=b_vals.size(); ++j) {
+    for (size_t j=0UL; j!=b_vals.size(); ++j) {
         *it_triplets_b = Triplet(b_row_idx[j], 0, b_vals[j]);
         ++it_triplets_b;
     }
@@ -64,7 +64,7 @@ void solve_using_eigen(
     if (solver.info() != Eigen::Success) {
         std::cerr << "Solving failed.\n";
     }
-    for (size_t j=0; j!=node_count; ++j) {
+    for (size_t j=0UL; j!=node_count; ++j) {
         x_out[j] = x(j);
     }
 }

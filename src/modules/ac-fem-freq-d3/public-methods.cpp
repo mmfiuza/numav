@@ -21,10 +21,10 @@ template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::set_maximum_frequency(
     const double& freq_max
 ) {
-    if (freq_max < 0) {
+    if (freq_max < 0.0) {
         error("Maximum frequency should be positive.");
     }
-    if (freq_max == 0) {
+    if (freq_max == 0.0) {
         error("Maximum frequency should not be zero.");
     }
     if (_freq_type_defined_by_user != _FreqTypeDefinedByUser::UNDEFINED) {
@@ -39,10 +39,10 @@ void SimulationAcFemFreqD3<O>::Impl::set_frequency_range(
     const double& freq_min,
     const double& freq_max
 ) {
-    if (freq_min<0 || freq_max<0) {
+    if (freq_min < 0.0 || freq_max < 0.0) {
         error("Frequency limits should be positive.");
     }
-    if (freq_min==0 || freq_max==0) {
+    if (freq_min == 0.0 || freq_max == 0.0) {
         error("Frequency limits should not be zero.");
     }
     if (freq_min >= freq_max) {
@@ -95,7 +95,7 @@ void SimulationAcFemFreqD3<O>::Impl::set_frequency_steps(
     _freq_min = frequency_steps.front();
     _freq_max = frequency_steps.back();
     _freq_steps = fz::SafePtr<double>(_freq_count);
-    for (size_t i=0; i!=_freq_count; ++i) {
+    for (size_t i = 0UL; i != _freq_count; ++i) {
         _freq_steps[i] = frequency_steps[i];
     }
     _freq_type_defined_by_user = _FreqTypeDefinedByUser::STEPS;
@@ -185,7 +185,7 @@ void SimulationAcFemFreqD3<O>::Impl::add_volume_material(
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
     const TypeOfSource& type_of_source,
-    const std::array<double,3>& point_coordinates,
+    const std::array<double,3UL>& point_coordinates,
     const PhysicalQuantity& physical_quantity_type,
     const _FuncRealToCmplx& physical_quantity_value
 ) {
@@ -218,7 +218,7 @@ void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
     const TypeOfSource& type_of_source,
-    const std::array<double,3>& point_coordinates,
+    const std::array<double,3UL>& point_coordinates,
     const PhysicalQuantity& physical_quantity_type,
     const char* const physical_quantity_value_text_file
 ) {
@@ -302,9 +302,9 @@ void SimulationAcFemFreqD3<O>::Impl::add_receiver(
 ) {
     _check_if_mesh_is_defined();
     // TODO: check if the point is outside the mesh
-    const double& x = point_coordinates[0];
-    const double& y = point_coordinates[1];
-    const double& z = point_coordinates[2];
+    const double& x = point_coordinates[0UL];
+    const double& y = point_coordinates[1UL];
+    const double& z = point_coordinates[2UL];
     _receiver_points.emplace_back(std::array<double,DIM>{x, y, z});
     ++_ri_count;
 }
@@ -356,6 +356,16 @@ void SimulationAcFemFreqD3<O>::Impl::_check_if_it_can_run() {
 }
 
 template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::Impl::set_result_export_path(
+    const char* const path_to_result
+) {
+    if (!_nmvr_file_path.empty()) {
+        error("Result export path is already defined.");
+    }
+    _nmvr_file_path = path_to_result;
+}
+
+template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::run()
 {
     _check_if_it_can_run();
@@ -366,17 +376,6 @@ void SimulationAcFemFreqD3<O>::Impl::run()
     _assemble_freq_independent_parts();
     _solve_systems();
     _post_process();
-}
-
-template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::Impl::export_result(
-    const char* const path_to_result
-) {
-    if (!_did_run) {
-        error("The Simulation needs to run before the result is exported."
-            " Call the run method first.");
-    }
-    _write_nmvr(path_to_result);
 }
 
 // explicit instantiation declarations
