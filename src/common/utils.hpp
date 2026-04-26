@@ -11,7 +11,8 @@
 
 namespace numav {
 
-void trim_right_whitespace(std::string_view& sv);
+// TODO: check if pass by ref is needed
+void trim_right_whitespace(std::string_view& sv); 
 
 template<typename T>
 T parse(std::string_view str) {
@@ -29,12 +30,12 @@ _FuncRealToCmplx convert_table_to_real_to_cmplx_func(
 );
 
 template<typename T>
-std::tuple<T,T> make_ascending_tuple(const T& a, const T& b) {
+std::tuple<T,T> make_ascending_tuple(const T a, const T b) {
     return a<b ? std::make_tuple(a,b) : std::make_tuple(b,a);
 }
 
 template<typename T, std::size_t... Sizes>
-constexpr auto concat_constexpr_arrays(const std::array<T, Sizes>&... arrays)
+constexpr auto concat_constexpr_arrays(const std::array<T, Sizes>... arrays)
 {
     constexpr std::size_t total_size = (Sizes + ...);
     std::array<T, total_size> result{};
@@ -48,21 +49,6 @@ constexpr auto concat_constexpr_arrays(const std::array<T, Sizes>&... arrays)
     );
     
     return result;
-}
-
-template<typename T>
-void write_matrix(const T& matrix, const std::string& filename) {
-    std::ofstream file(filename, std::ios::binary);
-    if (file.is_open()) {
-        const uint64_t rows = matrix.rows();
-        const uint64_t cols = matrix.cols();
-        file.write(reinterpret_cast<const char*>(&rows), sizeof(rows));
-        file.write(reinterpret_cast<const char*>(&cols), sizeof(cols));
-        file.write(
-            reinterpret_cast<const char*>(matrix.data()),
-            rows * cols * sizeof(typename T::Scalar)
-        );
-    }
 }
 
 } // namespace numav

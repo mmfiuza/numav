@@ -17,7 +17,7 @@
 namespace numav {
 
 template<typename T>
-bool compare_pair(const std::pair<T,T>& a, const std::pair<T,T>& b) {
+bool compare_pair(const std::pair<T,T> a, const std::pair<T,T> b) {
     #if NUMAV_GLOBAL_MATRIX_STORAGE_ORDER == NUMAV_UPPER_COL_MAJOR || \
         NUMAV_GLOBAL_MATRIX_STORAGE_ORDER == NUMAV_LOWER_COL_MAJOR
         if (a.second != b.second) {
@@ -40,7 +40,7 @@ bool compare_pair(const std::pair<T,T>& a, const std::pair<T,T>& b) {
 }
 
 template<typename T>
-std::pair<T,T> make_ordered_rowcol_pair(const T& a, const T& b) {
+std::pair<T,T> make_ordered_rowcol_pair(const T a, const T b) {
     #if NUMAV_GLOBAL_MATRIX_STORAGE_ORDER == NUMAV_UPPER_ROW_MAJOR || \
         NUMAV_GLOBAL_MATRIX_STORAGE_ORDER == NUMAV_UPPER_COL_MAJOR
         return a<b ? std::make_pair(a,b) : std::make_pair(b,a);
@@ -59,7 +59,7 @@ void SimulationAcFemFreqD3<O>::Impl::_allocate_a()
         std::array<size_t,2UL>, COMB_REP_SIZE<NODES_IN_VOL_ELEM<O>,2UL>
     > COMBS_VOL = COMBINATION_REP<NODES_IN_VOL_ELEM<O>>;
     std::unordered_set<std::pair<size_t,size_t>> existing_pairs;
-    for (size_t vei=0UL; vei!=_vei_count; ++vei) {
+    for (size_t vei = 0UL; vei != _vei_count; ++vei) {
         for (const auto& c : COMBS_VOL) {
             #if NUMAV_SYSTEM_SOLVER == NUMAV_LDLT_SOLVER
                 if (c[0UL] == c[1UL]) { continue; }
@@ -232,7 +232,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
         #if NUMAV_STIF_INTEGRATION_METHOD == NUMAV_GAUSS_QUADRATURE
             constexpr std::array<std::array<double,DIM>,NGP_STIF<O>>
                 GAUSS_POINTS_STIF = GAUSS_POINTS_VOL<NGP_STIF<O>>;
-            for (size_t gpi=0UL; gpi!=NGP_STIF<O>; ++gpi)
+            for (size_t gpi = 0UL; gpi != NGP_STIF<O>; ++gpi)
             {
                 const Eigen::Matrix<double,DIM,NODES_IN_VOL_ELEM<O>> nabla_n =
                     shape_func_vol_gradient<O>(
@@ -276,7 +276,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
             Eigen::Matrix<double, NODES_IN_VOL_ELEM<O>, NODES_IN_VOL_ELEM<O>>
                 stif_fi_part = stif_matrix_const_part / (36.0 * tet_volume);
 
-            for (size_t nci=0UL; nci!=COMBS_VOL.size(); ++nci) {
+            for (size_t nci = 0UL; nci != COMBS_VOL.size(); ++nci) {
                 _ivpg_to_stif_fi_part[ivpg][fipi_vol[nci]] +=
                     stif_fi_part(COMBS_VOL[nci][0UL], COMBS_VOL[nci][1UL]);
             }
@@ -286,7 +286,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
         #if NUMAV_MASS_INTEGRATION_METHOD == NUMAV_GAUSS_QUADRATURE
             constexpr std::array<std::array<double,DIM>,NGP_MASS<O>>
                 GAUSS_POINTS_MASS = GAUSS_POINTS_VOL<NGP_MASS<O>>;
-            for (size_t gpi=0UL; gpi!=NGP_MASS<O>; ++gpi)
+            for (size_t gpi = 0UL; gpi != NGP_MASS<O>; ++gpi)
             {
                 const Eigen::Matrix<double,DIM,NODES_IN_VOL_ELEM<O>> nabla_n =
                     shape_func_vol_gradient<O>(
@@ -317,7 +317,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
                     nnt_detj_w =
                         nnt * det_jac * GAUSS_WEIGHTS_VOL<NGP_MASS<O>>[gpi];
                 
-                for (size_t nci=0UL; nci!=COMBS_VOL.size(); ++nci) {
+                for (size_t nci = 0UL; nci != COMBS_VOL.size(); ++nci) {
                     _ivpg_to_mass_fi_part[ivpg][fipi_vol[nci]] +=
                         nnt_detj_w(COMBS_VOL[nci][0UL], COMBS_VOL[nci][1UL]);
                 }
@@ -331,7 +331,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
             Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,NODES_IN_VOL_ELEM<O>>
                 mass_fi_part = mass_matrix_const_part * tet_volume;
             
-            for (size_t nci=0UL; nci!=COMBS_VOL.size(); ++nci) {
+            for (size_t nci = 0UL; nci != COMBS_VOL.size(); ++nci) {
                 _ivpg_to_mass_fi_part[ivpg][fipi_vol[nci]] +=
                     mass_fi_part(COMBS_VOL[nci][0UL], COMBS_VOL[nci][1UL]);
             }
@@ -342,10 +342,10 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
 
 template<ElementOrder O>
 std::array<Eigen::Vector2d, NODES_IN_SFC_ELEM<O>> project_triangle_to_2d(
-    const std::array<Eigen::Vector3d, NODES_IN_SFC_ELEM<O>>& vertices_3d
+    const std::array<Eigen::Vector3d, NODES_IN_SFC_ELEM<O>> vertices_3d
 ) {
     std::array<Eigen::Vector3d, NODES_IN_SFC_ELEM<O>> point_minus_origin;
-    for (size_t eni = 0UL; eni!=NODES_IN_SFC_ELEM<O>; ++eni) {
+    for (size_t eni = 0UL; eni != NODES_IN_SFC_ELEM<O>; ++eni) {
         point_minus_origin[eni] = vertices_3d[eni] - vertices_3d[0UL];
     }
     const Eigen::Vector3d& u = point_minus_origin[1UL];
@@ -356,7 +356,7 @@ std::array<Eigen::Vector2d, NODES_IN_SFC_ELEM<O>> project_triangle_to_2d(
     y /= y.norm();
 
     std::array<Eigen::Vector2d, NODES_IN_SFC_ELEM<O>> vertices_2d;
-    for (size_t eni = 0UL; eni!=NODES_IN_SFC_ELEM<O>; ++eni) {
+    for (size_t eni = 0UL; eni != NODES_IN_SFC_ELEM<O>; ++eni) {
         vertices_2d[eni] = Eigen::Vector2d(
             point_minus_origin[eni].dot(x), point_minus_origin[eni].dot(y)
         );
@@ -375,7 +375,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_impedance()
     fz::SafePtr<std::unordered_map<
         std::pair<size_t,size_t>, size_t
     >> ispgi_to_map_to_fipi(_ispgi_count);
-    for (size_t isei=0UL; isei!=_isei_count; ++isei)
+    for (size_t isei = 0UL; isei != _isei_count; ++isei)
     {
         const size_t ispgi = _isei_to_ispgi[isei];
         const size_t sei = _isei_to_sei[isei];
@@ -393,7 +393,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_impedance()
     // allocate memory in the safe pointers
     _ispgi_to_damp_fi_part = fz::SafePtr<fz::SafePtr<double>>(_ispgi_count);
     _ispgi_to_ptr_in_a = fz::SafePtr<fz::SafePtr<_cmplx_t*>>(_ispgi_count);
-    for (size_t ispgi=0UL; ispgi!=_ispgi_count; ++ispgi)
+    for (size_t ispgi = 0UL; ispgi != _ispgi_count; ++ispgi)
     {
         const size_t size = ispgi_to_map_to_fipi[ispgi].size();
         _ispgi_to_damp_fi_part[ispgi] = fz::SafePtr<double>(size);
@@ -403,13 +403,13 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_impedance()
 
     // assemble the elementary damping matrices
     std::array<size_t, COMBS_SFC.size()> fipi_damp;
-    for (size_t isei=0UL; isei!=_isei_count; ++isei)
+    for (size_t isei = 0UL; isei != _isei_count; ++isei)
     {
         const size_t ispgi = _isei_to_ispgi[isei];
         const size_t sei = _isei_to_sei[isei];
         
         // Create _ispgi_to_ptr_in_a
-        for (size_t nci=0UL; nci!=COMBS_SFC.size(); ++nci)
+        for (size_t nci = 0UL; nci != COMBS_SFC.size(); ++nci)
         {
             const std::pair<size_t,size_t> pair = make_ordered_rowcol_pair(
                 _sei_to_ni[sei][COMBS_SFC[nci][0UL]],
@@ -440,7 +440,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_impedance()
         #if NUMAV_DAMP_INTEGRATION_METHOD == NUMAV_GAUSS_QUADRATURE
             // coordinates matrix
             std::array<Eigen::Vector3d, NODES_IN_SFC_ELEM<O>> triangle_3d;
-            for (size_t eni=0UL; eni!=NODES_IN_SFC_ELEM<O>; ++eni) {
+            for (size_t eni = 0UL; eni != NODES_IN_SFC_ELEM<O>; ++eni) {
                 const size_t ni = _sei_to_ni[sei][eni];
                 triangle_3d[eni] = Eigen::Vector3d(
                     _ni_to_coords[ni][0UL],
@@ -451,14 +451,14 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_impedance()
             std::array<Eigen::Vector2d, NODES_IN_SFC_ELEM<O>> triangle_2d =
                 project_triangle_to_2d<O>(triangle_3d);
             Eigen::Matrix<double,NODES_IN_SFC_ELEM<O>,2UL> coords_matrix;
-            for (size_t eni=0UL; eni!=NODES_IN_SFC_ELEM<O>; ++eni) {
+            for (size_t eni = 0UL; eni != NODES_IN_SFC_ELEM<O>; ++eni) {
                 coords_matrix(eni,0UL) = triangle_2d[eni](0UL);
                 coords_matrix(eni,1UL) = triangle_2d[eni](1UL);
             }
         #elif NUMAV_DAMP_INTEGRATION_METHOD == NUMAV_ANALYTIC
             // calculate triangle area
             std::array<std::array<double,DIM>,3UL> triangle_coords;
-            for (size_t eni=0UL; eni!=3UL; ++eni) {
+            for (size_t eni = 0UL; eni != 3UL; ++eni) {
                 const size_t ni = _sei_to_ni[sei][eni];
                 triangle_coords[eni] = std::array<double,DIM>({
                     _ni_to_coords[ni][0UL],
@@ -475,7 +475,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_impedance()
         #if NUMAV_DAMP_INTEGRATION_METHOD == NUMAV_GAUSS_QUADRATURE
             constexpr std::array<std::array<double,2UL>,NGP_DAMP<O>>
                 GAUSS_POINTS_DAMP = GAUSS_POINTS_SFC<NGP_DAMP<O>>;
-            for (size_t gpi=0UL; gpi!=NGP_DAMP<O>; ++gpi)
+            for (size_t gpi = 0UL; gpi != NGP_DAMP<O>; ++gpi)
             {
                 const Eigen::Matrix<double,2UL,NODES_IN_SFC_ELEM<O>> nabla_n =
                     shape_func_sfc_gradient<O>(
@@ -500,7 +500,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_impedance()
                     nnt_detj_w =
                         nnt * det_jac * GAUSS_WEIGHTS_SFC<NGP_DAMP<O>>[gpi];
                 
-                for (size_t nci=0UL; nci!=COMBS_SFC.size(); ++nci) {
+                for (size_t nci = 0UL; nci != COMBS_SFC.size(); ++nci) {
                     _ispgi_to_damp_fi_part[ispgi][fipi_damp[nci]] += 
                         nnt_detj_w(COMBS_SFC[nci][0UL], COMBS_SFC[nci][1UL]);
                 }
@@ -514,7 +514,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_impedance()
             Eigen::Matrix<double,NODES_IN_SFC_ELEM<O>,NODES_IN_SFC_ELEM<O>>
                 damp_fi_part = damp_matrix_const_part * triangle_area;
             
-            for (size_t nci=0UL; nci!=COMBS_SFC.size(); ++nci) {
+            for (size_t nci = 0UL; nci != COMBS_SFC.size(); ++nci) {
                 _ispgi_to_damp_fi_part[ispgi][fipi_damp[nci]] +=
                     damp_fi_part(COMBS_SFC[nci][0UL], COMBS_SFC[nci][1UL]);
             }
@@ -532,10 +532,10 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_velocity()
     fz::SafePtr<std::unordered_map<size_t,size_t>> ispgv_to_map_to_fipi(
         _ispgv_count
     );
-    for (size_t vsei=0UL; vsei!=_vsei_count; ++vsei) {
+    for (size_t vsei = 0UL; vsei != _vsei_count; ++vsei) {
         const size_t ispgv = _vsei_to_ispgv[vsei];
         const size_t sei = _vsei_to_sei[vsei];
-        for (size_t eni=0UL; eni!=NODES_IN_SFC_ELEM<O>; ++eni) {
+        for (size_t eni = 0UL; eni != NODES_IN_SFC_ELEM<O>; ++eni) {
             const size_t ni = _sei_to_ni[sei][eni];
             if (!ispgv_to_map_to_fipi[ispgv].contains(ni)) {
                 const size_t fipi = ispgv_to_map_to_fipi[ispgv].size();
@@ -547,7 +547,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_velocity()
     // allocate memory in the safe pointers
     _ispgv_to_forc_fi_part = fz::SafePtr<fz::SafePtr<double>>(_ispgv_count);
     _ispgv_to_ptr_in_b = fz::SafePtr<fz::SafePtr<_cmplx_t*>>(_ispgv_count);
-    for (size_t ispgv=0UL; ispgv!=_ispgv_count; ++ispgv)
+    for (size_t ispgv = 0UL; ispgv != _ispgv_count; ++ispgv)
     {
         const size_t size = ispgv_to_map_to_fipi[ispgv].size();
         _ispgv_to_forc_fi_part[ispgv] = fz::SafePtr<double>(size);
@@ -557,13 +557,13 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_velocity()
 
     // assemble elementary force vectors
     std::array<size_t, NODES_IN_SFC_ELEM<O>> fipi_forc;
-    for (size_t vsei=0UL; vsei!=_vsei_count; ++vsei)
+    for (size_t vsei = 0UL; vsei != _vsei_count; ++vsei)
     {
         const size_t ispgv = _vsei_to_ispgv[vsei];
         const size_t sei = _vsei_to_sei[vsei];
 
         // Create _ispgv_to_ptr_in_b
-        for (size_t eni=0UL; eni!=NODES_IN_SFC_ELEM<O>; ++eni)
+        for (size_t eni = 0UL; eni != NODES_IN_SFC_ELEM<O>; ++eni)
         {
             const size_t ni = _sei_to_ni[sei][eni];
             fipi_forc[eni] = ispgv_to_map_to_fipi[ispgv].at(ni);
@@ -579,7 +579,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_velocity()
         #if NUMAV_FORC_INTEGRATION_METHOD == NUMAV_GAUSS_QUADRATURE
             // coordinates matrix
             std::array<Eigen::Vector3d, NODES_IN_SFC_ELEM<O>> triangle_3d;
-            for (size_t eni=0UL; eni!=NODES_IN_SFC_ELEM<O>; ++eni) {
+            for (size_t eni = 0UL; eni != NODES_IN_SFC_ELEM<O>; ++eni) {
                 const size_t node_idx = _sei_to_ni[sei][eni];
                 triangle_3d[eni] = Eigen::Vector3d(
                     _ni_to_coords[node_idx][0UL],
@@ -590,14 +590,14 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_velocity()
             std::array<Eigen::Vector2d, NODES_IN_SFC_ELEM<O>> triangle_2d =
                 project_triangle_to_2d<O>(triangle_3d);
             Eigen::Matrix<double,NODES_IN_SFC_ELEM<O>,2UL> coords_matrix;
-            for (size_t eni=0UL; eni!=NODES_IN_SFC_ELEM<O>; ++eni) {
+            for (size_t eni = 0UL; eni != NODES_IN_SFC_ELEM<O>; ++eni) {
                 coords_matrix(eni,0UL) = triangle_2d[eni](0UL);
                 coords_matrix(eni,1UL) = triangle_2d[eni](1UL);
             }
         #elif NUMAV_FORC_INTEGRATION_METHOD == NUMAV_ANALYTIC
             // calculate triangle area
             std::array<std::array<double,DIM>,3UL> triangle_coords;
-            for (size_t eni=0UL; eni!=3UL; ++eni) {
+            for (size_t eni = 0UL; eni != 3UL; ++eni) {
                 const size_t ni = _sei_to_ni[sei][eni];
                 triangle_coords[eni] = std::array<double,DIM>({
                     _ni_to_coords[ni][0UL],
@@ -614,7 +614,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_velocity()
         #if NUMAV_FORC_INTEGRATION_METHOD == NUMAV_GAUSS_QUADRATURE
             constexpr std::array<std::array<double,2UL>,NGP_FORC<O>>
                 GAUSS_POINTS_FORC = GAUSS_POINTS_SFC<NGP_FORC<O>>;
-            for (size_t gpi=0UL; gpi!=NGP_FORC<O>; ++gpi)
+            for (size_t gpi = 0UL; gpi != NGP_FORC<O>; ++gpi)
             {
                 const Eigen::Matrix<double,2UL,NODES_IN_SFC_ELEM<O>> nabla_n =
                     shape_func_sfc_gradient<O>(
@@ -633,7 +633,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_velocity()
                 const Eigen::Matrix<double,NODES_IN_SFC_ELEM<O>,1UL> n_detj_w =
                     n * det_jac * GAUSS_WEIGHTS_SFC<NGP_FORC<O>>[gpi];
                 
-                for (size_t eni=0UL; eni!=NODES_IN_SFC_ELEM<O>; ++eni) {
+                for (size_t eni = 0UL; eni != NODES_IN_SFC_ELEM<O>; ++eni) {
                     _ispgv_to_forc_fi_part[ispgv][fipi_forc[eni]] +=
                         n_detj_w(eni);
                 }
@@ -647,7 +647,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_velocity()
             Eigen::Matrix<double,NODES_IN_SFC_ELEM<O>,1UL>
                 forc_fi_part = forc_vector_const_part * triangle_area;
             
-            for (size_t eni=0UL; eni!=NODES_IN_SFC_ELEM<O>; ++eni) {
+            for (size_t eni = 0UL; eni != NODES_IN_SFC_ELEM<O>; ++eni) {
                 _ispgv_to_forc_fi_part[ispgv][fipi_forc[eni]] +=
                     forc_fi_part(eni);
             }
@@ -663,7 +663,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_point_velocity()
 {
     _pvni_to_forc_fi_part = fz::SafePtr<_FuncRealToCmplx>(_pvni_count);
     _pvni_to_ptr_in_b = fz::SafePtr<_cmplx_t*>(_pvni_count);
-    for (size_t pvni=0UL; pvni!=_pvni_count; ++pvni)
+    for (size_t pvni = 0UL; pvni != _pvni_count; ++pvni)
     {
         _pvni_to_forc_fi_part[pvni] = 
             std::get<_FuncRealToCmplx>(_point_volvel[pvni]);
@@ -683,7 +683,7 @@ std::unordered_map<std::vector<size_t>, std::vector<T>> find_set_intersections(
 ) {
     // map each element to the indices of sets that contain it
     std::unordered_map<T, std::vector<size_t>> element_to_sets;
-    for (size_t set_index=0UL; set_index!=sets.size(); ++set_index) {
+    for (size_t set_index = 0UL; set_index != sets.size(); ++set_index) {
         for (const auto& element : sets[set_index]) {
             element_to_sets[element].push_back(set_index);
         }
@@ -703,16 +703,16 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_pressure()
 {
     // create the mathmatical sets of nodes for each pressure value assigned
     fz::SafePtr<fz::SafePtr<size_t>> sets(_ppni_count + _ispgp_count);
-    for (size_t ppni=0UL; ppni!=_ppni_count; ++ppni) {
+    for (size_t ppni = 0UL; ppni != _ppni_count; ++ppni) {
         sets[ppni] = fz::SafePtr<size_t>(1UL);
         sets[ppni][0UL] = std::get<size_t>(_point_pressure[ppni]);
     }
-    for (size_t ispgp=0UL; ispgp!=_ispgp_count; ++ispgp) {
+    for (size_t ispgp = 0UL; ispgp != _ispgp_count; ++ispgp) {
         std::set<size_t> unique_nodes; // TODO: review the use of set
-        for (size_t psei=0UL; psei!=_psei_count; ++psei) {
+        for (size_t psei = 0UL; psei != _psei_count; ++psei) {
             if (_psei_to_ispgp[psei] == ispgp){
                 const size_t sei = _psei_to_sei[psei];
-                for (size_t eni=0UL; eni!=NODES_IN_SFC_ELEM<O>; ++eni) {
+                for (size_t eni = 0UL; eni != NODES_IN_SFC_ELEM<O>; ++eni) {
                     const size_t ni = _sei_to_ni[sei][eni];
                     unique_nodes.insert(ni);
                 }

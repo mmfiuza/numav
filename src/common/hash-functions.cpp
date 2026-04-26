@@ -5,19 +5,19 @@
 namespace std
 {
     size_t hash<pair<size_t, size_t>>::operator()(
-        const pair<size_t, size_t>& key
+        const pair<size_t, size_t> key
     ) const {
         return (get<0UL>(key) << (4UL * sizeof(size_t))) + get<1UL>(key);
     }
 
     size_t hash<tuple<size_t, size_t>>::operator()(
-        const tuple<size_t, size_t>& key
+        const tuple<size_t, size_t> key
     ) const {
         return (get<0UL>(key) << (4UL * sizeof(size_t))) + get<1UL>(key);
     }
 
     size_t hash<std::vector<size_t>>::operator()(
-        const std::vector<size_t>& vec
+        const std::vector<size_t> vec
     ) const {
         size_t seed = vec.size();
         for (auto& i : vec) {

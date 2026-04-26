@@ -41,7 +41,7 @@ void SimulationAcFemFreqD3<O>::Impl::_organize_impedance_physical_group_data()
         }
     }
     _isei_to_ispgi = fz::SafePtr<size_t>(_isei_count);
-    for (size_t isei = 0UL; isei!=_isei_count; ++isei) {
+    for (size_t isei = 0UL; isei != _isei_count; ++isei) {
         const size_t sei = _isei_to_sei[isei];
         _isei_to_ispgi[isei] = _espg_to_ispg.at(_sei_to_espg[sei]);
     }

@@ -11,15 +11,15 @@ void solve_using_eigen(
     const fz::SafePtr<std::pair<size_t,size_t>>& nnz_rowcol_idx_pairs,
     const fz::SafePtr<_cmplx_t>& b_vals,
     const fz::SafePtr<size_t>& b_row_idx,
-    const size_t& node_count,
+    const size_t node_count,
     _cmplx_t* const x_out
 ) {
     using Triplet = typename Eigen::Triplet<_cmplx_t>;
 
     // a matrix
-    fz::SafePtr<Triplet> triplets_a(2*a_vals.size() - node_count);
+    fz::SafePtr<Triplet> triplets_a(2UL*a_vals.size() - node_count);
     Triplet* it_triplets_a = triplets_a.begin();
-    for (size_t j=0UL; j!=a_vals.size(); ++j) {
+    for (size_t j = 0UL; j != a_vals.size(); ++j) {
         *it_triplets_a = Triplet(
             nnz_rowcol_idx_pairs[j].first,
             nnz_rowcol_idx_pairs[j].second,
@@ -46,11 +46,11 @@ void solve_using_eigen(
     // b vector
     fz::SafePtr<Triplet> triplets_b(node_count);
     Triplet* it_triplets_b = triplets_b.begin();
-    for (size_t j=0UL; j!=b_vals.size(); ++j) {
-        *it_triplets_b = Triplet(b_row_idx[j], 0, b_vals[j]);
+    for (size_t j = 0UL; j != b_vals.size(); ++j) {
+        *it_triplets_b = Triplet(b_row_idx[j], 0UL, b_vals[j]);
         ++it_triplets_b;
     }
-    Eigen::SparseMatrix<_cmplx_t> b(node_count, 1);
+    Eigen::SparseMatrix<_cmplx_t> b(node_count, 1UL);
     b.setFromTriplets(triplets_b.begin(), triplets_b.end());
     triplets_b.free();
 
@@ -64,7 +64,7 @@ void solve_using_eigen(
     if (solver.info() != Eigen::Success) {
         std::cerr << "Solving failed.\n";
     }
-    for (size_t j=0UL; j!=node_count; ++j) {
+    for (size_t j = 0UL; j != node_count; ++j) {
         x_out[j] = x(j);
     }
 }

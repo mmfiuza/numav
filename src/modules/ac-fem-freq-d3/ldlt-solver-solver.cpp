@@ -13,7 +13,7 @@ void define_ldlt_solver_sparsity_pattern(
     const fz::SafePtr<_cmplx_t>& a_vals,
     fz::SafePtr<_cmplx_t>& _x,
     fz::SafePtr<_cmplx_t>& b_dense,
-    const size_t& ni_count
+    const size_t ni_count
 ) {
     // problem dimensions
     const size_t nzi_count = nz_rowcol_idx_pairs.size();
@@ -33,7 +33,7 @@ void define_ldlt_solver_sparsity_pattern(
             const size_t previous_ri = current_ri;
             current_ri = it_nz_rowcol_idx_pairs->first;
             const size_t ri_increment = current_ri - previous_ri;
-            for (size_t i=0UL; i!=ri_increment; ++i) {
+            for (size_t i = 0UL; i != ri_increment; ++i) {
                 *it_a_row_idx = nzi;
                 ++it_a_row_idx;
             }

@@ -6,8 +6,8 @@ namespace numav::nmvr {
 
 void write_data_chunk(
     std::ofstream& file,
-    const std::array<char,CHUNK_ID_SIZE>& chunk_id,
-    const uint64_t& chunk_size_in_bytes,
+    const std::array<char,CHUNK_ID_SIZE> chunk_id,
+    const uint64_t chunk_size_in_bytes,
     const void* const chunk_data
 ) {
     file.write(
@@ -23,8 +23,8 @@ void write_data_chunk(
 
 void write_data_chunk_header(
     std::ofstream& file,
-    const std::array<char,CHUNK_ID_SIZE>& chunk_id,
-    const uint64_t& chunk_size_in_bytes
+    const std::array<char,CHUNK_ID_SIZE> chunk_id,
+    const uint64_t chunk_size_in_bytes
 ) {
     file.write(
         chunk_id.data(), CHUNK_ID_SIZE
@@ -36,7 +36,7 @@ void write_data_chunk_header(
 
 void write_data_chunk_body(
     std::ofstream& file,
-    const uint64_t& size_in_bytes_to_write,
+    const uint64_t size_in_bytes_to_write,
     const void* const data
 ) {
     file.write(

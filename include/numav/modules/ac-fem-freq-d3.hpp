@@ -32,17 +32,17 @@ public:
     Simulation& operator=(Simulation&&) noexcept;
     
     void set_maximum_frequency(
-        const double&
+        const double
     );
     void set_frequency_range(
-        const double&,
-        const double&
+        const double,
+        const double
     );
     void set_frequency_steps_count(
-        const size_t&
+        const size_t
     );
     void set_frequency_sampling_density(
-        const FrequencySamplingDensity&
+        const FrequencySamplingDensity
     );
     void set_frequency_steps(
         const std::vector<double>&
@@ -51,58 +51,58 @@ public:
         const char* const
     );
     void add_volume_material(
-        const size_t&,
+        const size_t,
         const std::function<std::complex<double>(const double&)>&,
         const std::function<std::complex<double>(const double&)>&
     );
     void add_volume_material(
-        const size_t&,
+        const size_t,
         const char* const,
         const std::function<std::complex<double>(const double&)>&
     );
     void add_volume_material(
-        const size_t&,
+        const size_t,
         const std::function<std::complex<double>(const double&)>&,
         const char* const
     );
     void add_volume_material(
-        const size_t&,
+        const size_t,
         const char* const,
         const char* const
     );
     void add_sound_source(
-        const TypeOfSource&,
-        const std::array<double,3UL>&,
-        const PhysicalQuantity&,
+        const TypeOfSource,
+        const std::array<double,3UL>,
+        const PhysicalQuantity,
         const std::function<std::complex<double>(const double&)>&
     );
     void add_sound_source(
-        const TypeOfSource&,
-        const std::array<double,3UL>&,
-        const PhysicalQuantity&,
+        const TypeOfSource,
+        const std::array<double,3UL>,
+        const PhysicalQuantity,
         const char* const
     );
     void add_sound_source(
-        const TypeOfSource&,
-        const size_t&,
-        const PhysicalQuantity&,
+        const TypeOfSource,
+        const size_t,
+        const PhysicalQuantity,
         const std::function<std::complex<double>(const double&)>&
     );
     void add_sound_source(
-        const TypeOfSource&,
-        const size_t&,
-        const PhysicalQuantity&,
+        const TypeOfSource,
+        const size_t,
+        const PhysicalQuantity,
         const char* const
     );
     void add_receiver(
-        const std::array<double,3UL>&
+        const std::array<double,3UL>
     );
     void add_surface_specific_acoustic_impedance(
-        const size_t&,
+        const size_t,
         const std::function<std::complex<double>(const double&)>&
     );
     void add_surface_specific_acoustic_impedance(
-        const size_t&,
+        const size_t,
         const char* const
     );
     void set_result_export_path(

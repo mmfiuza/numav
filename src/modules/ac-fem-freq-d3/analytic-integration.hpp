@@ -13,14 +13,14 @@ namespace numav {
 // general get_stif_matrix_const_part declaration for all orders
 template<ElementOrder O>
 Eigen::Matrix<double,NODES_IN_VOL_ELEM<O>,NODES_IN_VOL_ELEM<O>>
-get_stif_matrix_const_part(const std::array<std::array<double,3UL>,4UL>&);
+get_stif_matrix_const_part(const std::array<std::array<double,3UL>,4UL>);
 
 template<>
 Eigen::Matrix<double,
     NODES_IN_VOL_ELEM<ElementOrder::O1>, NODES_IN_VOL_ELEM<ElementOrder::O1>
 >
 get_stif_matrix_const_part<ElementOrder::O1>(
-    const std::array<std::array<double,3UL>,4UL>& coords
+    const std::array<std::array<double,3UL>,4UL> coords
 ) {
     const double x03 = coords[0UL][0UL] - coords[3UL][0UL];
     const double x13 = coords[1UL][0UL] - coords[3UL][0UL];
@@ -68,7 +68,7 @@ Eigen::Matrix<double,
     NODES_IN_VOL_ELEM<ElementOrder::O2>, NODES_IN_VOL_ELEM<ElementOrder::O2>
 >
 get_stif_matrix_const_part<ElementOrder::O2>(
-    const std::array<std::array<double,3UL>,4UL>& coords
+    const std::array<std::array<double,3UL>,4UL> coords
 ) {
     // TODO
     error("Numav doesn't support second order analytic intgration for stifness"

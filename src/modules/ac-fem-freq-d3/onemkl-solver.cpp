@@ -30,7 +30,7 @@ namespace numav {
         const std::pair<size_t,size_t>* it_nnz_rowcol_idx_pairs =
             nnz_rowcol_idx_pairs.begin();
         size_t current_row = std::numeric_limits<size_t>::max();
-        for (MKL_INT i=0; i!=nnz_count; ++i) {
+        for (MKL_INT i = 0; i != nnz_count; ++i) { // TODO: define type of 0
             *it_a_col_idx = it_nnz_rowcol_idx_pairs->second;
             ++it_a_col_idx;
             if (it_nnz_rowcol_idx_pairs->first != current_row) {
@@ -97,7 +97,7 @@ namespace numav {
         if (error_id != MKL_DSS_SUCCESS) { print_dss_error(error_id); }
 
         // dense b vector
-        for (size_t i=0UL; i!=b_vals.size(); ++i) {
+        for (size_t i = 0UL; i != b_vals.size(); ++i) {
             b_dense[b_row_idx[i]] = b_vals[i];
         }
         

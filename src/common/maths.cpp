@@ -9,13 +9,13 @@
 namespace numav {
 
 fz::SafePtr<double> linspace(
-    const double& start, const double& finish, const size_t& num_points
+    const double start, const double finish, const size_t num_points
 ) {
     assert(num_points != 0UL && num_points != 1UL);
     fz::SafePtr<double> result(num_points);
     double step = (finish - start) / static_cast<double>(num_points - 1UL);
     result.front() = start;
-    for (double* it=result.begin()+1UL; it!=result.end()-1UL; ++it) {
+    for (double* it = result.begin()+1UL; it != result.end()-1UL; ++it) {
         *it = *(it - 1UL) + step;
     }
     result.back() = finish;
@@ -23,7 +23,7 @@ fz::SafePtr<double> linspace(
 }
 
 fz::SafePtr<double> cubspace(
-    const double& start, const double& finish, const size_t& num_points
+    const double start, const double finish, const size_t num_points
 ) {
     assert(num_points!=0 && num_points!=1);
     fz::SafePtr<double> x = linspace(0.0, 1.0, num_points);
@@ -37,7 +37,7 @@ fz::SafePtr<double> cubspace(
     return result;
 }
 
-double get_triangle_area(const std::array<std::array<double,3UL>,3UL>& coords)
+double get_triangle_area(const std::array<std::array<double,3UL>,3UL> coords)
 {
     const double a = std::sqrt(
         std::pow(coords[0UL][0UL] - coords[1UL][0UL], 2UL) +
@@ -60,7 +60,7 @@ double get_triangle_area(const std::array<std::array<double,3UL>,3UL>& coords)
 }
 
 double get_tetrahedron_volume(
-    const std::array<std::array<double,3UL>,4UL>& coords
+    const std::array<std::array<double,3UL>,4UL> coords
 ) {
     const Eigen::Matrix<double,4UL,4UL> mat {
       {coords[0UL][0UL], coords[1UL][0UL], coords[2UL][0UL], coords[3UL][0UL]},

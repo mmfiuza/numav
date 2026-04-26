@@ -7,7 +7,8 @@ namespace numav {
 template<>
 Eigen::Matrix<double, NODES_IN_SFC_ELEM<ElementOrder::O1>, 1UL>
 shape_func_sfc<ElementOrder::O1>(
-    const double& xi0, const double& xi1
+    const double xi0,
+    const double xi1
 ) {
     const double xi2 = 1.0 - xi0 - xi1;
     return Eigen::Matrix<double, NODES_IN_SFC_ELEM<ElementOrder::O1>, 1UL>(
@@ -20,7 +21,8 @@ shape_func_sfc<ElementOrder::O1>(
 template<>
 Eigen::Matrix<double, NODES_IN_SFC_ELEM<ElementOrder::O2>, 1UL>
 shape_func_sfc<ElementOrder::O2>(
-    const double& xi0, const double& xi1
+    const double xi0,
+    const double xi1
 ) {
     const double xi2 = 1.0 - xi0 - xi1;
     return Eigen::Matrix<double, NODES_IN_SFC_ELEM<ElementOrder::O2>, 1UL>(
@@ -36,7 +38,8 @@ shape_func_sfc<ElementOrder::O2>(
 template<>
 Eigen::Matrix<double, 2UL, NODES_IN_SFC_ELEM<ElementOrder::O1>>
 shape_func_sfc_gradient<ElementOrder::O1>(
-    const double& xi0, const double& xi1
+    const double xi0,
+    const double xi1
 ) {
     (void)xi0;
     (void)xi1;
@@ -49,7 +52,8 @@ shape_func_sfc_gradient<ElementOrder::O1>(
 template<>
 Eigen::Matrix<double, 2UL, NODES_IN_SFC_ELEM<ElementOrder::O2>>
 shape_func_sfc_gradient<ElementOrder::O2>(
-    const double& xi0, const double& xi1
+    const double xi0,
+    const double xi1
 ) {
     const double xi2 = 1.0 - xi0 - xi1;
     return Eigen::Matrix<double, 2UL, NODES_IN_SFC_ELEM<ElementOrder::O2>> {
@@ -61,7 +65,9 @@ shape_func_sfc_gradient<ElementOrder::O2>(
 template<>
 Eigen::Matrix<double, NODES_IN_VOL_ELEM<ElementOrder::O1>, 1UL>
 shape_func_vol<ElementOrder::O1>(
-    const double& xi0, const double& xi1, const double& xi2
+    const double xi0,
+    const double xi1,
+    const double xi2
 ) {
     const double xi3 = 1.0 - xi0 - xi1 - xi2;
     return Eigen::Matrix<double, NODES_IN_VOL_ELEM<ElementOrder::O1>, 1UL>(
@@ -75,7 +81,9 @@ shape_func_vol<ElementOrder::O1>(
 template<>
 Eigen::Matrix<double, NODES_IN_VOL_ELEM<ElementOrder::O2>, 1UL>
 shape_func_vol<ElementOrder::O2>(
-    const double& xi0, const double& xi1, const double& xi2
+    const double xi0,
+    const double xi1,
+    const double xi2
 ) {
     const double xi3 = 1.0 - xi0 - xi1 - xi2;
     return Eigen::Matrix<double, NODES_IN_VOL_ELEM<ElementOrder::O2>, 1UL>(
@@ -95,7 +103,9 @@ shape_func_vol<ElementOrder::O2>(
 template<>
 Eigen::Matrix<double, DIM, NODES_IN_VOL_ELEM<ElementOrder::O1>>
 shape_func_vol_gradient<ElementOrder::O1>(
-    const double& xi0, const double& xi1, const double& xi2
+    const double xi0,
+    const double xi1,
+    const double xi2
 ) {
     (void)xi0;
     (void)xi1;
@@ -110,7 +120,9 @@ shape_func_vol_gradient<ElementOrder::O1>(
 template<>
 Eigen::Matrix<double, DIM, NODES_IN_VOL_ELEM<ElementOrder::O2>>
 shape_func_vol_gradient<ElementOrder::O2>(
-    const double& xi0, const double& xi1, const double& xi2
+    const double xi0,
+    const double xi1,
+    const double xi2
 ) {
     const double xi3 = 1.0 - xi0 - xi1 - xi2;
     return Eigen::Matrix<double, DIM, NODES_IN_VOL_ELEM<ElementOrder::O2>> {

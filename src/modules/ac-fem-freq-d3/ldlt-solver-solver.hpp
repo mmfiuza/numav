@@ -17,7 +17,7 @@ void define_ldlt_solver_sparsity_pattern(
     const fz::SafePtr<_cmplx_t>&,
     fz::SafePtr<_cmplx_t>&,
     fz::SafePtr<_cmplx_t>&,
-    const size_t&
+    const size_t
 );
 
 void solve_using_ldlt_solver(

@@ -16,7 +16,7 @@ namespace numav {
 
 template <ElementOrder O>
 size_t SimulationAcFemFreqD3<O>::Impl::_get_closest_point(
-    const std::array<double,DIM>& point_coords
+    const std::array<double,DIM> point_coords
 ) {
     double minimum_distance_squared = std::numeric_limits<double>::max();
     size_t ni_closest = std::numeric_limits<size_t>::max();
@@ -164,8 +164,8 @@ void SimulationAcFemFreqD3<ElementOrder::O2>::Impl::_generate_extra_nodes()
     temp.free();
     
     // second pass: create the extra nodes and assign to volume elements
-    for (size_t vei=0UL; vei!=_vei_count; ++vei) {
-        for (size_t i=0UL; i!=VTX_PAIRS_VOL.size(); ++i)
+    for (size_t vei = 0UL; vei != _vei_count; ++vei) {
+        for (size_t i = 0UL; i != VTX_PAIRS_VOL.size(); ++i)
         {   
             if (!is_extra_node[vei][i]) { continue; }
 
@@ -192,8 +192,8 @@ void SimulationAcFemFreqD3<ElementOrder::O2>::Impl::_generate_extra_nodes()
     is_extra_node.free();
 
     // third pass: assign nodes to surface elements
-    for (size_t sei=0UL; sei!=_sei_count; ++sei) {
-        for (size_t i=0UL; i!=VTX_PAIRS_SFC.size(); ++i)
+    for (size_t sei = 0UL; sei != _sei_count; ++sei) {
+        for (size_t i = 0UL; i != VTX_PAIRS_SFC.size(); ++i)
         {
             // create a tuple of the indices in ascending order
             const std::tuple<size_t,size_t> tup = make_ascending_tuple(

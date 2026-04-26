@@ -31,17 +31,17 @@ public:
     Impl& operator=(Impl&&) noexcept;
 
     void set_maximum_frequency(
-        const double&
+        const double
     );
     void set_frequency_range(
-        const double&,
-        const double&
+        const double,
+        const double
     );
     void set_frequency_steps_count(
-        const size_t&
+        const size_t
     );
     void set_frequency_sampling_density(
-        const FrequencySamplingDensity&
+        const FrequencySamplingDensity
     );
     void set_frequency_steps(
         const std::vector<double>&
@@ -50,64 +50,66 @@ public:
         const char* const
     );
     void add_volume_material(
-        const size_t&,
+        const size_t,
         const std::function<_cmplx_t(const double&)>&,
         const std::function<_cmplx_t(const double&)>&
     );
     void add_volume_material(
-        const size_t&,
+        const size_t,
         const char* const,
         const std::function<_cmplx_t(const double&)>&
     );
     void add_volume_material(
-        const size_t&,
+        const size_t,
         const std::function<_cmplx_t(const double&)>&,
         const char* const
     );
     void add_volume_material(
-        const size_t&,
+        const size_t,
         const char* const,
         const char* const
     );
     void add_sound_source(
-        const TypeOfSource&,
-        const std::array<double,3UL>&,
-        const PhysicalQuantity&,
+        const TypeOfSource,
+        const std::array<double,3UL>,
+        const PhysicalQuantity,
         const std::function<_cmplx_t(const double&)>&
     );
     void add_sound_source(
-        const TypeOfSource&,
-        const std::array<double,3UL>&,
-        const PhysicalQuantity&,
+        const TypeOfSource,
+        const std::array<double,3UL>,
+        const PhysicalQuantity,
         const char* const
     );
     void add_sound_source(
-        const TypeOfSource&,
-        const size_t&,
-        const PhysicalQuantity&,
+        const TypeOfSource,
+        const size_t,
+        const PhysicalQuantity,
         const std::function<_cmplx_t(const double&)>&
     );
     void add_sound_source(
-        const TypeOfSource&,
-        const size_t&,
-        const PhysicalQuantity&,
+        const TypeOfSource,
+        const size_t,
+        const PhysicalQuantity,
         const char* const
     );
     void add_receiver(
-        const std::array<double,DIM>&
+        const std::array<double,DIM>
     );
     void add_surface_specific_acoustic_impedance(
-        const size_t&,
+        const size_t,
         const std::function<_cmplx_t(const double&)>&
     );
     void add_surface_specific_acoustic_impedance(
-        const size_t&,
+        const size_t,
         const char* const
     );
     void set_result_export_path(const char* const);
     void run();
 
 private:
+
+    // TODO: better data packing
     
     // volume element properties
     struct _VolProp {
@@ -137,9 +139,9 @@ private:
     
     void _load_bdf(const char* const);
     void _generate_extra_nodes();
-    size_t _get_closest_point(const std::array<double,3UL>&);
+    size_t _get_closest_point(const std::array<double,3UL>);
     void _check_if_mesh_is_defined();
-    void _validate_espg(const size_t&);
+    void _validate_espg(const size_t);
     void _check_if_it_can_run();
     void _define_freq_vector();
     void _organize_volume_physical_group_data();

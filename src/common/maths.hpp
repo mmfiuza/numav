@@ -11,29 +11,29 @@
 namespace numav {
 
 fz::SafePtr<double> linspace(
-    const double& start, const double& finish, const size_t& num_points
+    const double start, const double finish, const size_t num_points
 );
 
 fz::SafePtr<double> cubspace(
-    const double& start, const double& finish, const size_t& num_points
+    const double start, const double finish, const size_t num_points
 );
 
 double get_triangle_area(
-    const std::array<std::array<double,3UL>,3UL>& coords
+    const std::array<std::array<double,3UL>,3UL> coords
 );
 
 double get_tetrahedron_volume(
-    const std::array<std::array<double,3UL>,4UL>& coords
+    const std::array<std::array<double,3UL>,4UL> coords
 );
 
 template<typename... T>
-auto mean(const T&... args) {
+auto mean(const T... args) {
     return (args + ...) / (sizeof...(args));
 }
 
 template<size_t N> constexpr size_t FACTORIAL = [] {
     size_t result = 1UL;
-    for(size_t i = 2UL; i <= N; ++i) {
+    for (size_t i = 2UL; i <= N; ++i) {
         result *= i;
     }
     return result;
@@ -64,7 +64,7 @@ template<typename XContainer, typename YContainer, typename XType>
 auto interpolate(
     const XContainer& x_array,
     const YContainer& y_array,
-    const XType& x_value)
+    const XType x_value)
 {
     // Obtain sizes and iterators in a container‑agnostic way
     auto x_size = std::size(x_array);

@@ -10,7 +10,7 @@
 
 namespace numav {
 
-    template <ElementOrder O>
+template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::_check_if_mesh_is_defined() {
     if (!_is_mesh_defined){
         error("Mesh not defined. Call load_mesh to do so.");
@@ -19,7 +19,7 @@ void SimulationAcFemFreqD3<O>::Impl::_check_if_mesh_is_defined() {
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::set_maximum_frequency(
-    const double& freq_max
+    const double freq_max
 ) {
     if (freq_max < 0.0) {
         error("Maximum frequency should be positive.");
@@ -36,8 +36,8 @@ void SimulationAcFemFreqD3<O>::Impl::set_maximum_frequency(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::set_frequency_range(
-    const double& freq_min,
-    const double& freq_max
+    const double freq_min,
+    const double freq_max
 ) {
     if (freq_min < 0.0 || freq_max < 0.0) {
         error("Frequency limits should be positive.");
@@ -58,7 +58,7 @@ void SimulationAcFemFreqD3<O>::Impl::set_frequency_range(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::set_frequency_steps_count(
-    const size_t& frequency_steps_count
+    const size_t frequency_steps_count
 ) {
     if (_freq_type_defined_by_user == _FreqTypeDefinedByUser::UNDEFINED) {
         error("Simulation frequency was not defined."
@@ -72,7 +72,7 @@ void SimulationAcFemFreqD3<O>::Impl::set_frequency_steps_count(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::set_frequency_sampling_density(
-    const FrequencySamplingDensity& frequency_sampling_density
+    const FrequencySamplingDensity frequency_sampling_density
 ) {
     if (_freq_type_defined_by_user == _FreqTypeDefinedByUser::UNDEFINED) {
         error("Simulation frequency was not defined."
@@ -127,7 +127,7 @@ void SimulationAcFemFreqD3<O>::Impl::load_mesh(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_volume_material(
-    const size_t& evpg,
+    const size_t evpg,
     const _FuncRealToCmplx& density,
     const _FuncRealToCmplx& soundspeed
 ) {
@@ -146,7 +146,7 @@ void SimulationAcFemFreqD3<O>::Impl::add_volume_material(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_volume_material(
-    const size_t& evpg,
+    const size_t evpg,
     const char* const density_text_file,
     const _FuncRealToCmplx& soundspeed
 ) {
@@ -158,7 +158,7 @@ void SimulationAcFemFreqD3<O>::Impl::add_volume_material(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_volume_material(
-    const size_t& evpg,
+    const size_t evpg,
     const _FuncRealToCmplx& density,
     const char* const soundspeed_text_file
 ) {
@@ -170,7 +170,7 @@ void SimulationAcFemFreqD3<O>::Impl::add_volume_material(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_volume_material(
-    const size_t& evpg,
+    const size_t evpg,
     const char* const density_text_file,
     const char* const soundspeed_text_file
 ) {
@@ -184,9 +184,9 @@ void SimulationAcFemFreqD3<O>::Impl::add_volume_material(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
-    const TypeOfSource& type_of_source,
-    const std::array<double,3UL>& point_coordinates,
-    const PhysicalQuantity& physical_quantity_type,
+    const TypeOfSource type_of_source,
+    const std::array<double,3UL> point_coordinates,
+    const PhysicalQuantity physical_quantity_type,
     const _FuncRealToCmplx& physical_quantity_value
 ) {
     _check_if_mesh_is_defined();
@@ -217,9 +217,9 @@ void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
-    const TypeOfSource& type_of_source,
-    const std::array<double,3UL>& point_coordinates,
-    const PhysicalQuantity& physical_quantity_type,
+    const TypeOfSource type_of_source,
+    const std::array<double,3UL> point_coordinates,
+    const PhysicalQuantity physical_quantity_type,
     const char* const physical_quantity_value_text_file
 ) {
     _FuncRealToCmplx physical_quantity_value = 
@@ -234,7 +234,7 @@ void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::Impl::_validate_espg(const size_t& espg) {
+void SimulationAcFemFreqD3<O>::Impl::_validate_espg(const size_t espg) {
     if (!_existing_espg.contains(espg)) {
         error("Tag {} not found in mesh file.", espg);
     }
@@ -248,9 +248,9 @@ void SimulationAcFemFreqD3<O>::Impl::_validate_espg(const size_t& espg) {
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
-    const TypeOfSource& type_of_source,
-    const size_t& espg,
-    const PhysicalQuantity& physical_quantity_type,
+    const TypeOfSource type_of_source,
+    const size_t espg,
+    const PhysicalQuantity physical_quantity_type,
     const _FuncRealToCmplx& physical_quantity_value
 ) {
     _check_if_mesh_is_defined();
@@ -280,9 +280,9 @@ void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
-    const TypeOfSource& type_of_source,
-    const size_t& espg,
-    const PhysicalQuantity& physical_quantity_type,
+    const TypeOfSource type_of_source,
+    const size_t espg,
+    const PhysicalQuantity physical_quantity_type,
     const char* const physical_quantity_value_text_file
 ) {
     _FuncRealToCmplx physical_quantity_value = 
@@ -298,7 +298,7 @@ void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_receiver(
-    const std::array<double,DIM>& point_coordinates
+    const std::array<double,DIM> point_coordinates
 ) {
     _check_if_mesh_is_defined();
     // TODO: check if the point is outside the mesh
@@ -311,7 +311,7 @@ void SimulationAcFemFreqD3<O>::Impl::add_receiver(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_surface_specific_acoustic_impedance(
-    const size_t& espg,
+    const size_t espg,
     const _FuncRealToCmplx& impedance
 ) {
     _check_if_mesh_is_defined();
@@ -324,7 +324,7 @@ void SimulationAcFemFreqD3<O>::Impl::add_surface_specific_acoustic_impedance(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_surface_specific_acoustic_impedance(
-    const size_t& espg,
+    const size_t espg,
     const char* const impedance_text_file
 ) {
     _FuncRealToCmplx impedance = 

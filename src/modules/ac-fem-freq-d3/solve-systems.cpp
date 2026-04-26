@@ -127,7 +127,8 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
                 (density_value * std::pow(soundspeed_value, 2UL));
             
             for (size_t fipi = 0UL;
-                fipi != _ivpg_to_ptr_in_a[ivpg].size(); ++fipi) {
+                fipi != _ivpg_to_ptr_in_a[ivpg].size(); ++fipi
+            ) {
                 *_ivpg_to_ptr_in_a[ivpg][fipi] +=
                     _ivpg_to_stif_fi_part[ivpg][fipi] * stif_fd_part +
                     _ivpg_to_mass_fi_part[ivpg][fipi] * mass_fd_part;

@@ -6,29 +6,29 @@ namespace numav {
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::set_maximum_frequency(
-    const double& freq_max
+    const double freq_max
 ) {
     _pimpl->set_maximum_frequency(freq_max);
 }
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::set_frequency_range(
-    const double& freq_min,
-    const double& freq_max
+    const double freq_min,
+    const double freq_max
 ) {
     _pimpl->set_frequency_range(freq_min, freq_max);
 }
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::set_frequency_steps_count(
-    const size_t& frequency_steps_count
+    const size_t frequency_steps_count
 ) {
     _pimpl->set_frequency_steps_count(frequency_steps_count);
 }
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::set_frequency_sampling_density(
-    const FrequencySamplingDensity& frequency_sampling_density
+    const FrequencySamplingDensity frequency_sampling_density
 ) {
     _pimpl->set_frequency_sampling_density(frequency_sampling_density);
 }
@@ -49,7 +49,7 @@ void SimulationAcFemFreqD3<O>::load_mesh(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::add_volume_material(
-    const size_t& evpg,
+    const size_t evpg,
     const _FuncRealToCmplx& density,
     const _FuncRealToCmplx& soundspeed
 ) {
@@ -58,7 +58,7 @@ void SimulationAcFemFreqD3<O>::add_volume_material(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::add_volume_material(
-    const size_t& evpg,
+    const size_t evpg,
     const char* const density_text_file,
     const _FuncRealToCmplx& soundspeed
 ) {
@@ -67,7 +67,7 @@ void SimulationAcFemFreqD3<O>::add_volume_material(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::add_volume_material(
-    const size_t& evpg,
+    const size_t evpg,
     const _FuncRealToCmplx& density,
     const char* const soundspeed_text_file
 ) {
@@ -76,7 +76,7 @@ void SimulationAcFemFreqD3<O>::add_volume_material(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::add_volume_material(
-    const size_t& evpg,
+    const size_t evpg,
     const char* const density_text_file,
     const char* const soundspeed_text_file
 ) {
@@ -85,9 +85,9 @@ void SimulationAcFemFreqD3<O>::add_volume_material(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::add_sound_source(
-    const TypeOfSource& type_of_source,
-    const std::array<double,3UL>& point_coordinates,
-    const PhysicalQuantity& physical_quantity_type,
+    const TypeOfSource type_of_source,
+    const std::array<double,3UL> point_coordinates,
+    const PhysicalQuantity physical_quantity_type,
     const _FuncRealToCmplx& physical_quantity_value
 ) {
     _pimpl->add_sound_source(
@@ -100,9 +100,9 @@ void SimulationAcFemFreqD3<O>::add_sound_source(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::add_sound_source(
-    const TypeOfSource& type_of_source,
-    const std::array<double,3UL>& point_coordinates,
-    const PhysicalQuantity& physical_quantity_type,
+    const TypeOfSource type_of_source,
+    const std::array<double,3UL> point_coordinates,
+    const PhysicalQuantity physical_quantity_type,
     const char* const physical_quantity_value_text_file
 ) {
     _pimpl->add_sound_source(
@@ -115,9 +115,9 @@ void SimulationAcFemFreqD3<O>::add_sound_source(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::add_sound_source(
-    const TypeOfSource& type_of_source,
-    const size_t& espg,
-    const PhysicalQuantity& physical_quantity_type,
+    const TypeOfSource type_of_source,
+    const size_t espg,
+    const PhysicalQuantity physical_quantity_type,
     const _FuncRealToCmplx& physical_quantity_value
 ) {
     _pimpl->add_sound_source(
@@ -130,9 +130,9 @@ void SimulationAcFemFreqD3<O>::add_sound_source(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::add_sound_source(
-    const TypeOfSource& type_of_source,
-    const size_t& espg,
-    const PhysicalQuantity& physical_quantity_type,
+    const TypeOfSource type_of_source,
+    const size_t espg,
+    const PhysicalQuantity physical_quantity_type,
     const char* const physical_quantity_value_text_file
 ) {
     _pimpl->add_sound_source(
@@ -145,14 +145,14 @@ void SimulationAcFemFreqD3<O>::add_sound_source(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::add_receiver(
-    const std::array<double,3UL>& point_coordinates
+    const std::array<double,3UL> point_coordinates
 ) {
     _pimpl->add_receiver(point_coordinates);
 }
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::add_surface_specific_acoustic_impedance(
-    const size_t& espg,
+    const size_t espg,
     const _FuncRealToCmplx& impedance
 ) {
     _pimpl->add_surface_specific_acoustic_impedance(espg, impedance);
@@ -160,7 +160,7 @@ void SimulationAcFemFreqD3<O>::add_surface_specific_acoustic_impedance(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::add_surface_specific_acoustic_impedance(
-    const size_t& espg,
+    const size_t espg,
     const char* const impedance_text_file
 ) {
     _pimpl->add_surface_specific_acoustic_impedance(espg, impedance_text_file);
