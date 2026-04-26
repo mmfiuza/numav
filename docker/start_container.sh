@@ -1,10 +1,10 @@
+#!/bin/bash
+
 # Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
 # Adds SSH keys from a given directory (or ~/.ssh) to the agent, exports host
 # UID/GID, starts the container in detached mode, and runs an interactive bash
 # shell inside it.
-
-#!/bin/bash
 
 # Move to the script's directory (docker/)
 cd "$(dirname "$0")"
