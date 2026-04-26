@@ -23,10 +23,11 @@ int main()
     double freq_max = 400;
     s.set_frequency_range(freq_min, freq_max);
 
+    // Os valores das propriedades do material foram extraídas de "propair_panneton"
     s.add_volume_material(
         1,                          // id do volume (ar)
-        [](auto f) { return 1.2; }, // densidade do ar
-        [](auto f) { return std::complex<double>(343,0); } // velocidade do som no ar
+        [](auto f) { return 1.13427908459692; }, // densidade do ar
+        [](auto f) { return std::complex<double>(350.047757870597,0); } // velocidade do som no ar
     );
 
     // add volume velocity sources
