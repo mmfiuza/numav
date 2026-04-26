@@ -75,7 +75,7 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
             );
             
             // progress bar tick
-            bar.set_progress(static_cast<size_t>(fi + 1UL));
+            bar.set_progress(fi + 1UL);
 
             continue;
         }
@@ -184,7 +184,7 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
         );
         
         // progress bar tick
-        bar.set_progress(static_cast<size_t>(fi + 1UL));
+        bar.set_progress(fi + 1UL);
     }
     #if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
         constexpr MKL_INT options = NUMAV_MKL_OPTIONS;
