@@ -3,7 +3,8 @@
         {
             "name": "Numav",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "/opt/intel/oneapi/mkl/2025.2/include"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/g++",
