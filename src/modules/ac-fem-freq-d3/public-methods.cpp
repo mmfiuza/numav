@@ -21,10 +21,10 @@ template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::set_maximum_frequency(
     const Float freq_max
 ) {
-    if (freq_max < 0.0) {
+    if (freq_max < 0_F) {
         error("Maximum frequency should be positive.");
     }
-    if (freq_max == 0.0) {
+    if (freq_max == 0_F) {
         error("Maximum frequency should not be zero.");
     }
     if (_freq_type_defined_by_user != _FreqTypeDefinedByUser::UNDEFINED) {
@@ -39,10 +39,10 @@ void SimulationAcFemFreqD3<O>::Impl::set_frequency_range(
     const Float freq_min,
     const Float freq_max
 ) {
-    if (freq_min < 0.0 || freq_max < 0.0) {
+    if (freq_min < 0_F || freq_max < 0_F) {
         error("Frequency limits should be positive.");
     }
-    if (freq_min == 0.0 || freq_max == 0.0) {
+    if (freq_min == 0_F || freq_max == 0_F) {
         error("Frequency limits should not be zero.");
     }
     if (freq_min >= freq_max) {

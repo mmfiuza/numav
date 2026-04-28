@@ -1,5 +1,6 @@
 // Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
+#include "common/utils.hpp"
 #include "modules/ac-fem-freq-d3/ldlt-solver-solver.hpp"
 
 #include <limits>
@@ -44,7 +45,7 @@ void define_ldlt_solver_sparsity_pattern(
 
     // allocate the null dense b vector
     b_dense = fz::SafePtr<Cmplx>(ni_count);
-    b_dense.fill(Cmplx(0.0, 0.0));
+    b_dense.fill(Cmplx(0_F, 0_F));
     
     // define the non-zero structure of the matrix
     solver.define_sparsity_pattern(

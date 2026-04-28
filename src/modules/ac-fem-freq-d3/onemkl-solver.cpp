@@ -1,6 +1,7 @@
 // Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
 #include "common/exception.hpp"
+#include "common/utils.hpp"
 #include "modules/ac-fem-freq-d3/onemkl-solver.hpp"
 #include "modules/ac-fem-freq-d3/macros.hpp"
 
@@ -43,13 +44,11 @@ namespace numav {
         *it_a_row_ptr = nnz_count;
         ++it_a_row_ptr;
         
-        constexpr MKL_INT options = NUMAV_MKL_OPTIONS;
-        
         // error code
         _INTEGER_t error_id;
         
         // initialize the solver
-        error_id = dss_create(dss_handle, options);
+        error_id = dss_create(dss_handle, NUMAV_MKL_OPTIONS);
         if (error_id != MKL_DSS_SUCCESS) { print_dss_error(error_id); }
         
         // define the non-zero structure of the matrix
@@ -66,14 +65,14 @@ namespace numav {
         if (error_id != MKL_DSS_SUCCESS) { print_dss_error(error_id); }
         
         // reorder the matrix
-        error_id = dss_reorder(dss_handle, options, 0UL);
+        error_id = dss_reorder(dss_handle, NUMAV_MKL_OPTIONS, 0UL);
         if (error_id != MKL_DSS_SUCCESS) { print_dss_error(error_id); }
         a_row_ptr.free();
         a_col_idx.free();
 
         // allocate the null dense b vector
         b_dense = fz::SafePtr<Cmplx>(ni_count);
-        b_dense.fill(Cmplx(0.0, 0.0));
+        b_dense.fill(Cmplx(0_F, 0_F));
     }
 
     void solve_using_onemkl(

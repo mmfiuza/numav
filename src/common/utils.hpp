@@ -8,6 +8,7 @@
 #include <charconv>
 #include <tuple>
 #include <fstream>
+#include <memory>
 
 namespace numav {
 
@@ -29,6 +30,14 @@ FuncFloatToCmplx convert_table_to_real_to_cmplx_func(
     const char* const impedance_text_file
 );
 
+inline constexpr Float operator"" _F(unsigned long long v) noexcept {
+    return static_cast<Float>(v);
+}
+
+inline constexpr Float operator"" _F(long double v) noexcept {
+    return static_cast<Float>(v);
+}
+
 template<typename T>
 std::tuple<T,T> make_ascending_tuple(const T a, const T b) {
     return a<b ? std::make_tuple(a,b) : std::make_tuple(b,a);
@@ -49,6 +58,18 @@ constexpr auto concat_constexpr_arrays(const std::array<T, Sizes>... arrays)
     );
     
     return result;
+}
+
+template<typename T1, typename T2>
+std::unique_ptr<T1[]> static_cast_contiguous_data(
+    const T2* const data,
+    const size_t element_count
+) {
+    std::unique_ptr<T1[]> ptr = std::make_unique<T1[]>(element_count);
+    for (size_t i = 0UL; i!= element_count; ++i){
+        ptr[i] = static_cast<T1>(data[i]);
+    }
+    return ptr;
 }
 
 } // namespace numav

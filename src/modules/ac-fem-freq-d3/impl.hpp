@@ -51,17 +51,17 @@ public:
     );
     void add_volume_material(
         const size_t,
-        const std::function<Cmplx(const Float&)>&,
-        const std::function<Cmplx(const Float&)>&
+        const FuncFloatToCmplx&,
+        const FuncFloatToCmplx&
     );
     void add_volume_material(
         const size_t,
         const char* const,
-        const std::function<Cmplx(const Float&)>&
+        const FuncFloatToCmplx&
     );
     void add_volume_material(
         const size_t,
-        const std::function<Cmplx(const Float&)>&,
+        const FuncFloatToCmplx&,
         const char* const
     );
     void add_volume_material(
@@ -73,7 +73,7 @@ public:
         const TypeOfSource,
         const std::array<Float,3UL>,
         const PhysicalQuantity,
-        const std::function<Cmplx(const Float&)>&
+        const FuncFloatToCmplx&
     );
     void add_sound_source(
         const TypeOfSource,
@@ -85,7 +85,7 @@ public:
         const TypeOfSource,
         const size_t,
         const PhysicalQuantity,
-        const std::function<Cmplx(const Float&)>&
+        const FuncFloatToCmplx&
     );
     void add_sound_source(
         const TypeOfSource,
@@ -98,7 +98,7 @@ public:
     );
     void add_surface_specific_acoustic_impedance(
         const size_t,
-        const std::function<Cmplx(const Float&)>&
+        const FuncFloatToCmplx&
     );
     void add_surface_specific_acoustic_impedance(
         const size_t,

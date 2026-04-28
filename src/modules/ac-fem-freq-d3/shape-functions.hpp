@@ -3,6 +3,7 @@
 #pragma once
 
 #include "numav/numav.hpp"
+#include "common/utils.hpp"
 #include "modules/ac-fem-freq-d3/constants.hpp"
 #include "Eigen/Eigen"
 

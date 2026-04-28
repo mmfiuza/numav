@@ -6,6 +6,7 @@
 #include <numbers>
 
 #include "common/nmvr-format.hpp"
+#include "common/utils.hpp"
 #include "modules/ac-fem-freq-d3/ldlt-solver-solver.hpp"
 #include "modules/ac-fem-freq-d3/onemkl-solver.hpp"
 #include "modules/ac-fem-freq-d3/eigen-solver.hpp"
@@ -23,7 +24,7 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
     nmvr::write_data_chunk_header(
         _nvmr_file,
         nmvr::COMPLEX_AMPLITUDE_OF_SOUND_PRESSURE_SOLUTION_CHUNK_ID,
-        _ni_count * _freq_count * sizeof(Cmplx)
+        _ni_count * _freq_count * sizeof(std::complex<double>)
     );
 
     // print start time
@@ -55,45 +56,34 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
 
     for (size_t fi = 0UL; fi != _freq_count; ++fi)
     {
-        // reset values of A matrix and b vector
-        _a_vals.fill(Cmplx(0.0, 0.0));
-        _b_vals.fill(Cmplx(0.0, 0.0));
-        #if NUMAV_SYSTEM_SOLVER == NUMAV_LDLT_SOLVER
-            _a_diag.fill(Cmplx(0.0, 0.0));
-        #endif
-
         // frequency calculations
         const Float freq = _freq_steps[fi];
-        if (freq == 0.0) {
-            _x.fill(Cmplx(0.0, 0.0));
-
-            // write solution to nmvr file
-            nmvr::write_data_chunk_body(
-                _nvmr_file,
-                _ni_count * sizeof(Cmplx),
-                _x.data()
-            );
-            
-            // progress bar tick
-            bar.set_progress(fi + 1UL);
-
-            continue;
-        }
-        const Float omega = 2.0 * std::numbers::pi * freq;
+        const Float omega = 2_F * std::numbers::pi * freq;
         const Float omega_squared = omega * omega;
+        if (freq == 0_F) {
+            _x.fill(Cmplx(0_F, 0_F));
+            goto write_results_to_nmvr_and_continue;
+        }
+
+        // reset values of A matrix and b vector
+        _a_vals.fill(Cmplx(0_F, 0_F));
+        _b_vals.fill(Cmplx(0_F, 0_F));
+        #if NUMAV_SYSTEM_SOLVER == NUMAV_LDLT_SOLVER
+            _a_diag.fill(Cmplx(0_F, 0_F));
+        #endif
 
         // add point volume velocity to b vector
         for (size_t pvni = 0UL; pvni != _pvni_count; ++pvni)
         {
             const Cmplx volvel = (_pvni_to_forc_fi_part[pvni])(freq);
-            *_pvni_to_ptr_in_b[pvni] += Cmplx(0.0, -omega) * volvel;
+            *_pvni_to_ptr_in_b[pvni] += Cmplx(0_F, -omega) * volvel;
         }
 
         // add surface velocity to b vector
         for (size_t ispgv = 0UL; ispgv != _ispgv_count; ++ispgv)
         {
             const Cmplx velocity = (_ispgv_to_velocity[ispgv])(freq);
-            const Cmplx fd_part = Cmplx(0.0, -omega) * velocity;
+            const Cmplx fd_part = Cmplx(0_F, -omega) * velocity;
             for (size_t fipi = 0UL;
                 fipi != _ispgv_to_ptr_in_b[ispgv].size(); ++fipi)
             {
@@ -105,7 +95,7 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
         // add damping matrix to a
         for (size_t ispgi = 0UL; ispgi != _ispgi_count; ++ispgi) {
             const Cmplx impedance_value = _ispgi_to_impedance[ispgi](freq);
-            const Cmplx damp_fd_part = Cmplx(0.0, omega)/impedance_value;
+            const Cmplx damp_fd_part = Cmplx(0_F, omega)/impedance_value;
             
             for (size_t fipi = 0UL;
                 fipi != _ispgi_to_ptr_in_a[ispgi].size(); ++fipi
@@ -122,9 +112,9 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
             const Cmplx soundspeed_value =
                 (_ivpg_to_volprop[ivpg].soundspeed)(freq);
 
-            const Cmplx stif_fd_part = Cmplx(1.0, 0.0) / density_value;
-            const Cmplx mass_fd_part = - omega_squared /
-                (density_value * std::pow(soundspeed_value, 2UL));
+            const Cmplx stif_fd_part = Cmplx(1_F, 0_F) / density_value;
+            const Cmplx mass_fd_part = - omega_squared / 
+                (density_value * soundspeed_value * soundspeed_value);
             
             for (size_t fipi = 0UL;
                 fipi != _ivpg_to_ptr_in_a[ivpg].size(); ++fipi
@@ -177,19 +167,22 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
             static_assert(false, "Invalid NUMAV_SYSTEM_SOLVER.");
         #endif
 
+        write_results_to_nmvr_and_continue:
+
         // write solution to nmvr file
         nmvr::write_data_chunk_body(
             _nvmr_file,
-            _ni_count * sizeof(Cmplx),
-            _x.data()
+            _ni_count * sizeof(std::complex<double>),
+            static_cast_contiguous_data<std::complex<double>>(
+                _x.data(), _ni_count
+            ).get()
         );
         
         // progress bar tick
         bar.set_progress(fi + 1UL);
     }
     #if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
-        constexpr MKL_INT options = NUMAV_MKL_OPTIONS;
-        _INTEGER_t error_id = dss_delete(_dss_handle, options);
+        _INTEGER_t error_id = dss_delete(_dss_handle, NUMAV_MKL_OPTIONS);
         if (error_id != MKL_DSS_SUCCESS) { print_dss_error(error_id); }
     #endif
     _end_nmvr_file();

@@ -60,7 +60,7 @@ void solve_using_eigen(
     if (solver.info() != Eigen::Success) {
         std::cerr << "Factorization failed. Matrix may be singular.\n";
     }
-    const Eigen::VectorXcd x = solver.solve(b);
+    const Eigen::Matrix<Cmplx,Eigen::Dynamic,1UL> x = solver.solve(b);
     if (solver.info() != Eigen::Success) {
         std::cerr << "Solving failed.\n";
     }

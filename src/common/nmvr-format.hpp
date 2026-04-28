@@ -111,17 +111,17 @@ SIM_TYPE_FEM_ORDER =
 void write_data_chunk(
     std::ofstream&,
     const std::array<char,CHUNK_ID_SIZE>,
-    const uint64_t,
+    const size_t,
     const void* const
 );
 void write_data_chunk_header(
     std::ofstream&,
     const std::array<char,CHUNK_ID_SIZE>,
-    const uint64_t
+    const size_t
 );
 void write_data_chunk_body(
     std::ofstream&,
-    const uint64_t,
+    const size_t,
     const void* const
 );
 

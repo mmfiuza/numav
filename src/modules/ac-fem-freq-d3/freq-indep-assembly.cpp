@@ -163,9 +163,9 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
     {
         const size_t size = ivpg_to_map_to_fipi[ivpg].size();
         _ivpg_to_stif_fi_part[ivpg] = fz::SafePtr<Float>(size);
-        _ivpg_to_stif_fi_part[ivpg].fill(0.0);
+        _ivpg_to_stif_fi_part[ivpg].fill(0_F);
         _ivpg_to_mass_fi_part[ivpg] = fz::SafePtr<Float>(size);
-        _ivpg_to_mass_fi_part[ivpg].fill(0.0);
+        _ivpg_to_mass_fi_part[ivpg].fill(0_F);
         _ivpg_to_ptr_in_a[ivpg] = fz::SafePtr<Cmplx*>(size);
     }
 
@@ -274,7 +274,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
 
             const
             Eigen::Matrix<Float, NODES_IN_VOL_ELEM<O>, NODES_IN_VOL_ELEM<O>>
-                stif_fi_part = stif_matrix_const_part / (36.0 * tet_volume);
+                stif_fi_part = stif_matrix_const_part / (36_F * tet_volume);
 
             for (size_t nci = 0UL; nci != COMBS_VOL.size(); ++nci) {
                 _ivpg_to_stif_fi_part[ivpg][fipi_vol[nci]] +=
@@ -397,7 +397,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_impedance()
     {
         const size_t size = ispgi_to_map_to_fipi[ispgi].size();
         _ispgi_to_damp_fi_part[ispgi] = fz::SafePtr<Float>(size);
-        _ispgi_to_damp_fi_part[ispgi].fill(0.0);
+        _ispgi_to_damp_fi_part[ispgi].fill(0_F);
         _ispgi_to_ptr_in_a[ispgi] = fz::SafePtr<Cmplx*>(size);
     }
 
@@ -551,7 +551,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_velocity()
     {
         const size_t size = ispgv_to_map_to_fipi[ispgv].size();
         _ispgv_to_forc_fi_part[ispgv] = fz::SafePtr<Float>(size);
-        _ispgv_to_forc_fi_part[ispgv].fill(0.0);
+        _ispgv_to_forc_fi_part[ispgv].fill(0_F);
         _ispgv_to_ptr_in_b[ispgv] = fz::SafePtr<Cmplx*>(size);
     }
 
@@ -738,7 +738,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_pressure()
     size_t pvi = 0UL;
     for (auto& [set_indexes, ni_vector] : intersections) {
         auto average = [this,set_indexes](const Float& freq) {
-            Cmplx sum = Cmplx(0.0, 0.0);
+            Cmplx sum = Cmplx(0_F, 0_F);
             for (const auto& set_index : set_indexes) {
                 if (set_index < _ppni_count) {
                     const size_t& ppni = set_index;

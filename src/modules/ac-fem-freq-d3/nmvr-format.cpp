@@ -27,7 +27,6 @@ void SimulationAcFemFreqD3<O>::Impl::_write_simulation_inputs_to_nmvr_file(
         nmvr::SIM_TYPE_DOMAIN_SIZE +
         nmvr::SIM_TYPE_DIMENSION_SIZE +
         nmvr::SIM_TYPE_ELEMENT_ORDER_SIZE;
-    
     constexpr std::array<char, SIMULATION_TYPE_CHUNK_SIZE> 
         SIMULATION_TYPE_DATA =
             concat_constexpr_arrays(
@@ -37,7 +36,6 @@ void SimulationAcFemFreqD3<O>::Impl::_write_simulation_inputs_to_nmvr_file(
                 nmvr::SIM_TYPE_DIMENSION<Dimension::D3>,
                 nmvr::SIM_TYPE_FEM_ORDER<O>
             );
-    
     nmvr::write_data_chunk(
         _nvmr_file,
         nmvr::SIMULATION_TYPE_CHUNK_ID,
@@ -50,15 +48,19 @@ void SimulationAcFemFreqD3<O>::Impl::_write_simulation_inputs_to_nmvr_file(
         _nvmr_file,
         nmvr::SIMULATED_FREQUENCY_STEPS_CHUNK_ID,
         _freq_count * sizeof(uint64_t),
-        _freq_steps.data()
+        static_cast_contiguous_data<double>(
+            _freq_steps.data(), _freq_count
+        ).get()
     );
 
     // chunk: node index to coordinates
     nmvr::write_data_chunk(
         _nvmr_file,
         nmvr::NODE_INDEX_TO_COORDINATES_CHUNK_ID,
-        _ni_count * 3UL * sizeof(double),
-        _ni_to_coords.data()
+        DIM * _ni_count * sizeof(double),
+        static_cast_contiguous_data<double>(
+            _ni_to_coords.data()->data(), DIM * _ni_count
+        ).get()
     );
 
     // chunk: surface element index to node index
@@ -66,7 +68,9 @@ void SimulationAcFemFreqD3<O>::Impl::_write_simulation_inputs_to_nmvr_file(
         _nvmr_file,
         nmvr::SURFACE_ELEMENT_INDEX_TO_NODE_INDEX_CHUNK_ID,
         _sei_count * NODES_IN_SFC_ELEM<O> * sizeof(uint64_t),
-        _sei_to_ni.data()
+        static_cast_contiguous_data<uint64_t>(
+            _sei_to_ni.data()->data(), _sei_count * NODES_IN_SFC_ELEM<O>
+        ).get()
     );
 
     // chunk: volume element index to node index
@@ -74,7 +78,9 @@ void SimulationAcFemFreqD3<O>::Impl::_write_simulation_inputs_to_nmvr_file(
         _nvmr_file,
         nmvr::VOLUME_ELEMENT_INDEX_TO_NODE_INDEX_CHUNK_ID,
         _vei_count * NODES_IN_VOL_ELEM<O> * sizeof(uint64_t),
-        _vei_to_ni.data()
+        static_cast_contiguous_data<uint64_t>(
+            _vei_to_ni.data()->data(), _vei_count * NODES_IN_VOL_ELEM<O>
+        ).get()
     );
 }
 

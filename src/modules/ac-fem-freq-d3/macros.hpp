@@ -2,6 +2,13 @@
 
 #pragma once
 
+#include "numav/aliases.hpp"
+
+#if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
+    #include "mkl_dss.h"
+    #include "mkl_types.h"
+#endif
+
 // define the linear system solver
 #define NUMAV_LDLT_SOLVER 11UL
 #define NUMAV_EIGEN 12UL
@@ -31,10 +38,20 @@
 #define NUMAV_DAMP_INTEGRATION_METHOD NUMAV_ANALYTIC
 #define NUMAV_FORC_INTEGRATION_METHOD NUMAV_ANALYTIC
 
-#define NUMAV_MKL_OPTIONS \
-    MKL_DSS_MSG_LVL_WARNING + \
-    MKL_DSS_TERM_LVL_ERROR + \
-    MKL_DSS_ZERO_BASED_INDEXING
+#if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
+    constexpr MKL_INT NUMAV_MKL_OPTIONS =
+        []<typename F = numav::Float>() constexpr {
+            MKL_INT options =
+                MKL_DSS_MSG_LVL_WARNING +
+                MKL_DSS_TERM_LVL_ERROR +
+                MKL_DSS_ZERO_BASED_INDEXING;
+            
+            if constexpr (std::is_same_v<F, float>) {
+                options += MKL_DSS_SINGLE_PRECISION;
+            }
+            return options;
+        }();
+#endif
 
 // explicit instantiation declarations
 #define INSTANTIATE_SIMULATION_CLASS \
