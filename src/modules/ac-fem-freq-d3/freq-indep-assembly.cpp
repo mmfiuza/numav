@@ -18,38 +18,41 @@ namespace numav {
 
 template<typename T>
 bool compare_pair(const std::pair<T,T> a, const std::pair<T,T> b) {
-    #if NUMAV_GLOBAL_MATRIX_STORAGE_ORDER == NUMAV_UPPER_COL_MAJOR || \
-        NUMAV_GLOBAL_MATRIX_STORAGE_ORDER == NUMAV_LOWER_COL_MAJOR
+    if constexpr
+    (GLOBAL_MATRIX_STORAGE_ORDER == MatrixStorageOrder::COL_MAJOR)
+    {
         if (a.second != b.second) {
             return a.second < b.second;
         }
         else {
             return a.first < b.first;
         }
-    #elif NUMAV_GLOBAL_MATRIX_STORAGE_ORDER == NUMAV_UPPER_ROW_MAJOR || \
-          NUMAV_GLOBAL_MATRIX_STORAGE_ORDER == NUMAV_LOWER_ROW_MAJOR
+    }
+    else if constexpr
+    (GLOBAL_MATRIX_STORAGE_ORDER == MatrixStorageOrder::ROW_MAJOR)
+    {
         if (a.first != b.first) {
             return a.first < b.first;
         }
         else {
             return a.second < b.second;
         }
-    #else
-        static_assert(false, "Invalid NUMAV_GLOBAL_MATRIX_STORAGE_ORDER.");
-    #endif
+    }
 }
 
 template<typename T>
-std::pair<T,T> make_ordered_rowcol_pair(const T a, const T b) {
-    #if NUMAV_GLOBAL_MATRIX_STORAGE_ORDER == NUMAV_UPPER_ROW_MAJOR || \
-        NUMAV_GLOBAL_MATRIX_STORAGE_ORDER == NUMAV_UPPER_COL_MAJOR
+std::pair<T,T> make_ordered_rowcol_pair(const T a, const T b)
+{
+    if constexpr
+    (GLOBAL_MATRIX_TRIANGULAR_TYPE == TriangularMatrixType::UPPER)
+    {
         return a<b ? std::make_pair(a,b) : std::make_pair(b,a);
-    #elif NUMAV_GLOBAL_MATRIX_STORAGE_ORDER == NUMAV_LOWER_ROW_MAJOR || \
-          NUMAV_GLOBAL_MATRIX_STORAGE_ORDER == NUMAV_LOWER_COL_MAJOR
+    }
+    else if constexpr
+    (GLOBAL_MATRIX_TRIANGULAR_TYPE == TriangularMatrixType::LOWER)
+    {
         return a<b ? std::make_pair(b,a) : std::make_pair(a,b);
-    #else
-        static_assert(false, "Invalid NUMAV_GLOBAL_MATRIX_STORAGE_ORDER.");
-    #endif
+    }
 }
 
 template <ElementOrder O>

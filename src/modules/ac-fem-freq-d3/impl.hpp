@@ -3,6 +3,7 @@
 #include "numav/numav.hpp"
 #include "numav/aliases.hpp"
 #include "modules/ac-fem-freq-d3/macros.hpp"
+#include "modules/ac-fem-freq-d3/compile-options.hpp"
 #include "modules/ac-fem-freq-d3/constants.hpp"
 
 #include <unordered_map>

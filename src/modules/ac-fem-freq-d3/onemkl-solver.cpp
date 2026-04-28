@@ -3,7 +3,7 @@
 #include "common/exception.hpp"
 #include "common/utils.hpp"
 #include "modules/ac-fem-freq-d3/onemkl-solver.hpp"
-#include "modules/ac-fem-freq-d3/macros.hpp"
+#include "modules/ac-fem-freq-d3/compile-options.hpp"
 
 namespace numav {
 
