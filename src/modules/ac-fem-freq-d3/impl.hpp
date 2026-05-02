@@ -14,7 +14,6 @@
 
 #include "Eigen/Eigen"
 #include "SafePtr.hpp"
-#include "ldlt-solver.hpp"
 
 namespace numav {
 
@@ -163,9 +162,15 @@ private:
     void _begin_nmvr_file();
     void _write_simulation_inputs_to_nmvr_file();
     void _end_nmvr_file();
-    #if NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
-        void define_sparsity_pattern_using_eigen();
-        void solve_using_eigen();
+    #if NUMAV_SYSTEM_SOLVER == NUMAV_INTERNAL
+        void define_sparsity_pattern_using_internal_solver();
+        void solve_using_internal_solver();
+    #elif NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
+        void define_sparsity_pattern_using_eigen_solver();
+        void solve_using_eigen_solver();
+    #elif NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
+        void define_sparsity_pattern_using_onemkl_solver();
+        void solve_using_onemkl_solver();
     #endif
 
     enum class _FreqTypeDefinedByUser {
@@ -249,7 +254,7 @@ private:
     fz::SafePtr<Cmplx> _b_vals;
     fz::SafePtr<Cmplx> _x;
 
-    #if NUMAV_SYSTEM_SOLVER == NUMAV_LDLT_SOLVER
+    #if NUMAV_SYSTEM_SOLVER == NUMAV_INTERNAL
         LdltSolver<Cmplx> _solver;
         fz::SafePtr<Cmplx> _b_dense;
         fz::SafePtr<Cmplx> _a_diag;

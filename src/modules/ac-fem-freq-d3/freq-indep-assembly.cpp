@@ -9,8 +9,6 @@
 #include "modules/ac-fem-freq-d3/shape-functions.hpp"
 #include "modules/ac-fem-freq-d3/analytic-integration.hpp"
 #include "modules/ac-fem-freq-d3/gauss-quadrature.hpp"
-#include "modules/ac-fem-freq-d3/ldlt-solver-solver.hpp"
-#include "modules/ac-fem-freq-d3/onemkl-solver.hpp"
 
 #include <set>
 
@@ -46,7 +44,7 @@ std::pair<T,T> make_ordered_rowcol_pair(const T a, const T b)
     #if NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
         return std::make_pair(a,b);
     #endif
-    
+
     if constexpr
     (GLOBAL_MATRIX_TRIANGULAR_TYPE == TriangularMatrixType::UPPER)
     {
@@ -76,7 +74,7 @@ void SimulationAcFemFreqD3<O>::Impl::_allocate_a()
     std::unordered_set<std::pair<size_t,size_t>> existing_pairs;
     for (size_t vei = 0UL; vei != _vei_count; ++vei) {
         for (const auto& eni : ENI_PAIRS) {
-            #if NUMAV_SYSTEM_SOLVER == NUMAV_LDLT_SOLVER
+            #if NUMAV_SYSTEM_SOLVER == NUMAV_INTERNAL
                 if (eni[0UL] == eni[1UL]) { continue; }
             #endif
             existing_pairs.insert(
@@ -100,7 +98,7 @@ void SimulationAcFemFreqD3<O>::Impl::_allocate_a()
         compare_pair<size_t>
     );
     _a_vals = fz::SafePtr<Cmplx>(_ni_connections.size());
-    #if NUMAV_SYSTEM_SOLVER == NUMAV_LDLT_SOLVER
+    #if NUMAV_SYSTEM_SOLVER == NUMAV_INTERNAL
         _a_diag = fz::SafePtr<Cmplx>(_ni_count);
     #endif
 }
@@ -207,7 +205,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
             );
             fipi_vol[nci] = ivpg_to_map_to_fipi[ivpg].at(pair);
 
-            #if NUMAV_SYSTEM_SOLVER == NUMAV_LDLT_SOLVER
+            #if NUMAV_SYSTEM_SOLVER == NUMAV_INTERNAL
                 if(pair.first == pair.second) {
                     const size_t ni = pair.first;
                     _ivpg_to_ptr_in_a[ivpg][fipi_vol[nci]] =
@@ -448,7 +446,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_impedance()
             );
             fipi_damp[nci] = ispgi_to_map_to_fipi[ispgi].at(pair);
             
-            #if NUMAV_SYSTEM_SOLVER == NUMAV_LDLT_SOLVER
+            #if NUMAV_SYSTEM_SOLVER == NUMAV_INTERNAL
                 if(pair.first == pair.second) {
                     const size_t ni = pair.first;
                     _ispgi_to_ptr_in_a[ispgi][fipi_damp[nci]] =
@@ -797,7 +795,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_pressure()
         _pvi_to_ptr_in_b[pvi] = fz::SafePtr<Cmplx*>(ni_vector.size());
         size_t fipi = 0UL;
         for (const auto& ni : ni_vector) {
-            #if NUMAV_SYSTEM_SOLVER == NUMAV_LDLT_SOLVER
+            #if NUMAV_SYSTEM_SOLVER == NUMAV_INTERNAL
                 // _pvi_to_ptr_in_a
                 _pvi_to_ptr_in_a[pvi][fipi] = _a_diag.data() + ni;
                 const size_t* const ni_ptr = std::lower_bound(
@@ -842,25 +840,14 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_freq_independent_parts()
     _allocate_a();
     _allocate_b();
     _allocate_x();
-    #if NUMAV_SYSTEM_SOLVER == NUMAV_LDLT_SOLVER
-        define_ldlt_solver_sparsity_pattern(
-            _solver,
-            _a_diag,
-            _ni_connections,
-            _a_vals,
-            _x,
-            _b_dense,
-            _ni_count
-        );
+    #if NUMAV_SYSTEM_SOLVER == NUMAV_INTERNAL
+        define_sparsity_pattern_using_internal_solver();
     #elif NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
-        define_sparsity_pattern_using_eigen();
+        define_sparsity_pattern_using_eigen_solver();
     #elif NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
-        define_onemkl_sparsity_pattern(
-            _dss_handle,
-            _ni_connections,
-            _ni_count,
-            _b_dense
-        );
+        define_sparsity_pattern_using_onemkl_solver();
+    #else
+        static_assert(false, "Invalid NUMAV_SYSTEM_SOLVER.");
     #endif
     _assemble_fi_part_for_vol_elements();
     _assemble_fi_part_for_sfc_impedance();

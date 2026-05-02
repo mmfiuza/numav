@@ -7,8 +7,6 @@
 
 #include "common/nmvr-format.hpp"
 #include "common/utils.hpp"
-#include "modules/ac-fem-freq-d3/ldlt-solver-solver.hpp"
-#include "modules/ac-fem-freq-d3/onemkl-solver.hpp"
 
 #include <indicators/progress_bar.hpp>
 #include <indicators/cursor_control.hpp>
@@ -59,7 +57,7 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
         const Float freq = _freq_steps[fi];
         const Float omega = 2_F * std::numbers::pi * freq;
         const Float omega_squared = omega * omega;
-        if (freq == 0_F) {
+        if (freq == 0_F) { // TODO: fix first tick
             _x.fill(Cmplx(0_F, 0_F));
             goto write_results_to_nmvr_and_continue;
         }
@@ -67,7 +65,7 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
         // reset values of A matrix and b vector
         _a_vals.fill(Cmplx(0_F, 0_F));
         _b_vals.fill(Cmplx(0_F, 0_F));
-        #if NUMAV_SYSTEM_SOLVER == NUMAV_LDLT_SOLVER
+        #if NUMAV_SYSTEM_SOLVER == NUMAV_INTERNAL
             _a_diag.fill(Cmplx(0_F, 0_F));
         #endif
 
@@ -137,24 +135,12 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
         }
 
         // solve
-        #if NUMAV_SYSTEM_SOLVER == NUMAV_LDLT_SOLVER
-            solve_using_ldlt_solver(
-                _solver,
-                _b_vals,
-                _b_row_idx,
-                _b_dense
-            );
+        #if NUMAV_SYSTEM_SOLVER == NUMAV_INTERNAL
+            solve_using_internal_solver();
         #elif NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
-            solve_using_eigen();
+            solve_using_eigen_solver();
         #elif NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
-            solve_using_onemkl(
-                _dss_handle,
-                _a_vals,
-                _b_vals,
-                _b_row_idx,
-                _b_dense,
-                _x.data()
-            );
+            solve_using_onemkl_solver();
         #else
             static_assert(false, "Invalid NUMAV_SYSTEM_SOLVER.");
         #endif
@@ -173,10 +159,6 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
         // progress bar tick
         bar.set_progress(fi + 1UL);
     }
-    #if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
-        _INTEGER_t error_id = dss_delete(_dss_handle, NUMAV_MKL_OPTIONS);
-        if (error_id != MKL_DSS_SUCCESS) { print_dss_error(error_id); }
-    #endif
     _end_nmvr_file();
     
     // end progress bar

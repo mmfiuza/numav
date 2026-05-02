@@ -7,7 +7,8 @@ namespace numav {
 #if NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::Impl::define_sparsity_pattern_using_eigen()
+void
+SimulationAcFemFreqD3<O>::Impl::define_sparsity_pattern_using_eigen_solver()
 {
     const size_t nz_count = _ni_connections.size();
 
@@ -46,7 +47,7 @@ void SimulationAcFemFreqD3<O>::Impl::define_sparsity_pattern_using_eigen()
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::Impl::solve_using_eigen()
+void SimulationAcFemFreqD3<O>::Impl::solve_using_eigen_solver()
 {
     using Triplet = typename Eigen::Triplet<Cmplx>;
 

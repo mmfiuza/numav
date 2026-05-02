@@ -5,13 +5,15 @@
 #include "numav/aliases.hpp"
 
 // define the linear system solver
-#define NUMAV_LDLT_SOLVER 11
+#define NUMAV_INTERNAL 11
 #define NUMAV_EIGEN 12
 #define NUMAV_ONEMKL 13
 #define NUMAV_SYSTEM_SOLVER NUMAV_ONEMKL
 
 // include solvers if needed
-#if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
+#if NUMAV_SYSTEM_SOLVER == NUMAV_INTERNAL
+    #include "ldlt-solver.hpp"
+#elif NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
     #include "mkl_dss.h"
     #include "mkl_types.h"
 #endif
@@ -31,7 +33,7 @@ enum class TriangularMatrixType {
     LOWER,
     UPPER
 };
-#if NUMAV_SYSTEM_SOLVER == NUMAV_LDLT_SOLVER
+#if NUMAV_SYSTEM_SOLVER == NUMAV_INTERNAL
     constexpr TriangularMatrixType GLOBAL_MATRIX_TRIANGULAR_TYPE =
         TriangularMatrixType::LOWER;
 #elif NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
@@ -49,7 +51,7 @@ enum class MatrixStorageOrder {
     ROW_MAJOR,
     COL_MAJOR
 };
-#if NUMAV_SYSTEM_SOLVER == NUMAV_LDLT_SOLVER
+#if NUMAV_SYSTEM_SOLVER == NUMAV_INTERNAL
     constexpr MatrixStorageOrder GLOBAL_MATRIX_STORAGE_ORDER =
         MatrixStorageOrder::ROW_MAJOR;
 #elif NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
