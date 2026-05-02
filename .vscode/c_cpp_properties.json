@@ -4,7 +4,8 @@
             "name": "Numav",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/opt/intel/oneapi/mkl/2025.2/include"
+                "/opt/intel/oneapi/mkl/2025.2/include",
+                "/usr/include/eigen3"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/g++",

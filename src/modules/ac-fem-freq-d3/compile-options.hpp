@@ -9,6 +9,8 @@
 #define NUMAV_EIGEN 12
 #define NUMAV_ONEMKL 13
 #define NUMAV_SYSTEM_SOLVER NUMAV_ONEMKL
+
+// include solvers if needed
 #if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
     #include "mkl_dss.h"
     #include "mkl_types.h"

@@ -26,7 +26,7 @@ fz::SafePtr<Float> linspace(
 fz::SafePtr<Float> cubspace(
     const Float start, const Float finish, const size_t num_points
 ) {
-    assert(num_points!=0 && num_points!=1);
+    assert(num_points != 0UL && num_points != 1UL);
     fz::SafePtr<Float> x = linspace(0_F, 1_F, num_points);
     const Float& a3 = std::pow(start, 3UL);
     const Float& b3 = std::pow(finish, 3UL);

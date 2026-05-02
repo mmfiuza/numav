@@ -9,43 +9,43 @@ namespace numav {
 
 #if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
 
-    void print_dss_error(const _INTEGER_t& error_id) {
+    void print_dss_error(const MKL_INT& error_id) {
         error("oneMLK error code: {}", error_id);
     }
 
     void define_onemkl_sparsity_pattern(
         _MKL_DSS_HANDLE_t& dss_handle,
-        const fz::SafePtr<std::pair<size_t,size_t>>& nnz_rowcol_idx_pairs,
+        const fz::SafePtr<std::pair<size_t,size_t>>& ni_connections,
         const size_t ni_count,
         fz::SafePtr<Cmplx>& b_dense
     ) {
         // problem dimensions
         const MKL_INT node_count = ni_count;
-        const MKL_INT nnz_count = nnz_rowcol_idx_pairs.size();
+        const MKL_INT nnz_count = ni_connections.size();
         
         // create a_col_idx and a_row_ptr
         fz::SafePtr<MKL_INT> a_col_idx(nnz_count);
         fz::SafePtr<MKL_INT> a_row_ptr(node_count + 1UL);
         MKL_INT* it_a_col_idx = a_col_idx.begin();
         MKL_INT* it_a_row_ptr = a_row_ptr.begin();
-        const std::pair<size_t,size_t>* it_nnz_rowcol_idx_pairs =
-            nnz_rowcol_idx_pairs.begin();
+        const std::pair<size_t,size_t>* it_ni_connections =
+            ni_connections.begin();
         size_t current_row = std::numeric_limits<size_t>::max();
-        for (MKL_INT i = 0; i != nnz_count; ++i) { // TODO: define type of 0
-            *it_a_col_idx = it_nnz_rowcol_idx_pairs->second;
+        for (MKL_INT i = 0LL; i != nnz_count; ++i) {
+            *it_a_col_idx = it_ni_connections->second;
             ++it_a_col_idx;
-            if (it_nnz_rowcol_idx_pairs->first != current_row) {
-                current_row = it_nnz_rowcol_idx_pairs->first;
+            if (it_ni_connections->first != current_row) {
+                current_row = it_ni_connections->first;
                 *it_a_row_ptr = i; 
                 ++it_a_row_ptr;
             }
-            ++it_nnz_rowcol_idx_pairs;
+            ++it_ni_connections;
         }
         *it_a_row_ptr = nnz_count;
         ++it_a_row_ptr;
         
         // error code
-        _INTEGER_t error_id;
+        MKL_INT error_id;
         
         // initialize the solver
         error_id = dss_create(dss_handle, NUMAV_MKL_OPTIONS);
@@ -84,7 +84,7 @@ namespace numav {
         Cmplx* const x_out
     ) {
         // error code
-        _INTEGER_t error_id;
+        MKL_INT error_id;
         
         // factor the matrix
         constexpr MKL_INT positive_definiteness = MKL_DSS_INDEFINITE;

@@ -7,6 +7,7 @@
 #include "SafePtr.hpp"
 
 #include <tuple>
+#include <cmath>
 
 namespace numav {
 
@@ -39,21 +40,53 @@ template<size_t N> constexpr size_t FACTORIAL = [] {
     return result;
 }();
 
-template<size_t N, size_t K> constexpr size_t COMB_REP_SIZE = [] {
+template<auto N, size_t K>
+constexpr auto POWER = [] { // TODO: apply this to more parts of the repo 
+    using T = decltype(N);
+    T result = T(1);
+    for (size_t i = 0UL; i != K; ++i) {
+        result *= N;
+    }
+    return result;
+}();
+
+template<size_t N, size_t K>
+constexpr size_t PERMUTATION_REP_SIZE = [] {
+    // combination with repetition
+    return POWER<N,K>;
+}();
+
+template<size_t N>
+constexpr std::array<std::array<size_t,2UL>, PERMUTATION_REP_SIZE<N,2UL>> 
+PERMUTATION_REP = [] { // todo: generalize for K!=2 (maybe)
+    constexpr size_t K = 2UL;
+    // combination with repetition in upper column major order
+    std::array<std::array<size_t,K>, PERMUTATION_REP_SIZE<N,K>> result;
+    auto it_result = result.begin();
+    for (size_t j = 0UL; j != N; ++j) {
+        for (size_t i = 0UL; i != N; ++i) {
+            *it_result = {i, j};
+            ++it_result;
+        }
+    }
+    return result;
+}();
+
+template<size_t N, size_t K> constexpr size_t COMBINATION_REP_SIZE = [] {
     // combination with repetition
     return FACTORIAL<N+K-1UL> / (FACTORIAL<K> * FACTORIAL<N-1UL>);
 }();
 
 template<size_t N>
-constexpr std::array<std::array<size_t,2UL>, COMB_REP_SIZE<N,2UL>> 
+constexpr std::array<std::array<size_t,2UL>, COMBINATION_REP_SIZE<N,2UL>> 
 COMBINATION_REP = [] { // todo: generalize for K!=2 (maybe)
     constexpr size_t K = 2UL;
     // combination with repetition in upper column major order
-    std::array<std::array<size_t,K>, COMB_REP_SIZE<N,K>> result;
+    std::array<std::array<size_t,K>, COMBINATION_REP_SIZE<N,K>> result;
     auto it_result = result.begin();
     for (size_t j = 0UL; j != N; ++j) {
         for (size_t i = 0UL; i != j+1UL; ++i) {
-            *it_result = {i,j};
+            *it_result = {i, j};
             ++it_result;
         }
     }

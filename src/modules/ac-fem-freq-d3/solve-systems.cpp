@@ -9,7 +9,6 @@
 #include "common/utils.hpp"
 #include "modules/ac-fem-freq-d3/ldlt-solver-solver.hpp"
 #include "modules/ac-fem-freq-d3/onemkl-solver.hpp"
-#include "modules/ac-fem-freq-d3/eigen-solver.hpp"
 
 #include <indicators/progress_bar.hpp>
 #include <indicators/cursor_control.hpp>
@@ -146,14 +145,7 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
                 _b_dense
             );
         #elif NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
-            solve_using_eigen(
-                _a_vals,
-                _nnz_rowcol_idx_pairs,
-                _b_vals,
-                _b_row_idx,
-                _ni_count,
-                _x.data()
-            );
+            solve_using_eigen();
         #elif NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
             solve_using_onemkl(
                 _dss_handle,

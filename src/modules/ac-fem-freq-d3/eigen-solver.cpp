@@ -1,72 +1,82 @@
 // Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
-#include "modules/ac-fem-freq-d3/eigen-solver.hpp"
-
-#include "Eigen/Eigen"
+#include "modules/ac-fem-freq-d3/impl.hpp"
 
 namespace numav {
 
-void solve_using_eigen(
-    const fz::SafePtr<Cmplx>& a_vals,
-    const fz::SafePtr<std::pair<size_t,size_t>>& nnz_rowcol_idx_pairs,
-    const fz::SafePtr<Cmplx>& b_vals,
-    const fz::SafePtr<size_t>& b_row_idx,
-    const size_t node_count,
-    Cmplx* const x_out
-) {
+#if NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
+
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::Impl::define_sparsity_pattern_using_eigen()
+{
+    const size_t nz_count = _ni_connections.size();
+
+    // rewrite matrix in CSC form
+    _a_row_idx = fz::SafePtr<ptrdiff_t>(nz_count);
+    _a_col_idx = fz::SafePtr<ptrdiff_t>(_ni_count + 1UL);
+    ptrdiff_t* it_a_row_idx = _a_row_idx.begin();
+    ptrdiff_t* it_a_col_idx = _a_col_idx.begin();
+    auto it_ni_connections = _ni_connections.begin();
+    size_t current_col = std::numeric_limits<size_t>::max();
+    for (size_t nzi = 0UL; nzi != nz_count; ++nzi) {
+        *it_a_row_idx = it_ni_connections->first;
+        ++it_a_row_idx;
+        if (it_ni_connections->second != current_col) {
+            current_col = it_ni_connections->second;
+            *it_a_col_idx = nzi; 
+            ++it_a_col_idx;
+        }
+        ++it_ni_connections;
+    }
+    *it_a_col_idx = nz_count;
+
+    _a.emplace(
+        _ni_count,
+        _ni_count,
+        nz_count,
+        _a_col_idx.data(),
+        _a_row_idx.data(),
+        _a_vals.data()
+    );
+
+    _solver->analyzePattern(*_a);
+    if (_solver->info() != Eigen::Success) {
+        std::cerr << "Eigen::analyzePattern failed.\n";
+    }
+}
+
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::Impl::solve_using_eigen()
+{
     using Triplet = typename Eigen::Triplet<Cmplx>;
 
-    // a matrix
-    fz::SafePtr<Triplet> triplets_a(2UL*a_vals.size() - node_count);
-    Triplet* it_triplets_a = triplets_a.begin();
-    for (size_t j = 0UL; j != a_vals.size(); ++j) {
-        *it_triplets_a = Triplet(
-            nnz_rowcol_idx_pairs[j].first,
-            nnz_rowcol_idx_pairs[j].second,
-            a_vals[j]
-        );
-        ++it_triplets_a;
-
-        // lower part of a
-        if (nnz_rowcol_idx_pairs[j].first != 
-            nnz_rowcol_idx_pairs[j].second
-        ) {
-            *it_triplets_a = Triplet(
-                nnz_rowcol_idx_pairs[j].second,
-                nnz_rowcol_idx_pairs[j].first,
-                a_vals[j]
-            );
-            ++it_triplets_a;
-        }
-    }
-    Eigen::SparseMatrix<Cmplx> a(node_count, node_count);
-    a.setFromTriplets(triplets_a.begin(), triplets_a.end());
-    triplets_a.free();
-
     // b vector
-    fz::SafePtr<Triplet> triplets_b(node_count);
+    fz::SafePtr<Triplet> triplets_b(_ni_count);
     Triplet* it_triplets_b = triplets_b.begin();
-    for (size_t j = 0UL; j != b_vals.size(); ++j) {
-        *it_triplets_b = Triplet(b_row_idx[j], 0UL, b_vals[j]);
+    for (size_t j = 0UL; j != _b_vals.size(); ++j) {
+        *it_triplets_b = Triplet(_b_row_idx[j], 0UL, _b_vals[j]);
         ++it_triplets_b;
     }
-    Eigen::SparseMatrix<Cmplx> b(node_count, 1UL);
+    Eigen::SparseMatrix<Cmplx> b(_ni_count, 1UL);
     b.setFromTriplets(triplets_b.begin(), triplets_b.end());
     triplets_b.free();
 
-    Eigen::SparseLU<Eigen::SparseMatrix<Cmplx>> solver;
-    solver.analyzePattern(a);
-    solver.factorize(a);
-    if (solver.info() != Eigen::Success) {
+    _solver->factorize(*_a);
+    if (_solver->info() != Eigen::Success) { // TODO: format error messages
         std::cerr << "Factorization failed. Matrix may be singular.\n";
     }
-    const Eigen::Matrix<Cmplx,Eigen::Dynamic,1UL> x = solver.solve(b);
-    if (solver.info() != Eigen::Success) {
+    const Eigen::Matrix<Cmplx, Eigen::Dynamic, 1UL> x_temp = _solver->solve(b);
+    if (_solver->info() != Eigen::Success) {
         std::cerr << "Solving failed.\n";
     }
-    for (size_t j = 0UL; j != node_count; ++j) {
-        x_out[j] = x(j);
+    for (size_t ni = 0UL; ni != _ni_count; ++ni) {
+        _x[ni] = x_temp(ni);
     }
 }
+
+#endif
+
+// explicit instantiation declarations
+INSTANTIATE_SIMULATION_CLASS
 
 } // namespace numav

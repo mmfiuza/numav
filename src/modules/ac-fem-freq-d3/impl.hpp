@@ -9,14 +9,12 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <fstream>
+#include <memory>
+#include <optional>
 
 #include "Eigen/Eigen"
 #include "SafePtr.hpp"
 #include "ldlt-solver.hpp"
-#if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
-    #include "mkl_dss.h"
-    #include "mkl_types.h"
-#endif
 
 namespace numav {
 
@@ -111,6 +109,7 @@ public:
 private:
 
     // TODO: better data packing
+    // TODO: check if NDEBUG can make Eigen faster
     
     // volume element properties
     struct _VolProp {
@@ -164,6 +163,10 @@ private:
     void _begin_nmvr_file();
     void _write_simulation_inputs_to_nmvr_file();
     void _end_nmvr_file();
+    #if NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
+        void define_sparsity_pattern_using_eigen();
+        void solve_using_eigen();
+    #endif
 
     enum class _FreqTypeDefinedByUser {
         UNDEFINED,
@@ -213,11 +216,6 @@ private:
     fz::SafePtr<size_t> _isei_to_ispgi;
     fz::SafePtr<size_t> _vsei_to_ispgv;
     fz::SafePtr<size_t> _psei_to_ispgp;
-
-    fz::SafePtr<std::pair<size_t,size_t>> _nnz_rowcol_idx_pairs;
-    fz::SafePtr<Cmplx> _a_vals;
-    fz::SafePtr<size_t> _b_row_idx;
-    fz::SafePtr<Cmplx> _b_vals;
     
     fz::SafePtr<_VolProp> _ivpg_to_volprop;
     fz::SafePtr<FuncFloatToCmplx> _ispgi_to_impedance;
@@ -243,14 +241,29 @@ private:
 
     std::vector<std::array<Float,DIM>> _receiver_points;
 
-    fz::SafePtr<Cmplx> _x;
-
     std::ofstream _nvmr_file;
+    
+    fz::SafePtr<std::pair<size_t,size_t>> _ni_connections;
+    fz::SafePtr<Cmplx> _a_vals;
+    fz::SafePtr<size_t> _b_row_idx;
+    fz::SafePtr<Cmplx> _b_vals;
+    fz::SafePtr<Cmplx> _x;
 
     #if NUMAV_SYSTEM_SOLVER == NUMAV_LDLT_SOLVER
         LdltSolver<Cmplx> _solver;
         fz::SafePtr<Cmplx> _b_dense;
         fz::SafePtr<Cmplx> _a_diag;
+    #elif NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
+        std::unique_ptr<
+            Eigen::SparseLU<
+                Eigen::SparseMatrix<Cmplx, Eigen::ColMajor, ptrdiff_t>
+            >
+        > _solver;
+        std::optional<Eigen::Map<
+            Eigen::SparseMatrix<Cmplx, Eigen::ColMajor, ptrdiff_t>
+        >> _a;
+        fz::SafePtr<ptrdiff_t> _a_row_idx;
+        fz::SafePtr<ptrdiff_t> _a_col_idx;
     #elif NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
         _MKL_DSS_HANDLE_t _dss_handle;
         fz::SafePtr<Cmplx> _b_dense;
