@@ -28,8 +28,8 @@ fz::SafePtr<Float> cubspace(
 ) {
     assert(num_points != 0UL && num_points != 1UL);
     fz::SafePtr<Float> x = linspace(0_F, 1_F, num_points);
-    const Float& a3 = std::pow(start, 3UL);
-    const Float& b3 = std::pow(finish, 3UL);
+    const Float& a3 = power<3UL>(start);
+    const Float& b3 = power<3UL>(finish);
     fz::SafePtr<Float> result(num_points);
     for (size_t i = 0UL; i != num_points; ++i) {
         result[i] = std::pow(a3 + (b3 - a3) * x[i], 1_F/3_F);
@@ -41,19 +41,19 @@ fz::SafePtr<Float> cubspace(
 Float get_triangle_area(const std::array<std::array<Float,3UL>,3UL> coords)
 {
     const Float a = std::sqrt(
-        std::pow(coords[0UL][0UL] - coords[1UL][0UL], 2UL) +
-        std::pow(coords[0UL][1UL] - coords[1UL][1UL], 2UL) +
-        std::pow(coords[0UL][2UL] - coords[1UL][2UL], 2UL)
+        power<2UL>(coords[0UL][0UL] - coords[1UL][0UL]) +
+        power<2UL>(coords[0UL][1UL] - coords[1UL][1UL]) +
+        power<2UL>(coords[0UL][2UL] - coords[1UL][2UL])
     );
     const Float b = std::sqrt(
-        std::pow(coords[1UL][0UL] - coords[2UL][0UL], 2UL) +
-        std::pow(coords[1UL][1UL] - coords[2UL][1UL], 2UL) +
-        std::pow(coords[1UL][2UL] - coords[2UL][2UL], 2UL)
+        power<2UL>(coords[1UL][0UL] - coords[2UL][0UL]) +
+        power<2UL>(coords[1UL][1UL] - coords[2UL][1UL]) +
+        power<2UL>(coords[1UL][2UL] - coords[2UL][2UL])
     );
     const Float c = std::sqrt(
-        std::pow(coords[2UL][0UL] - coords[0UL][0UL], 2UL) +
-        std::pow(coords[2UL][1UL] - coords[0UL][1UL], 2UL) +
-        std::pow(coords[2UL][2UL] - coords[0UL][2UL], 2UL)
+        power<2UL>(coords[2UL][0UL] - coords[0UL][0UL]) +
+        power<2UL>(coords[2UL][1UL] - coords[0UL][1UL]) +
+        power<2UL>(coords[2UL][2UL] - coords[0UL][2UL])
     );
     const Float s = (a + b + c) / 2_F;
     const Float area = std::sqrt(s * (s-a) * (s-b) * (s-c));

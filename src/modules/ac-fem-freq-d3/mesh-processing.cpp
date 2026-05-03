@@ -22,9 +22,9 @@ size_t SimulationAcFemFreqD3<O>::Impl::_get_closest_point(
     size_t ni_closest = std::numeric_limits<size_t>::max();
     for (size_t ni = 0UL; ni != _ni_count; ++ni) {
         Float distance_squared = 
-            std::pow(_ni_to_coords[ni][0UL] - point_coords[0UL], 2UL) +
-            std::pow(_ni_to_coords[ni][1UL] - point_coords[1UL], 2UL) +
-            std::pow(_ni_to_coords[ni][2UL] - point_coords[2UL], 2UL)
+            power<2UL>(_ni_to_coords[ni][0UL] - point_coords[0UL]) +
+            power<2UL>(_ni_to_coords[ni][1UL] - point_coords[1UL]) +
+            power<2UL>(_ni_to_coords[ni][2UL] - point_coords[2UL])
         ;
         if (distance_squared < minimum_distance_squared) {
             minimum_distance_squared = distance_squared;

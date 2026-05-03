@@ -40,8 +40,21 @@ template<size_t N> constexpr size_t FACTORIAL = [] {
     return result;
 }();
 
+template<size_t K, typename T>
+constexpr T power(T N) {
+    if constexpr (K == 0) {
+        return T(1);
+    }
+    else if constexpr (K == 1) {
+        return N;
+    }
+    else {
+        return N * power<K-1>(N);
+    }
+}
+
 template<auto N, size_t K>
-constexpr auto POWER = [] { // TODO: apply this to more parts of the repo 
+constexpr auto POWER = [] {
     using T = decltype(N);
     T result = T(1);
     for (size_t i = 0UL; i != K; ++i) {
