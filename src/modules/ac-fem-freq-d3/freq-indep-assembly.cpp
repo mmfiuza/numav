@@ -841,11 +841,11 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_freq_independent_parts()
     _allocate_b();
     _allocate_x();
     #if NUMAV_SYSTEM_SOLVER == NUMAV_INTERNAL
-        define_sparsity_pattern_using_internal_solver();
+        _define_sparsity_pattern_using_internal_solver();
     #elif NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
-        define_sparsity_pattern_using_eigen_solver();
+        _define_sparsity_pattern_using_eigen_solver();
     #elif NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
-        define_sparsity_pattern_using_onemkl_solver();
+        _define_sparsity_pattern_using_onemkl_solver();
     #else
         static_assert(false, "Invalid NUMAV_SYSTEM_SOLVER.");
     #endif

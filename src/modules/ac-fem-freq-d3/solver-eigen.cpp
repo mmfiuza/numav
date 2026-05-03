@@ -1,5 +1,6 @@
 // Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
+#include "common/exception.hpp"
 #include "modules/ac-fem-freq-d3/impl.hpp"
 
 namespace numav {
@@ -8,7 +9,7 @@ namespace numav {
 
 template <ElementOrder O>
 void
-SimulationAcFemFreqD3<O>::Impl::define_sparsity_pattern_using_eigen_solver()
+SimulationAcFemFreqD3<O>::Impl::_define_sparsity_pattern_using_eigen_solver()
 {
     const size_t nz_count = _ni_connections.size();
 
@@ -42,12 +43,12 @@ SimulationAcFemFreqD3<O>::Impl::define_sparsity_pattern_using_eigen_solver()
 
     _solver->analyzePattern(*_a);
     if (_solver->info() != Eigen::Success) {
-        std::cerr << "Eigen::analyzePattern failed.\n";
+        error("Eigen::analyzePattern failed.");
     }
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::Impl::solve_using_eigen_solver()
+void SimulationAcFemFreqD3<O>::Impl::_solve_using_eigen_solver()
 {
     using Triplet = typename Eigen::Triplet<Cmplx>;
 
@@ -63,12 +64,12 @@ void SimulationAcFemFreqD3<O>::Impl::solve_using_eigen_solver()
     triplets_b.free();
 
     _solver->factorize(*_a);
-    if (_solver->info() != Eigen::Success) { // TODO: format error messages
-        std::cerr << "Factorization failed. Matrix may be singular.\n";
+    if (_solver->info() != Eigen::Success) {
+        error("Eigen::factorize failed.");
     }
     const Eigen::Matrix<Cmplx, Eigen::Dynamic, 1UL> x_temp = _solver->solve(b);
     if (_solver->info() != Eigen::Success) {
-        std::cerr << "Solving failed.\n";
+        error("Eigen::solve failed.");
     }
     for (size_t ni = 0UL; ni != _ni_count; ++ni) {
         _x[ni] = x_temp(ni);

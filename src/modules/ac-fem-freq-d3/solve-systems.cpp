@@ -27,7 +27,7 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
     // print start time
     auto start_time = std::chrono::system_clock::now();
     auto time_t_start = std::chrono::system_clock::to_time_t(start_time);
-    std::cout << "Solver started at: "
+    std::cout << "Solver started at: " // TODO: move to log files
         << std::put_time(std::localtime(&time_t_start), "%Hh:%Mm:%Ss") << "\n";
 
     // create progress bar
@@ -60,7 +60,7 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
         const Float freq = _freq_steps[fi];
         const Float omega = 2_F * std::numbers::pi * freq;
         const Float omega_squared = omega * omega;
-        if (freq == 0_F) { // TODO: fix first tick
+        if (freq == 0_F) {
             _x.fill(Cmplx(0_F, 0_F));
             goto write_results_to_nmvr_and_continue;
         }
@@ -139,11 +139,11 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
 
         // solve
         #if NUMAV_SYSTEM_SOLVER == NUMAV_INTERNAL
-            solve_using_internal_solver();
+            _solve_using_internal_solver();
         #elif NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
-            solve_using_eigen_solver();
+            _solve_using_eigen_solver();
         #elif NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
-            solve_using_onemkl_solver();
+            _solve_using_onemkl_solver();
         #else
             static_assert(false, "Invalid NUMAV_SYSTEM_SOLVER.");
         #endif
@@ -171,7 +171,7 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
     // print finish
     auto end_time = std::chrono::system_clock::now();
     auto time_t_end = std::chrono::system_clock::to_time_t(end_time);
-    std::cout << "Solver ended at: " <<
+    std::cout << "Solver ended at: " << // TODO: move to log files
         std::put_time(std::localtime(&time_t_end), "%Hh:%Mm:%Ss") << "\n";
 
     _did_run = true;

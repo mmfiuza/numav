@@ -163,14 +163,14 @@ private:
     void _write_simulation_inputs_to_nmvr_file();
     void _end_nmvr_file();
     #if NUMAV_SYSTEM_SOLVER == NUMAV_INTERNAL
-        void define_sparsity_pattern_using_internal_solver();
-        void solve_using_internal_solver();
+        void _define_sparsity_pattern_using_internal_solver();
+        void _solve_using_internal_solver();
     #elif NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
-        void define_sparsity_pattern_using_eigen_solver();
-        void solve_using_eigen_solver();
+        void _define_sparsity_pattern_using_eigen_solver();
+        void _solve_using_eigen_solver();
     #elif NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
-        void define_sparsity_pattern_using_onemkl_solver();
-        void solve_using_onemkl_solver();
+        void _define_sparsity_pattern_using_onemkl_solver();
+        void _solve_using_onemkl_solver();
     #endif
 
     enum class _FreqTypeDefinedByUser {

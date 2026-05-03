@@ -12,7 +12,7 @@ namespace numav {
 
 template <ElementOrder O>
 void
-SimulationAcFemFreqD3<O>::Impl::define_sparsity_pattern_using_internal_solver()
+SimulationAcFemFreqD3<O>::Impl::_define_sparsity_pattern_using_internal_solver()
 {
     // problem dimensions
     const size_t nzi_count = _ni_connections.size();
@@ -59,7 +59,7 @@ SimulationAcFemFreqD3<O>::Impl::define_sparsity_pattern_using_internal_solver()
     a_col_idx.free();
 }
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::Impl::solve_using_internal_solver()
+void SimulationAcFemFreqD3<O>::Impl::_solve_using_internal_solver()
 {
     // dense b vector
     for (size_t i = 0UL; i != _b_vals.size(); ++i) {
