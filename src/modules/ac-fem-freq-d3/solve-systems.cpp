@@ -31,6 +31,9 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
         << std::put_time(std::localtime(&time_t_start), "%Hh:%Mm:%Ss") << "\n";
 
     // create progress bar
+    size_t bar_progress = 0UL;
+    const size_t bar_max_progress =
+        (_freq_steps[0UL] == 0_F) ? _freq_count - 1UL : _freq_count;
     indicators::show_console_cursor(false);
     indicators::ProgressBar bar {
         indicators::option::BarWidth{37UL},
@@ -48,7 +51,7 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
             std::vector<indicators::FontStyle>{indicators::FontStyle::bold}
         },
         indicators::option::MinProgress{0UL},
-        indicators::option::MaxProgress{_freq_count}
+        indicators::option::MaxProgress{bar_max_progress}
     };
 
     for (size_t fi = 0UL; fi != _freq_count; ++fi)
@@ -145,6 +148,10 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
             static_assert(false, "Invalid NUMAV_SYSTEM_SOLVER.");
         #endif
 
+        // progress bar tick
+        ++bar_progress;
+        bar.set_progress(bar_progress);
+
         write_results_to_nmvr_and_continue:
 
         // write solution to nmvr file
@@ -155,9 +162,6 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
                 _x.data(), _ni_count
             ).get()
         );
-        
-        // progress bar tick
-        bar.set_progress(fi + 1UL);
     }
     _end_nmvr_file();
     
