@@ -107,6 +107,7 @@ SimulationAcFemFreqD3<O>::Impl::~Impl() {
     #elif NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
         _a_row_idx.free();
         _a_col_idx.free();
+        _b_row_idx_signed.free();
     #elif NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
         _b_dense.free();
     #endif

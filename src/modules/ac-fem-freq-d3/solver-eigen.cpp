@@ -11,9 +11,8 @@ template <ElementOrder O>
 void
 SimulationAcFemFreqD3<O>::Impl::_define_sparsity_pattern_using_eigen_solver()
 {
+    // rewrite A matrix in CSC form
     const size_t nz_count = _ni_connections.size();
-
-    // rewrite matrix in CSC form
     _a_row_idx = fz::SafePtr<ptrdiff_t>(nz_count);
     _a_col_idx = fz::SafePtr<ptrdiff_t>(_ni_count + 1UL);
     ptrdiff_t* it_a_row_idx = _a_row_idx.begin();
@@ -32,7 +31,8 @@ SimulationAcFemFreqD3<O>::Impl::_define_sparsity_pattern_using_eigen_solver()
     }
     *it_a_col_idx = nz_count;
 
-    _a.emplace(
+    // create the A matrix
+    _a_eigen.emplace(
         _ni_count,
         _ni_count,
         nz_count,
@@ -41,7 +41,29 @@ SimulationAcFemFreqD3<O>::Impl::_define_sparsity_pattern_using_eigen_solver()
         _a_vals.data()
     );
 
-    _solver->analyzePattern(*_a);
+    // create b vector
+    _b_col_idx_signed[0UL] = static_cast<ptrdiff_t>(0);
+    _b_col_idx_signed[1UL] = static_cast<ptrdiff_t>(_b_vals.size());
+    _b_row_idx_signed = fz::SafePtr<ptrdiff_t>(_b_row_idx.size());
+    for (size_t i = 0UL; i != _b_row_idx.size(); ++i) {
+        _b_row_idx_signed[i] = static_cast<ptrdiff_t>(_b_row_idx[i]);
+    }
+    _b_eigen.emplace(
+        _ni_count,
+        1UL,
+        _b_vals.size(),
+        _b_col_idx_signed.data(),
+        _b_row_idx_signed.data(),
+        _b_vals.data()
+    );
+
+    // create x vector
+    _x_eigen.emplace(
+        _x.data(), _ni_count
+    );
+
+    // analyze A sparsity pattern
+    _solver->analyzePattern(*_a_eigen);
     if (_solver->info() != Eigen::Success) {
         error("Eigen::analyzePattern failed.");
     }
@@ -50,29 +72,13 @@ SimulationAcFemFreqD3<O>::Impl::_define_sparsity_pattern_using_eigen_solver()
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::_solve_using_eigen_solver()
 {
-    using Triplet = typename Eigen::Triplet<Cmplx>;
-
-    // b vector
-    fz::SafePtr<Triplet> triplets_b(_ni_count);
-    Triplet* it_triplets_b = triplets_b.begin();
-    for (size_t j = 0UL; j != _b_vals.size(); ++j) {
-        *it_triplets_b = Triplet(_b_row_idx[j], 0UL, _b_vals[j]);
-        ++it_triplets_b;
-    }
-    Eigen::SparseMatrix<Cmplx> b(_ni_count, 1UL);
-    b.setFromTriplets(triplets_b.begin(), triplets_b.end());
-    triplets_b.free();
-
-    _solver->factorize(*_a);
+    _solver->factorize(*_a_eigen);
     if (_solver->info() != Eigen::Success) {
         error("Eigen::factorize failed.");
     }
-    const Eigen::Matrix<Cmplx, Eigen::Dynamic, 1UL> x_temp = _solver->solve(b);
+    *_x_eigen = _solver->solve(*_b_eigen);
     if (_solver->info() != Eigen::Success) {
         error("Eigen::solve failed.");
-    }
-    for (size_t ni = 0UL; ni != _ni_count; ++ni) {
-        _x[ni] = x_temp(ni);
     }
 }
 

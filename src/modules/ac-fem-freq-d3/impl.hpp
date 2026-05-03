@@ -263,12 +263,20 @@ private:
             Eigen::SparseLU<
                 Eigen::SparseMatrix<Cmplx, Eigen::ColMajor, ptrdiff_t>
             >
-        > _solver;
-        std::optional<Eigen::Map<
-            Eigen::SparseMatrix<Cmplx, Eigen::ColMajor, ptrdiff_t>
-        >> _a;
+            > _solver;
         fz::SafePtr<ptrdiff_t> _a_row_idx;
         fz::SafePtr<ptrdiff_t> _a_col_idx;
+        std::optional<Eigen::Map<
+            Eigen::SparseMatrix<Cmplx, Eigen::ColMajor, ptrdiff_t>
+        >> _a_eigen;
+        fz::SafePtr<ptrdiff_t> _b_row_idx_signed;
+        std::array<ptrdiff_t, 2UL> _b_col_idx_signed;
+        std::optional<Eigen::Map<
+            Eigen::SparseMatrix<Cmplx, Eigen::ColMajor, ptrdiff_t>
+        >> _b_eigen;
+        std::optional<Eigen::Map<
+            Eigen::Matrix<Cmplx, Eigen::Dynamic, 1UL>
+        >> _x_eigen;
     #elif NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
         _MKL_DSS_HANDLE_t _dss_handle;
         fz::SafePtr<Cmplx> _b_dense;
