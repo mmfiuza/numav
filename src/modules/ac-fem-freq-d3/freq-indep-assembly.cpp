@@ -220,7 +220,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
                 pair,
                 compare_pair<size_t>
             );
-            const ptrdiff_t ptrdiff = pair_ptr - _ni_connections.begin();
+            const size_t ptrdiff = pair_ptr - _ni_connections.begin();
             _ivpg_to_ptr_in_a[ivpg][fipi_vol[nci]] = _a_vals.begin() + ptrdiff;
         }
         
@@ -461,7 +461,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_impedance()
                 pair,
                 compare_pair<size_t>
             );
-            const ptrdiff_t ptrdiff = pair_ptr - _ni_connections.begin();
+            const size_t ptrdiff = pair_ptr - _ni_connections.begin();
             _ispgi_to_ptr_in_a[ispgi][fipi_damp[nci]] =
                 _a_vals.begin() + ptrdiff;
         }
@@ -600,7 +600,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_velocity()
             const size_t* const ni_ptr = std::lower_bound(
                 _b_row_idx.begin(), _b_row_idx.end(), ni
             );
-            const ptrdiff_t ptrdiff = ni_ptr - _b_row_idx.begin();
+            const size_t ptrdiff = ni_ptr - _b_row_idx.begin();
             _ispgv_to_ptr_in_b[ispgv][fipi_forc[eni]] =
                 _b_vals.begin() + ptrdiff;
         }
@@ -701,7 +701,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_point_velocity()
         const size_t* const ni_ptr = std::lower_bound(
             _b_row_idx.begin(), _b_row_idx.end(), ni
         );
-        const ptrdiff_t ptrdiff = ni_ptr - _b_row_idx.begin();
+        const size_t ptrdiff = ni_ptr - _b_row_idx.begin();
         _pvni_to_ptr_in_b[pvni] = _b_vals.begin() + ptrdiff;
     }
 }
@@ -766,7 +766,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_pressure()
     _pvi_to_pressure = fz::SafePtr<FuncFloatToCmplx>(_pvi_count);
     size_t pvi = 0UL;
     for (auto& [set_indexes, ni_vector] : intersections) {
-        auto average = [this,set_indexes](const Float& freq) {
+        auto average = [this, set_indexes](const Float& freq) {
             Cmplx sum = Cmplx(0_F, 0_F);
             for (const auto& set_index : set_indexes) {
                 if (set_index < _ppni_count) {
@@ -802,7 +802,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_pressure()
                     _b_row_idx.begin(), _b_row_idx.end(), ni
                 );
                 // _pvi_to_ptr_in_b
-                const ptrdiff_t ptrdiff_b = ni_ptr - _b_row_idx.begin();
+                const size_t ptrdiff_b = ni_ptr - _b_row_idx.begin();
                 _pvi_to_ptr_in_b[pvi][fipi] = _b_vals.begin() + ptrdiff_b;
                 ++fipi;
                 continue;
@@ -816,7 +816,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_pressure()
                         pair,
                         compare_pair<size_t>
                     );
-                const ptrdiff_t ptrdiff_a = 
+                const size_t ptrdiff_a = 
                     pair_ptr - _ni_connections.begin();
                 _pvi_to_ptr_in_a[pvi][fipi] = _a_vals.begin() + ptrdiff_a;
                 
@@ -824,7 +824,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_pressure()
                 const size_t* const ni_ptr = std::lower_bound(
                     _b_row_idx.begin(), _b_row_idx.end(), ni
                 );
-                const ptrdiff_t ptrdiff_b = ni_ptr - _b_row_idx.begin();
+                const size_t ptrdiff_b = ni_ptr - _b_row_idx.begin();
                 _pvi_to_ptr_in_b[pvi][fipi] = _b_vals.begin() + ptrdiff_b;
                 
                 ++fipi;
