@@ -18,7 +18,8 @@ RUN apt-get update && apt-get install -y \
     libspdlog-dev=1:1.10.0+ds-0.4 \
     wget=1.21.3-1+deb12u1 \
     gosu=1.14-1+b10 \
-    tree=2.1.0-1
+    tree=2.1.0-1 \
+    sudo=1.9.13p3-1+deb12u3
 
 # install Eigen
 ARG EIGEN_VERSION="5.0.1"
