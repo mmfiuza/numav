@@ -43,7 +43,8 @@ SimulationAcFemFreqD3<O>::Impl::Impl() {
     _ri_count = 0UL;
     #if NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
         _solver = std::make_unique<Eigen::SparseLU<
-            Eigen::SparseMatrix<Cmplx, Eigen::ColMajor, ptrdiff_t>
+            Eigen::SparseMatrix<Cmplx, Eigen::ColMajor, Eigen::Index>,
+            Eigen::COLAMDOrdering<Eigen::Index>
         >>();
     #endif
 }

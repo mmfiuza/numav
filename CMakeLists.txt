@@ -11,7 +11,7 @@ option(BUILD_SHARED_LIBS "Build shared library" OFF)
 option(GDB "Build with debug symbols for gdb" OFF)
 
 # find dependencies
-find_package(Eigen3 3.4 REQUIRED)
+find_package(Eigen3 5.0.1 REQUIRED)
 find_package(spdlog REQUIRED)
 
 # Set MKL paths
@@ -41,14 +41,15 @@ target_include_directories(numav
 )
 
 target_compile_definitions(numav PUBLIC 
-    MKL_ILP64
-    EIGEN_DEFAULT_DENSE_INDEX_TYPE=int64_t
     FMT_HEADER_ONLY
     SAFE_PTR_DEBUG
+    EIGEN_DEFAULT_DENSE_INDEX_TYPE=int64_t
+    EIGEN_NO_DEBUG
+    MKL_ILP64
 )
 
 if(NOT GDB)
-    target_compile_options(numav PRIVATE -Wall -Wextra -O3 -m64 -ffast-math)
+    target_compile_options(numav PRIVATE -Wall -Wextra -Ofast -m64 -ffast-math)
     target_link_options(numav PRIVATE -flto -m64)
 else()
     target_compile_options(numav PRIVATE -Wall -Wextra -g -O0 -fno-inline -m64)

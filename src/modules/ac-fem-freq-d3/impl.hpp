@@ -13,6 +13,7 @@
 #include <optional>
 
 #include "Eigen/Eigen"
+#include "Eigen/OrderingMethods"
 #include "SafePtr.hpp"
 
 namespace numav {
@@ -261,18 +262,19 @@ private:
     #elif NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
         std::unique_ptr<
             Eigen::SparseLU<
-                Eigen::SparseMatrix<Cmplx, Eigen::ColMajor, ptrdiff_t>
+                Eigen::SparseMatrix<Cmplx, Eigen::ColMajor, Eigen::Index>,
+                Eigen::COLAMDOrdering<Eigen::Index>
             >
-            > _solver;
-        fz::SafePtr<ptrdiff_t> _a_row_idx;
-        fz::SafePtr<ptrdiff_t> _a_col_idx;
+        > _solver;
+        fz::SafePtr<Eigen::Index> _a_row_idx;
+        fz::SafePtr<Eigen::Index> _a_col_idx;
         std::optional<Eigen::Map<
-            Eigen::SparseMatrix<Cmplx, Eigen::ColMajor, ptrdiff_t>
+            Eigen::SparseMatrix<Cmplx, Eigen::ColMajor, Eigen::Index>
         >> _a_eigen;
-        fz::SafePtr<ptrdiff_t> _b_row_idx_signed;
-        std::array<ptrdiff_t, 2UL> _b_col_idx_signed;
+        fz::SafePtr<Eigen::Index> _b_row_idx_signed;
+        std::array<Eigen::Index, 2UL> _b_col_idx_signed;
         std::optional<Eigen::Map<
-            Eigen::SparseMatrix<Cmplx, Eigen::ColMajor, ptrdiff_t>
+            Eigen::SparseMatrix<Cmplx, Eigen::ColMajor, Eigen::Index>
         >> _b_eigen;
         std::optional<Eigen::Map<
             Eigen::Matrix<Cmplx, Eigen::Dynamic, 1UL>
