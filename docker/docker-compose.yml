@@ -13,7 +13,9 @@ services:
     volumes:
       - ..:/workspace
       - ${SSH_AUTH_SOCK}:/ssh-agent
-      - ${HOME}/.gitconfig:/home/devuser/.gitconfig 
+      - ${HOME}/.gitconfig:/home/devuser/.gitconfig
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     environment:
       - SSH_AUTH_SOCK=/ssh-agent
     env_file:
