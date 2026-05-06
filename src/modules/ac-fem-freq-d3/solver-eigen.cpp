@@ -63,8 +63,8 @@ SimulationAcFemFreqD3<O>::Impl::_define_sparsity_pattern_using_eigen_solver()
     );
 
     // analyze A sparsity pattern
-    _solver->isSymmetric(true); // TODO: explore more what this does
-    _solver->setPivotThreshold(Float(0.0));
+    // _solver->isSymmetric(true);
+    // _solver->setPivotThreshold(0_F);
     _solver->analyzePattern(*_a_eigen);
     if (_solver->info() != Eigen::Success) {
         error("Eigen::analyzePattern failed.");

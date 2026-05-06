@@ -45,6 +45,9 @@ target_compile_definitions(numav PUBLIC
     SAFE_PTR_DEBUG
     EIGEN_DEFAULT_DENSE_INDEX_TYPE=int64_t
     EIGEN_NO_DEBUG
+    EIGEN_NO_AUTOMATIC_RESIZING
+    EIGEN_FAST_MATH
+    # EIGEN_USE_BLAS
     MKL_ILP64
 )
 
@@ -67,6 +70,7 @@ target_link_libraries(numav PRIVATE
     -Wl,--end-group
     -lgomp
     -lpthread -lm -ldl
+    # /workspace/OpenBLAS/install/lib/libopenblas.a
 )
 
 # add subdirectories
