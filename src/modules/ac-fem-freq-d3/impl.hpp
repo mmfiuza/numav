@@ -172,6 +172,10 @@ private:
     #elif NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
         void _define_sparsity_pattern_using_onemkl_solver();
         void _solve_using_onemkl_solver();
+    #elif NUMAV_SYSTEM_SOLVER == NUMAV_MUMPS
+        void _define_sparsity_pattern_using_mumps_solver();
+        void _solve_using_mumps_solver();
+        void _terminate_mumps_solver();
     #endif
 
     enum class _FreqTypeDefinedByUser {
@@ -281,6 +285,11 @@ private:
         >> _x_eigen;
     #elif NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
         _MKL_DSS_HANDLE_t _dss_handle;
+        fz::SafePtr<Cmplx> _b_dense;
+    #elif NUMAV_SYSTEM_SOLVER == NUMAV_MUMPS
+        ZMUMPS_STRUC_C _solver;
+        fz::SafePtr<MUMPS_INT> _a_row_idx;
+        fz::SafePtr<MUMPS_INT> _a_col_idx;
         fz::SafePtr<Cmplx> _b_dense;
     #endif
 };

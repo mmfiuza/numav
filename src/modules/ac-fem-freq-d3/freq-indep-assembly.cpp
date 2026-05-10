@@ -846,6 +846,8 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_freq_independent_parts()
         _define_sparsity_pattern_using_eigen_solver();
     #elif NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
         _define_sparsity_pattern_using_onemkl_solver();
+    #elif NUMAV_SYSTEM_SOLVER == NUMAV_MUMPS
+        _define_sparsity_pattern_using_mumps_solver();
     #else
         static_assert(false, "Invalid NUMAV_SYSTEM_SOLVER.");
     #endif

@@ -14,12 +14,36 @@ option(GDB "Build with debug symbols for gdb" OFF)
 find_package(Eigen3 5.0.1 REQUIRED)
 find_package(spdlog REQUIRED)
 
-# Set MKL paths
-set(MKLROOT "/opt/intel/oneapi/mkl/2025.2")
-set(MKL_COMPILER_ROOT "/opt/intel/oneapi/compiler/2025.2")
-
-# add third-party subdirectories
-add_subdirectory(third-party/ldlt-solver)
+# solver-specific configuration
+set(SOLVER "ONEMKL" CACHE STRING "The linear system solver")
+set_property(CACHE SOLVER PROPERTY STRINGS "INTERNAL" "EIGEN" "ONEMKL" "MUMPS")
+if(SOLVER STREQUAL "INTERNAL")
+    set(SELECTED_SOLVER_DEFINITION NUMAV_USE_INTERNAL_SOLVER)
+    set(SOLVER_SPECIFIC_LINK_LIBRARIES ldlt_solver)
+    add_subdirectory(third-party/ldlt-solver)
+elseif(SOLVER STREQUAL "EIGEN")
+    set(SELECTED_SOLVER_DEFINITION NUMAV_USE_EIGEN_SOLVER)
+    set(SOLVER_SPECIFIC_LINK_LIBRARIES -lblas)
+    set(SOLVER_SPECIFIC_DEFINITIONS EIGEN_USE_BLAS)
+elseif(SOLVER STREQUAL "ONEMKL")
+    set(SELECTED_SOLVER_DEFINITION NUMAV_USE_ONEMKL_SOLVER)
+    set(SOLVER_SPECIFIC_INCLUDE_DIRECTORIES
+        /opt/intel/oneapi/mkl/2025.2/include
+    )
+    set(SOLVER_SPECIFIC_LINK_LIBRARIES
+        -Wl,--start-group
+        /opt/intel/oneapi/mkl/2025.2/lib/libmkl_gf_ilp64.a
+        /opt/intel/oneapi/mkl/2025.2/lib/libmkl_gnu_thread.a
+        /opt/intel/oneapi/mkl/2025.2/lib/libmkl_core.a
+        -Wl,--end-group
+        -lgomp
+    )
+    set(SOLVER_SPECIFIC_DEFINITIONS MKL_ILP64)
+elseif(SOLVER STREQUAL "MUMPS")
+    set(SELECTED_SOLVER_DEFINITION NUMAV_USE_MUMPS_SOLVER)
+    set(SOLVER_SPECIFIC_INCLUDE_DIRECTORIES /usr/include)
+    set(SOLVER_SPECIFIC_LINK_LIBRARIES -lzmumps_seq)
+endif()
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build/lib")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build/lib")
@@ -27,7 +51,6 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build/lib")
 # add numav
 file(GLOB_RECURSE NUMAV_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 file(GLOB_RECURSE NUMAV_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/include/*.hpp")
-
 add_library(numav ${NUMAV_SOURCES} ${NUMAV_HEADERS})
 
 target_include_directories(numav 
@@ -37,7 +60,7 @@ target_include_directories(numav
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${CMAKE_CURRENT_SOURCE_DIR}/third-party/indicators/include
         ${CMAKE_CURRENT_SOURCE_DIR}/third-party/safe-ptr/include
-        ${MKLROOT}/include
+        ${SOLVER_SPECIFIC_INCLUDE_DIRECTORIES}
 )
 
 target_compile_definitions(numav PUBLIC 
@@ -47,31 +70,25 @@ target_compile_definitions(numav PUBLIC
     EIGEN_NO_DEBUG
     EIGEN_NO_AUTOMATIC_RESIZING
     EIGEN_FAST_MATH
-    # EIGEN_USE_BLAS
-    MKL_ILP64
+    ${SELECTED_SOLVER_DEFINITION}
+    ${SOLVER_SPECIFIC_DEFINITIONS}
 )
-
-if(NOT GDB)
-    target_compile_options(numav PRIVATE -Wall -Wextra -Ofast -m64 -ffast-math)
-    target_link_options(numav PRIVATE -flto -m64)
-else()
-    target_compile_options(numav PRIVATE -Wall -Wextra -g -O0 -fno-inline -m64)
-    target_link_options(numav PRIVATE -m64)
-endif()
 
 target_link_libraries(numav PRIVATE
     Eigen3::Eigen
     spdlog::spdlog_header_only
-    ldlt_solver
-    -Wl,--start-group
-    ${MKLROOT}/lib/libmkl_gf_ilp64.a 
-    ${MKLROOT}/lib/libmkl_gnu_thread.a
-    ${MKLROOT}/lib/libmkl_core.a
-    -Wl,--end-group
-    -lgomp
-    -lpthread -lm -ldl
-    # /workspace/OpenBLAS/install/lib/libopenblas.a
+    ${SOLVER_SPECIFIC_LINK_LIBRARIES}
 )
+
+if(NOT GDB)
+    set(COMPILER_FLAGS -Ofast -ffast-math)
+    set(LINKER_FLAGS -flto)
+else()
+    set(COMPILER_FLAGS -g -O0 -fno-inline)
+endif()
+
+target_compile_options(numav PRIVATE -Wall -Wextra -m64 ${COMPILER_FLAGS})
+target_link_options(numav PRIVATE -m64 ${LINKER_FLAGS})
 
 # add subdirectories
 if(BUILD_TESTS)

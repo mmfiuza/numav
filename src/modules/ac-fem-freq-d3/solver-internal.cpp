@@ -1,14 +1,12 @@
 // Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
 #include "common/utils.hpp"
-
 #include "modules/ac-fem-freq-d3/impl.hpp"
-
 #include <limits>
 
-namespace numav {
-
 #if NUMAV_SYSTEM_SOLVER == NUMAV_INTERNAL
+
+namespace numav {
 
 template <ElementOrder O>
 void
@@ -69,9 +67,9 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_using_internal_solver()
     _solver.solve();
 }
 
-#endif
-
 // explicit instantiation declarations
 INSTANTIATE_SIMULATION_CLASS
 
 } // namespace numav
+
+#endif

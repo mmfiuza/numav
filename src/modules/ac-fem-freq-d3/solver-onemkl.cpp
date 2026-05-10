@@ -2,12 +2,12 @@
 
 #include "common/exception.hpp"
 #include "common/utils.hpp"
-
 #include "modules/ac-fem-freq-d3/impl.hpp"
+
+#if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
 
 namespace numav {
 
-#if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
 
 void print_dss_error(const MKL_INT error_id) {
     error("oneMLK error code: {}", error_id);
@@ -114,9 +114,9 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_using_onemkl_solver()
     }
 }
 
-#endif
-
 // explicit instantiation declarations
 INSTANTIATE_SIMULATION_CLASS
 
 } // namespace numav
+
+#endif

@@ -144,6 +144,8 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
             _solve_using_eigen_solver();
         #elif NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
             _solve_using_onemkl_solver();
+        #elif NUMAV_SYSTEM_SOLVER == NUMAV_MUMPS
+            _solve_using_mumps_solver();
         #else
             static_assert(false, "Invalid NUMAV_SYSTEM_SOLVER.");
         #endif
@@ -164,6 +166,11 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
         );
     }
     _end_nmvr_file();
+
+    // terminate solver
+    #if NUMAV_SYSTEM_SOLVER == NUMAV_MUMPS
+        _terminate_mumps_solver();
+    #endif
     
     // end progress bar
     indicators::show_console_cursor(true);

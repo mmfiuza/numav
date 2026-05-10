@@ -8,7 +8,16 @@
 #define NUMAV_INTERNAL 11
 #define NUMAV_EIGEN 12
 #define NUMAV_ONEMKL 13
-#define NUMAV_SYSTEM_SOLVER NUMAV_ONEMKL
+#define NUMAV_MUMPS 14
+#ifdef NUMAV_USE_INTERNAL_SOLVER
+    #define NUMAV_SYSTEM_SOLVER NUMAV_INTERNAL
+#elif defined(NUMAV_USE_EIGEN_SOLVER)
+    #define NUMAV_SYSTEM_SOLVER NUMAV_EIGEN
+#elif defined(NUMAV_USE_ONEMKL_SOLVER)
+    #define NUMAV_SYSTEM_SOLVER NUMAV_ONEMKL
+#elif defined(NUMAV_USE_MUMPS_SOLVER)
+    #define NUMAV_SYSTEM_SOLVER NUMAV_MUMPS
+#endif
 
 // include solvers if needed
 #if NUMAV_SYSTEM_SOLVER == NUMAV_INTERNAL
@@ -16,6 +25,8 @@
 #elif NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
     #include "mkl_dss.h"
     #include "mkl_types.h"
+#elif NUMAV_SYSTEM_SOLVER == NUMAV_MUMPS
+    #include "zmumps_c.h"
 #endif
 
 // define the integration method for the matrices
@@ -42,6 +53,9 @@ enum class TriangularMatrixType {
 #elif NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
     constexpr TriangularMatrixType GLOBAL_MATRIX_TRIANGULAR_TYPE =
         TriangularMatrixType::UPPER;
+#elif NUMAV_SYSTEM_SOLVER == NUMAV_MUMPS
+    constexpr TriangularMatrixType GLOBAL_MATRIX_TRIANGULAR_TYPE =
+        TriangularMatrixType::UPPER;
 #else
     static_assert(false, "Invalid NUMAV_SYSTEM_SOLVER.");
 #endif
@@ -58,6 +72,9 @@ enum class MatrixStorageOrder {
     constexpr MatrixStorageOrder GLOBAL_MATRIX_STORAGE_ORDER =
         MatrixStorageOrder::COL_MAJOR;
 #elif NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
+    constexpr MatrixStorageOrder GLOBAL_MATRIX_STORAGE_ORDER =
+        MatrixStorageOrder::ROW_MAJOR;
+#elif NUMAV_SYSTEM_SOLVER == NUMAV_MUMPS
     constexpr MatrixStorageOrder GLOBAL_MATRIX_STORAGE_ORDER =
         MatrixStorageOrder::ROW_MAJOR;
 #else

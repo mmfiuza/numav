@@ -19,7 +19,10 @@ RUN apt-get update && apt-get install -y \
     wget=1.21.3-1+deb12u1 \
     gosu=1.14-1+b10 \
     tree=2.1.0-1 \
-    sudo=1.9.13p3-1+deb12u3
+    sudo=1.9.13p3-1+deb12u3 \
+    libblas-dev=3.11.0-2 \
+    liblapack-dev=3.11.0-2 \
+    libmumps-seq-dev=5.5.1-1
 
 # install Eigen
 ARG EIGEN_VERSION="5.0.1"
