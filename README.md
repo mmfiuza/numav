@@ -42,14 +42,6 @@ cmake --build build --parallel ${nproc} &&
 ./build/tests_bin/test1
 ```
 
-## How to build examples
-Run:
-```
-rm -rf build &&
-cmake -B build -D CMAKE_BUILD_TYPE=Release -D BUILD_EXAMPLES=TRUE &&
-cmake --build build --parallel ${nproc}
-```
-
 ## How to link a code against libnumav.a (Static Numav)
 Run:
 ```
