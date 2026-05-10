@@ -168,7 +168,9 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
     _end_nmvr_file();
 
     // terminate solver
-    #if NUMAV_SYSTEM_SOLVER == NUMAV_MUMPS
+    #if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
+        _terminate_onemkl_solver();
+    #elif NUMAV_SYSTEM_SOLVER == NUMAV_MUMPS
         _terminate_mumps_solver();
     #endif
     

@@ -172,6 +172,7 @@ private:
     #elif NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
         void _define_sparsity_pattern_using_onemkl_solver();
         void _solve_using_onemkl_solver();
+        void _terminate_onemkl_solver();
     #elif NUMAV_SYSTEM_SOLVER == NUMAV_MUMPS
         void _define_sparsity_pattern_using_mumps_solver();
         void _solve_using_mumps_solver();

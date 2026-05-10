@@ -114,6 +114,19 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_using_onemkl_solver()
     }
 }
 
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::Impl::_terminate_onemkl_solver()
+{
+    // error code
+    MKL_INT error_id = dss_delete(
+        _dss_handle,
+        NUMAV_MKL_OPTIONS
+    );
+    if (error_id != MKL_DSS_SUCCESS) {
+        print_dss_error(error_id);
+    }
+}
+
 // explicit instantiation declarations
 INSTANTIATE_SIMULATION_CLASS
 
