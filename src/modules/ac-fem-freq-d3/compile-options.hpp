@@ -17,6 +17,8 @@
     #define NUMAV_SYSTEM_SOLVER NUMAV_ONEMKL
 #elif defined(NUMAV_USE_MUMPS_SOLVER)
     #define NUMAV_SYSTEM_SOLVER NUMAV_MUMPS
+#else
+    static_assert(false, "Invalid NUMAV_SYSTEM_SOLVER.");
 #endif
 
 // include solvers if needed

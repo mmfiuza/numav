@@ -7,9 +7,7 @@
 
 #include "common/nmvr-format.hpp"
 #include "common/utils.hpp"
-
-#include <indicators/progress_bar.hpp>
-#include <indicators/cursor_control.hpp>
+#include "common/log.hpp"
 
 namespace numav {
 
@@ -25,34 +23,13 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
     );
 
     // print start time
-    auto start_time = std::chrono::system_clock::now();
-    auto time_t_start = std::chrono::system_clock::to_time_t(start_time);
-    std::cout << "Solver started at: " // TODO: move to log files
-        << std::put_time(std::localtime(&time_t_start), "%Hh:%Mm:%Ss") << "\n";
+    log::print_start_time();
 
-    // create progress bar
-    size_t bar_progress = 0UL;
-    const size_t bar_max_progress =
+    // start progress bar
+    const size_t bar_progress_max =
         (_freq_steps[0UL] == 0_F) ? _freq_count - 1UL : _freq_count;
-    indicators::show_console_cursor(false);
-    indicators::ProgressBar bar {
-        indicators::option::BarWidth{37UL},
-        indicators::option::Start{" |"},
-        indicators::option::Fill{"="},
-        indicators::option::Lead{"="},
-        indicators::option::Remainder{" "},
-        indicators::option::End{"|"},
-        indicators::option::PrefixText{"Running"},
-        indicators::option::ForegroundColor{indicators::Color::unspecified},
-        indicators::option::ShowPercentage{true},
-        indicators::option::ShowElapsedTime{true},
-        indicators::option::ShowRemainingTime{true},
-        indicators::option::FontStyles{
-            std::vector<indicators::FontStyle>{indicators::FontStyle::bold}
-        },
-        indicators::option::MinProgress{0UL},
-        indicators::option::MaxProgress{bar_max_progress}
-    };
+    size_t bar_progress = 
+        log::start_progress_bar(_progress_bar, bar_progress_max);
 
     for (size_t fi = 0UL; fi != _freq_count; ++fi)
     {
@@ -67,10 +44,10 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
 
         // reset values of A matrix and b vector
         _a_vals.fill(Cmplx(0_F, 0_F));
-        _b_vals.fill(Cmplx(0_F, 0_F));
         #if NUMAV_SYSTEM_SOLVER == NUMAV_INTERNAL
             _a_diag.fill(Cmplx(0_F, 0_F));
         #endif
+        _b_vals.fill(Cmplx(0_F, 0_F));
 
         // add point volume velocity to b vector
         for (size_t pvni = 0UL; pvni != _pvni_count; ++pvni)
@@ -93,10 +70,10 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
         }
 
         // add damping matrix to a
-        for (size_t ispgi = 0UL; ispgi != _ispgi_count; ++ispgi) {
+        for (size_t ispgi = 0UL; ispgi != _ispgi_count; ++ispgi)
+        {
             const Cmplx impedance_value = _ispgi_to_impedance[ispgi](freq);
-            const Cmplx damp_fd_part = Cmplx(0_F, omega)/impedance_value;
-            
+            const Cmplx damp_fd_part = Cmplx(0_F, omega) / impedance_value;
             for (size_t fipi = 0UL;
                 fipi != _ispgi_to_ptr_in_a[ispgi].size(); ++fipi
             ) {
@@ -106,7 +83,8 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
         }
 
         // add stiffness and mass matrix to a
-        for (size_t ivpg = 0UL; ivpg != _ivpg_count; ++ivpg) {
+        for (size_t ivpg = 0UL; ivpg != _ivpg_count; ++ivpg)
+        {
             const Cmplx density_value =
                 (_ivpg_to_volprop[ivpg].density)(freq);
             const Cmplx soundspeed_value =
@@ -126,7 +104,8 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
         }
 
         // add pressure to a and b
-        for (size_t pvi = 0UL; pvi != _pvi_count; ++pvi) {
+        for (size_t pvi = 0UL; pvi != _pvi_count; ++pvi)
+        {
             const Cmplx pressure = (_pvi_to_pressure[pvi])(freq);
             for (size_t fipi = 0UL;
                 fipi != _pvi_to_ptr_in_a[pvi].size(); ++fipi
@@ -150,9 +129,8 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
             static_assert(false, "Invalid NUMAV_SYSTEM_SOLVER.");
         #endif
 
-        // progress bar tick
-        ++bar_progress;
-        bar.set_progress(bar_progress);
+        // increment progress bar
+        log::increment_progress_bar(_progress_bar, bar_progress);
 
         write_results_to_nmvr_and_continue:
 
@@ -174,14 +152,11 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
         _terminate_mumps_solver();
     #endif
     
-    // end progress bar
-    indicators::show_console_cursor(true);
-    
+    // finish progress bar
+    log::finish_progress_bar();
+
     // print finish
-    auto end_time = std::chrono::system_clock::now();
-    auto time_t_end = std::chrono::system_clock::to_time_t(end_time);
-    std::cout << "Solver ended at: " << // TODO: move to log files
-        std::put_time(std::localtime(&time_t_end), "%Hh:%Mm:%Ss") << "\n";
+    log::print_finish_time();
 
     _did_run = true;
 }

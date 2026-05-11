@@ -6,6 +6,7 @@
 
 #include "spdlog/spdlog.h"
 #include "fmt/core.h"
+#include <indicators/progress_bar.hpp>
 
 namespace numav::log {
 
@@ -24,7 +25,18 @@ namespace numav::log {
     }
 
     void print_opening();
-
     void print_opening_ac_fem_freq_d3();
+    void print_start_time();
+    void print_finish_time();
+
+    size_t start_progress_bar(
+        std::unique_ptr<indicators::ProgressBar>& bar,
+        const size_t progress_max
+    );
+    void increment_progress_bar(
+        std::unique_ptr<indicators::ProgressBar>& bar,
+        size_t& bar_progress
+    );
+    void finish_progress_bar();
 
 } // namespace numav::log

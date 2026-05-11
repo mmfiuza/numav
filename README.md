@@ -37,7 +37,7 @@ cmake --build build --parallel ${nproc}
 Run:
 ```
 rm -rf build &&
-cmake -B build -D CMAKE_BUILD_TYPE=Release -D BUILD_TESTS=TRUE -D SOLVER=ONEMKL &&
+cmake -B build -D CMAKE_BUILD_TYPE=Release -D BUILD_TESTS=TRUE &&
 cmake --build build --parallel ${nproc} &&
 ./build/tests_bin/test1
 ```

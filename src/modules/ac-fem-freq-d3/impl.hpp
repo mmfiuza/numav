@@ -15,6 +15,7 @@
 #include "Eigen/Eigen"
 #include "Eigen/OrderingMethods"
 #include "SafePtr.hpp"
+#include <indicators/progress_bar.hpp>
 
 namespace numav {
 
@@ -109,7 +110,6 @@ public:
 private:
 
     // TODO: better data packing
-    // TODO: check if NDEBUG can make Eigen faster
     
     // volume element properties
     struct _VolProp {
@@ -253,6 +253,7 @@ private:
     std::vector<std::array<Float,DIM>> _receiver_points;
 
     std::ofstream _nvmr_file;
+    std::unique_ptr<indicators::ProgressBar> _progress_bar;
     
     fz::SafePtr<std::pair<size_t,size_t>> _ni_connections;
     fz::SafePtr<Cmplx> _a_vals;
