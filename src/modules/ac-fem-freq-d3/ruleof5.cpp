@@ -122,7 +122,8 @@ SimulationAcFemFreqD3<O>::Impl::Impl(
 ) noexcept = default;
 
 template<ElementOrder O>
-SimulationAcFemFreqD3<O>::Impl& SimulationAcFemFreqD3<O>::Impl::operator=(
+typename SimulationAcFemFreqD3<O>::Impl&
+SimulationAcFemFreqD3<O>::Impl::operator=(
     Impl&& other
 ) noexcept = default;
 

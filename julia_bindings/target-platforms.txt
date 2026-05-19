@@ -1,0 +1,7 @@
+Windows x86_64
+Linux x86_64 glibc
+Linux aarch64 glibc
+macOS x86_64
+macOS aarch64
+Linux x86_64 musl
+Linux aarch64 musl

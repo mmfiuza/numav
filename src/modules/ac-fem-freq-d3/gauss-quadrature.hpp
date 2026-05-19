@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include "common/maths.hpp"
+#include "modules/ac-fem-freq-d3/impl.hpp"
+
 namespace numav {
 
 template<ElementOrder O> constexpr size_t NGP_FORC = [] {
@@ -28,7 +31,7 @@ template<size_t N>
 constexpr std::array<std::array<Float,2UL>,N> GAUSS_POINTS_SFC = [] {
     if constexpr (N == 1UL) {
         constexpr Float a = 1_F / 3_F;
-        return std::array<std::array<Float,2UL>,N>({ {a, a} });
+        return std::array<std::array<Float,2UL>,N>{{ {a, a} }};
     }
     if constexpr (N == 3UL) {
         constexpr Float a = 1_F / 6_F;
@@ -43,11 +46,11 @@ template<size_t N>
 constexpr std::array<std::array<Float,DIM>,N> GAUSS_POINTS_VOL = [] {
     if constexpr (N == 1UL) {
         constexpr Float a = 1_F / 4_F;
-        return std::array<std::array<Float,DIM>,N>({ {a, a, a} });
+        return std::array<std::array<Float,DIM>,N>{{ {a, a, a} }};
     }
     if constexpr (N == 4UL) {
-        constexpr Float a = (5_F -     std::sqrt(5_F)) / 20_F;
-        constexpr Float b = (5_F + 3_F*std::sqrt(5_F)) / 20_F;
+        constexpr Float a = (5_F -     SQRT(5_F)) / 20_F;
+        constexpr Float b = (5_F + 3_F*SQRT(5_F)) / 20_F;
         return std::array<std::array<Float,DIM>,N>{{
             {a,a,a}, {b,a,a}, {a,b,a}, {a,a,b}
         }};
@@ -75,12 +78,12 @@ constexpr std::array<std::array<Float,DIM>,N> GAUSS_POINTS_VOL = [] {
     }
     if constexpr (N == 15UL) {
         constexpr Float a = 1_F / 4_F;
-        constexpr Float b = ( 7_F +     std::sqrt(15_F)) / 34_F;
-        constexpr Float c = ( 7_F -     std::sqrt(15_F)) / 34_F;
-        constexpr Float d = (13_F - 3_F*std::sqrt(15_F)) / 34_F;
-        constexpr Float e = (13_F + 3_F*std::sqrt(15_F)) / 34_F;
-        constexpr Float f = ( 5_F -     std::sqrt(15_F)) / 20_F;
-        constexpr Float g = ( 5_F +     std::sqrt(15_F)) / 20_F;
+        constexpr Float b = ( 7_F +     SQRT(15_F)) / 34_F;
+        constexpr Float c = ( 7_F -     SQRT(15_F)) / 34_F;
+        constexpr Float d = (13_F - 3_F*SQRT(15_F)) / 34_F;
+        constexpr Float e = (13_F + 3_F*SQRT(15_F)) / 34_F;
+        constexpr Float f = ( 5_F -     SQRT(15_F)) / 20_F;
+        constexpr Float g = ( 5_F +     SQRT(15_F)) / 20_F;
         return std::array<std::array<Float,DIM>,N>{{
             {a,a,a},
             {b,b,b}, {b,b,d}, {b,d,b}, {d,b,b}, 
@@ -125,8 +128,8 @@ constexpr std::array<Float,N> GAUSS_WEIGHTS_VOL = [] {
     }
     if constexpr (N == 15UL) {
         constexpr Float a = 8_F / 405_F;
-        constexpr Float b = (2665_F - 14_F*std::sqrt(15_F)) / 226800_F;
-        constexpr Float c = (2665_F + 14_F*std::sqrt(15_F)) / 226800_F;
+        constexpr Float b = (2665_F - 14_F*SQRT(15_F)) / 226800_F;
+        constexpr Float c = (2665_F + 14_F*SQRT(15_F)) / 226800_F;
         constexpr Float d = 5_F / 567_F;
         return std::array<Float,N>({a,b,b,b,b,c,c,c,c,d,d,d,d,d,d});
     }

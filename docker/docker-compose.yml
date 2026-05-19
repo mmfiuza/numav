@@ -9,6 +9,7 @@ services:
       context: ..
       dockerfile: docker/Dockerfile
     container_name: numav
+    privileged: true
     working_dir: /workspace
     volumes:
       - ..:/workspace

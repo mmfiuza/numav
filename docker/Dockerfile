@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y \
     gcc=4:12.2.0-3 \
     g++=4:12.2.0-3 \
     gdb=13.1-3 \
+    clang=1:14.0-55.7~deb12u1 \
     make=4.3-4.1 \
     cmake=3.25.1-1 \
     curl=7.88.1-10+deb12u14 \
@@ -33,9 +34,11 @@ RUN rm eigen-${EIGEN_VERSION}.tar.gz
 RUN cd eigen-${EIGEN_VERSION} && \
     mkdir build && \
     cd build && \
-    cmake -DCMAKE_INSTALL_PREFIX=/opt \
-        -DEIGEN_BUILD_BLAS=OFF -DEIGEN_BUILD_LAPACK=OFF .. && \
-    make install && \
+    cmake \
+        -D CMAKE_INSTALL_PREFIX=/opt \
+        -D EIGEN_BUILD_BLAS=OFF \
+        -D EIGEN_BUILD_LAPACK=OFF .. && \
+    cmake --install . && \
     cd ../.. && \
     rm -rf eigen-${EIGEN_VERSION}
 
@@ -46,29 +49,41 @@ RUN sh ./intel-onemkl-2025.2.0.629_offline.sh -a --silent --eula accept
 RUN rm intel-onemkl-2025.2.0.629_offline.sh
 
 # install Julia
-ARG JULIA_VERSION="1.12.5"
-ARG JULIAUP_VERSION="1.19.9"
+ARG JULIA_VERSION="1.11.9"
+ARG BINARY_BUILDER_JULIA_VERSION="1.7.3"
+ARG JULIAUP_VERSION="1.20.1"
 ENV JULIA_DEPOT_PATH=/usr/local/share/julia
 ENV JULIAUP_DEPOT_PATH=/usr/local/share
 RUN case "$(uname -m)" in \
         x86_64)    JULIAUP_ARCH="x86_64" ;; \
         aarch64)   JULIAUP_ARCH="aarch64" ;; \
-        i386|i686) JULIAUP_ARCH="i686" ;; \
         *)         echo "Unsupported arch: $(uname -m)" && exit 1 ;; \
     esac && \
 curl -fsSL "https://github.com/JuliaLang/juliaup/releases/download/\
 v${JULIAUP_VERSION}/juliaup-${JULIAUP_VERSION}-${JULIAUP_ARCH}\
 -unknown-linux-musl-portable.tar.gz" | tar -xz -C /usr/local/bin
 RUN juliaup add ${JULIA_VERSION}
+RUN juliaup add ${BINARY_BUILDER_JULIA_VERSION}
 RUN juliaup default ${JULIA_VERSION}
 RUN chmod -R 777 ${JULIAUP_DEPOT_PATH}/juliaup
 
 # install Julia packages
 RUN julia +${JULIA_VERSION} -e 'using Pkg; Pkg.add([ \
-    PackageSpec(name="Plots", version="1.41.6"), \
-    PackageSpec(name="Symbolics", version="7.17.0") \
+    PackageSpec(name="CxxWrap", version="0.17.5"), \
+    PackageSpec(name="Plots"), \
+    PackageSpec(name="Symbolics"), \
+    PackageSpec(name="Revise") \
+])'
+RUN julia +${BINARY_BUILDER_JULIA_VERSION} -e 'using Pkg; Pkg.add([ \
+    PackageSpec(name="BinaryBuilder", version="0.6.6") \
 ])'
 RUN chmod -R 777 ${JULIA_DEPOT_PATH}
+
+# set privileged mode environment variable
+ENV BINARYBUILDER_RUNNER=privileged
+
+# agree to the Xcode license terms
+# ENV BINARYBUILDER_AUTOMATIC_APPLE=true
 
 # set the entrypoint
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh

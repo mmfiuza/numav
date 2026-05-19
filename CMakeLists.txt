@@ -10,10 +10,6 @@ option(BUILD_EXAMPLES "Build examples" OFF)
 option(BUILD_SHARED_LIBS "Build shared library" OFF)
 option(GDB "Build with debug symbols for gdb" OFF)
 
-# find dependencies
-find_package(Eigen3 5.0.1 REQUIRED)
-find_package(spdlog REQUIRED)
-
 # solver-specific configuration
 set(SOLVER "ONEMKL" CACHE STRING "The linear system solver")
 set_property(CACHE SOLVER PROPERTY STRINGS "INTERNAL" "EIGEN" "ONEMKL" "MUMPS")
@@ -23,8 +19,8 @@ if(SOLVER STREQUAL "INTERNAL")
     add_subdirectory(third-party/ldlt-solver)
 elseif(SOLVER STREQUAL "EIGEN")
     set(SELECTED_SOLVER_DEFINITION NUMAV_USE_EIGEN_SOLVER)
-    set(SOLVER_SPECIFIC_LINK_LIBRARIES -lblas)
-    set(SOLVER_SPECIFIC_DEFINITIONS EIGEN_USE_BLAS)
+    # set(SOLVER_SPECIFIC_LINK_LIBRARIES -lblas)
+    # set(SOLVER_SPECIFIC_DEFINITIONS EIGEN_USE_BLAS)
 elseif(SOLVER STREQUAL "ONEMKL")
     set(SELECTED_SOLVER_DEFINITION NUMAV_USE_ONEMKL_SOLVER)
     set(SOLVER_SPECIFIC_INCLUDE_DIRECTORIES
@@ -60,6 +56,9 @@ target_include_directories(numav
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${CMAKE_CURRENT_SOURCE_DIR}/third-party/indicators/include
         ${CMAKE_CURRENT_SOURCE_DIR}/third-party/safe-ptr/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/third-party/eigen3/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/third-party/spdlog/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/third-party/fmt/include
         ${SOLVER_SPECIFIC_INCLUDE_DIRECTORIES}
 )
 
@@ -75,20 +74,39 @@ target_compile_definitions(numav PUBLIC
 )
 
 target_link_libraries(numav PRIVATE
-    Eigen3::Eigen
-    spdlog::spdlog_header_only
     ${SOLVER_SPECIFIC_LINK_LIBRARIES}
 )
 
+# set numav's compile and link flags
+set(NUMAV_COMPILER_FLAGS -Wall -Wextra)
+set(NUMAV_LINKER_FLAGS)
 if(NOT GDB)
-    set(COMPILER_FLAGS -Ofast -ffast-math)
-    set(LINKER_FLAGS -flto)
+    set(NUMAV_COMPILER_FLAGS ${NUMAV_COMPILER_FLAGS} -O3)
+    set(NUMAV_LINKER_FLAGS ${NUMAV_LINKER_FLAGS} -flto)
 else()
-    set(COMPILER_FLAGS -g -O0 -fno-inline)
+    set(NUMAV_COMPILER_FLAGS ${NUMAV_COMPILER_FLAGS} -g -O0 -fno-inline)
 endif()
+if(BIND_JULIA)
+    set(NUMAV_COMPILER_FLAGS ${NUMAV_COMPILER_FLAGS} -fPIC)
+endif()
+target_compile_options(numav PRIVATE ${NUMAV_COMPILER_FLAGS})
+target_link_options(numav PRIVATE ${NUMAV_LINKER_FLAGS})
 
-target_compile_options(numav PRIVATE -Wall -Wextra -m64 ${COMPILER_FLAGS})
-target_link_options(numav PRIVATE -m64 ${LINKER_FLAGS})
+if(BIND_JULIA)
+    find_package(JlCxx REQUIRED)
+    get_target_property(JlCxx_location JlCxx::cxxwrap_julia LOCATION)
+    get_filename_component(JlCxx_location ${JlCxx_location} DIRECTORY)
+    
+    add_library(numav_jl SHARED
+        ${CMAKE_CURRENT_SOURCE_DIR}/julia_bindings/numav_jl.cpp
+    )
+    target_link_libraries(numav_jl
+        numav
+        JlCxx::cxxwrap_julia
+        JlCxx::cxxwrap_julia_stl
+    )
+    install(TARGETS numav_jl LIBRARY DESTINATION lib)
+endif()
 
 # add subdirectories
 if(BUILD_TESTS)

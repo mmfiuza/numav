@@ -25,28 +25,23 @@ namespace numav {
         D3
     };
 
-    enum class ElementOrder {
-        O1,
-        O2
-    };
-
     enum class TypeOfSource {
         POINT,
         SURFACE
     };
 
     enum class PhysicalQuantity {
-        PRESSURE,
         VOLUME_VELOCITY,
-        PARTICLE_VELOCITY
+        PARTICLE_VELOCITY,
+        PRESSURE
     };
 
     // declare the general Simulation class
     template<
-        Phenomenon PHENOMENON,
-        NumericalMethod NUMERICAL_METHOD,
-        Domain DOMAIN,
-        Dimension DIMENSION,
+        Phenomenon PHE,
+        NumericalMethod NUM,
+        Domain DOM,
+        Dimension DIM,
         auto... EXTRA
     >
     class Simulation {};

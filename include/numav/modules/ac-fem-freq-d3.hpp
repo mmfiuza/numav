@@ -10,6 +10,11 @@
 
 namespace numav {
 
+enum class ElementOrder {
+    O1,
+    O2
+};
+
 enum class FrequencySamplingDensity {
     CONSTANT,
     QUADRATIC
@@ -32,81 +37,81 @@ public:
     Simulation& operator=(Simulation&&) noexcept;
     
     void set_maximum_frequency(
-        const Float
+        const Float maximum_frequnecy_in_hertz
     );
     void set_frequency_range(
-        const Float,
-        const Float
+        const Float minimum_frequnecy_in_hertz,
+        const Float maximum_frequnecy_in_hertz
     );
     void set_frequency_steps_count(
-        const size_t
+        const size_t frequency_steps_count
     );
     void set_frequency_sampling_density(
-        const FrequencySamplingDensity
+        const FrequencySamplingDensity frequency_sampling_density
     );
     void set_frequency_steps(
-        const std::vector<Float>&
+        const std::vector<Float>& frequency_steps
     );
     void load_mesh(
-        const char* const
+        const char* const path_to_mesh_file
     );
     void add_volume_material(
-        const size_t,
-        const FuncFloatToCmplx&,
-        const FuncFloatToCmplx&
+        const size_t external_volume_physical_group,
+        const FuncFloatToCmplx& rho,
+        const FuncFloatToCmplx& c
     );
     void add_volume_material(
-        const size_t,
-        const char* const,
-        const FuncFloatToCmplx&
+        const size_t external_volume_physical_group,
+        const char* const rho,
+        const FuncFloatToCmplx& c
     );
     void add_volume_material(
-        const size_t,
-        const FuncFloatToCmplx&,
-        const char* const
+        const size_t external_volume_physical_group,
+        const FuncFloatToCmplx& rho,
+        const char* const c
     );
     void add_volume_material(
-        const size_t,
-        const char* const,
-        const char* const
+        const size_t external_volume_physical_group,
+        const char* const rho,
+        const char* const c
     );
     void add_sound_source(
-        const TypeOfSource,
-        const std::array<Float,3UL>,
-        const PhysicalQuantity,
-        const FuncFloatToCmplx&
+        const TypeOfSource source_type,
+        const std::array<Float,3UL> coordinates,
+        const PhysicalQuantity physical_quantity_type,
+        const FuncFloatToCmplx& physical_quantity
     );
     void add_sound_source(
-        const TypeOfSource,
-        const std::array<Float,3UL>,
-        const PhysicalQuantity,
-        const char* const
+        const TypeOfSource source_type,
+        const std::array<Float,3UL> coordinates,
+        const PhysicalQuantity physical_quantity_type,
+        const char* const physical_quantity
     );
     void add_sound_source(
-        const TypeOfSource,
-        const size_t,
-        const PhysicalQuantity,
-        const FuncFloatToCmplx&
+        const TypeOfSource source_type,
+        const size_t external_surface_physical_group,
+        const PhysicalQuantity physical_quantity_type,
+        const FuncFloatToCmplx& physical_quantity
     );
     void add_sound_source(
-        const TypeOfSource,
-        const size_t,
-        const PhysicalQuantity,
-        const char* const
+        const TypeOfSource source_type,
+        const size_t external_surface_physical_group,
+        const PhysicalQuantity physical_quantity_type,
+        const char* const physical_quantity
     );
     void add_receiver(
-        const std::array<Float,3UL>
+        const std::array<Float,3UL> coordinates
     );
     void add_surface_specific_acoustic_impedance(
-        const size_t,
-        const FuncFloatToCmplx&
+        const size_t external_surface_physical_group,
+        const FuncFloatToCmplx& impedance
     );
     void add_surface_specific_acoustic_impedance(
-        const size_t,
-        const char* const
+        const size_t external_surface_physical_group,
+        const char* const impedance
     );
     void set_result_export_path(
-        const char* const
+        const char* const path_to_nmvr_file
     );
     void run(
     );
@@ -118,7 +123,7 @@ private:
 
 // alias for simulation type
 template<ElementOrder O>
-using SimulationAcFemFreqD3 = typename numav::Simulation<
+using SimulationAcFemFreqD3 = Simulation<
     Phenomenon::ACOUSTIC,
     NumericalMethod::FEM,
     Domain::FREQUENCY,

@@ -10,7 +10,7 @@ The development container can be started in two ways:
 ### Linux terminal
 To start the container directly in a Linux terminal environment, go to the root directory of this repository and run:
 ```
-./docker/start_container.sh <path-to-your-github-ssh-keys>
+./docker/start-container.sh <path-to-your-github-ssh-keys>
 ```
 `<path-to-your-github-ssh-keys>` is an optional argument. Its default value is `~/.ssh`.
 
@@ -52,4 +52,37 @@ g++ -o my_simulation my_simulation.cpp -Iinclude -L./build/lib -L/opt/intel/onea
 Run:
 ```
 g++ -o my_simulation my_simulation.cpp -I include -L ./build/lib -l numav -Wl,-rpath,./build/lib
+```
+
+## How to build libnumav_jl
+```
+rm -rf build &&
+cmake -B build \
+    -D CMAKE_BUILD_TYPE=Release \
+    -D SOLVER=EIGEN \
+    -D BIND_JULIA=TRUE \
+    -D CMAKE_INSTALL_PREFIX=install \
+    -D CMAKE_PREFIX_PATH=/usr/local/share/julia/artifacts/752d4b39cfdf21d41a0ef67332e5cf4b4bdef3c5 &&
+cmake --build build --parallel ${nproc}
+cmake --install ./build
+```
+
+## How to build the JLL
+```
+julia +1.7.3 /workspace/julia_bindings/build_tarballs.jl --deploy-jll=local
+
+```
+
+## How to generate the libnumav_jl_jll override
+```
+rm -rf /workspace/julia_bindings/override
+mkdir /workspace/julia_bindings/override
+tar -xzvf /workspace/products/libnumav_jl.v0.1.0.x86_64-linux-gnu-cxx11-julia_version+1.11.0.tar.gz -C /workspace/julia_bindings/override
+julia /workspace/julia_bindings/generate_override.jl
+```
+
+## Dev the Julia packages
+```
+] dev /usr/local/share/julia/dev/libnumav_jl_jll
+] dev /workspace/julia_bindings/Numav
 ```

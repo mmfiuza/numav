@@ -1,6 +1,3 @@
-# Prerequisites
-*.d
-
 # Compiled Object files
 *.slo
 *.lo
@@ -34,7 +31,7 @@
 # pdf
 *.pdf
 
-# built files
+# build files
 /build
 /products
 
@@ -42,15 +39,17 @@
 *.bdf
 !tests/*.bdf
 
-# zip
+# compressed files
 *.zip
-
-# julia
-Manifest.toml
+*.tar.gz
 
 # simulation results
-*.bin
 *.nmvr
 
-# Internal stored environment variables
+# internally stored environment variables
 .env
+
+# third-party
+/third-party/eigen3
+/third-party/fmt
+/third-party/spdlog

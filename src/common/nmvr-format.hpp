@@ -1,5 +1,7 @@
 // Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
+#pragma once
+
 #include <fstream>
 #include <array>
 

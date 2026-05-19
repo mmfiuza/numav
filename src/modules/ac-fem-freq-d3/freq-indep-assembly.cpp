@@ -766,7 +766,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_pressure()
     _pvi_to_pressure = fz::SafePtr<FuncFloatToCmplx>(_pvi_count);
     size_t pvi = 0UL;
     for (auto& [set_indexes, ni_vector] : intersections) {
-        auto average = [this, set_indexes](const Float& freq) {
+        auto average = [this, set_indexes = set_indexes](const Float& freq) {
             Cmplx sum = Cmplx(0_F, 0_F);
             for (const auto& set_index : set_indexes) {
                 if (set_index < _ppni_count) {

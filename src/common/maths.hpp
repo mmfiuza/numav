@@ -3,6 +3,7 @@
 #pragma once
 
 #include "numav/aliases.hpp"
+#include "common/utils.hpp"
 
 #include "SafePtr.hpp"
 
@@ -53,12 +54,28 @@ constexpr T power(T N) {
     }
 }
 
-template<auto N, size_t K>
+constexpr Float SQRT(const Float X) {
+    Float low_bound = 0;
+    Float high_bound = (X > 1) ? X : 1;
+    for (size_t i = 0UL; i != 100UL; ++i)
+    {
+        Float mid = (low_bound + high_bound) / 2_F;
+        if (mid * mid > X) {
+            high_bound = mid;
+        }
+        else {
+            low_bound = mid;
+        }
+    }
+    return low_bound;
+};
+
+template<auto X, size_t N>
 constexpr auto POWER = [] {
-    using T = decltype(N);
+    using T = decltype(X);
     T result = T(1);
-    for (size_t i = 0UL; i != K; ++i) {
-        result *= N;
+    for (size_t i = 0UL; i != N; ++i) {
+        result *= X;
     }
     return result;
 }();

@@ -1,5 +1,7 @@
 // Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
+#pragma once
+
 #include "numav/numav.hpp"
 #include "numav/aliases.hpp"
 #include "modules/ac-fem-freq-d3/macros.hpp"
