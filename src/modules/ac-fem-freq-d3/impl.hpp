@@ -117,6 +117,7 @@ private:
     void _generate_extra_nodes();
     size_t _get_closest_point(const std::array<Float,3UL> point_coords);
     void _check_if_mesh_is_defined();
+    void _check_if_did_run();
     void _validate_espg(const size_t espg);
     void _check_if_it_can_run();
     void _define_freq_vector();

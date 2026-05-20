@@ -18,9 +18,30 @@ void SimulationAcFemFreqD3<O>::Impl::_check_if_mesh_is_defined() {
 }
 
 template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::Impl::_check_if_did_run() {
+    if (_did_run) {
+        error("This simulation has already been run.");
+    }
+}
+
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::Impl::_validate_espg(const size_t espg) {
+    if (!_existing_espg.contains(espg)) {
+        error("Physical group {} not found in mesh file.", espg);
+    }
+    if (_espg_to_pressure.contains(espg) ||
+        _espg_to_velocity.contains(espg) ||
+        _espg_to_impedance.contains(espg)
+    ) {
+        error("Physical group {} already assigned.", espg);
+    }
+}
+
+template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::set_maximum_frequency(
     const Float freq_max
 ) {
+    _check_if_did_run();
     if (freq_max < 0_F) {
         error("Maximum frequency should be positive.");
     }
@@ -39,6 +60,7 @@ void SimulationAcFemFreqD3<O>::Impl::set_frequency_range(
     const Float freq_min,
     const Float freq_max
 ) {
+    _check_if_did_run();
     if (freq_min < 0_F || freq_max < 0_F) {
         error("Frequency limits should be positive.");
     }
@@ -60,6 +82,7 @@ template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::set_frequency_steps_count(
     const size_t freq_steps_count
 ) {
+    _check_if_did_run();
     if (_freq_type_defined_by_user == _FreqTypeDefinedByUser::UNDEFINED) {
         error("Simulation frequency was not defined."
             " Call set_maximum_frequency to do so.");
@@ -74,6 +97,7 @@ template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::set_frequency_sampling_density(
     const FrequencySamplingDensity freq_sampling_density
 ) {
+    _check_if_did_run();
     if (_freq_type_defined_by_user == _FreqTypeDefinedByUser::UNDEFINED) {
         error("Simulation frequency was not defined."
             " Call set_maximum_frequency to do so.");
@@ -88,6 +112,7 @@ template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::set_frequency_steps(
     const std::vector<Float>& freq_steps
 ) {
+    _check_if_did_run();
     if (_freq_type_defined_by_user != _FreqTypeDefinedByUser::UNDEFINED) {
         error("Simulation frequency is already defined.");
     }
@@ -106,6 +131,7 @@ template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::load_mesh(
     const char* const path_to_mesh
 ) {
+    _check_if_did_run();
     if (_is_mesh_defined) {
         error("Mesh is already defined.");
     }
@@ -132,11 +158,12 @@ void SimulationAcFemFreqD3<O>::Impl::add_volume_material(
     const FuncFloatToCmplx& soundspeed_func
 ) {
     _check_if_mesh_is_defined();
+    _check_if_did_run();
     if (!_existing_evpg.contains(evpg)) {
-        error("Tag {} not found in mesh file.", evpg);
+        error("Physical group {} not found in mesh file.", evpg);
     }
     if (_evpg_to_volprop.contains(evpg)) {
-        error("Tag {} already assigned.", evpg);
+        error("Physical group {} already assigned.", evpg);
     }
     _evpg_to_volprop.insert({evpg, {density_func, soundspeed_func}});
     const size_t ivpg = _evpg_to_ivpg.size();
@@ -190,6 +217,7 @@ void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
     const FuncFloatToCmplx& pq_func
 ) {
     _check_if_mesh_is_defined();
+    _check_if_did_run();
     // TODO: check if the point is outside the mesh
     if (source_type != TypeOfSource::POINT) {
         error("Tried to assign coordinates to a surface sound source.");
@@ -233,19 +261,6 @@ void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::Impl::_validate_espg(const size_t espg) {
-    if (!_existing_espg.contains(espg)) {
-        error("Tag {} not found in mesh file.", espg);
-    }
-    if (_espg_to_pressure.contains(espg) ||
-        _espg_to_velocity.contains(espg) ||
-        _espg_to_impedance.contains(espg)
-    ) {
-        error("Tag {} already assigned.", espg);
-    }
-}
-
-template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
     const TypeOfSource source_type,
     const size_t espg,
@@ -253,9 +268,10 @@ void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
     const FuncFloatToCmplx& pq_func
 ) {
     _check_if_mesh_is_defined();
+    _check_if_did_run();
     _validate_espg(espg);
     if (source_type != TypeOfSource::SURFACE) {
-        error("Tried to assign a tag to a point.");
+        error("Tried to assign a physical group to a point.");
     }
     
     if (pq_type == PhysicalQuantity::PARTICLE_VELOCITY) {
@@ -299,6 +315,7 @@ void SimulationAcFemFreqD3<O>::Impl::add_receiver(
     const std::array<Float,DIM> point_coords
 ) {
     _check_if_mesh_is_defined();
+    _check_if_did_run();
     // TODO: check if the point is outside the mesh
     const Float& x = point_coords[0UL];
     const Float& y = point_coords[1UL];
@@ -314,6 +331,7 @@ void SimulationAcFemFreqD3<O>::Impl::add_surface_material(
     const FuncFloatToCmplx& pq_func
 ) {
     _check_if_mesh_is_defined();
+    _check_if_did_run();
     _validate_espg(espg);
     if (pq_type != PhysicalQuantity::IMPEDANCE) {
         error("Possible physical quantity type is only impedance");
@@ -342,6 +360,7 @@ void SimulationAcFemFreqD3<O>::Impl::add_surface_material(
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::_check_if_it_can_run() {
     _check_if_mesh_is_defined();
+    _check_if_did_run();
     if (!_is_any_source_defined){
         error("No sound source was defined."
             " Call add_sound_source to do so.");
@@ -352,12 +371,9 @@ void SimulationAcFemFreqD3<O>::Impl::_check_if_it_can_run() {
     }
     for (auto& evpg : _existing_evpg) {
         if (!_evpg_to_volprop.contains(evpg)) {
-            error("Volume tag {} was not assigned."
+            error("Volume physical group {} was not assigned."
             " Call add_volume_material to do so.", evpg);
         }
-    }
-    if (_did_run) {
-        error("This Simulation has already been run.");
     }
 }
 
@@ -365,6 +381,7 @@ template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::set_result_export_path(
     const char* const path_to_result
 ) {
+    _check_if_did_run();
     if (!_nmvr_file_path.empty()) {
         error("Result export path is already defined.");
     }
