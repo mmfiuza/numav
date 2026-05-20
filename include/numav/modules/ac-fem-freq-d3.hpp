@@ -37,11 +37,11 @@ public:
     Simulation& operator=(Simulation&&) noexcept;
     
     void set_maximum_frequency(
-        const Float maximum_frequnecy_in_hertz
+        const Float maximum_frequnecy
     );
     void set_frequency_range(
-        const Float minimum_frequnecy_in_hertz,
-        const Float maximum_frequnecy_in_hertz
+        const Float minimum_frequnecy,
+        const Float maximum_frequnecy
     );
     void set_frequency_steps_count(
         const size_t frequency_steps_count
@@ -57,58 +57,60 @@ public:
     );
     void add_volume_material(
         const size_t external_volume_physical_group,
-        const FuncFloatToCmplx& rho,
-        const FuncFloatToCmplx& c
+        const FuncFloatToCmplx& density,
+        const FuncFloatToCmplx& sound_speed
     );
     void add_volume_material(
         const size_t external_volume_physical_group,
-        const char* const rho,
-        const FuncFloatToCmplx& c
+        const char* const density,
+        const FuncFloatToCmplx& sound_speed
     );
     void add_volume_material(
         const size_t external_volume_physical_group,
-        const FuncFloatToCmplx& rho,
-        const char* const c
+        const FuncFloatToCmplx& density,
+        const char* const sound_speed
     );
     void add_volume_material(
         const size_t external_volume_physical_group,
-        const char* const rho,
-        const char* const c
+        const char* const density,
+        const char* const sound_speed
     );
     void add_sound_source(
         const TypeOfSource source_type,
         const std::array<Float,3UL> coordinates,
         const PhysicalQuantity physical_quantity_type,
-        const FuncFloatToCmplx& physical_quantity
+        const FuncFloatToCmplx& physical_quantity_value
     );
     void add_sound_source(
         const TypeOfSource source_type,
         const std::array<Float,3UL> coordinates,
         const PhysicalQuantity physical_quantity_type,
-        const char* const physical_quantity
+        const char* const physical_quantity_value
     );
     void add_sound_source(
         const TypeOfSource source_type,
         const size_t external_surface_physical_group,
         const PhysicalQuantity physical_quantity_type,
-        const FuncFloatToCmplx& physical_quantity
+        const FuncFloatToCmplx& physical_quantity_value
     );
     void add_sound_source(
         const TypeOfSource source_type,
         const size_t external_surface_physical_group,
         const PhysicalQuantity physical_quantity_type,
-        const char* const physical_quantity
+        const char* const physical_quantity_value
     );
     void add_receiver(
         const std::array<Float,3UL> coordinates
     );
-    void add_surface_specific_acoustic_impedance(
+    void add_surface_material(
         const size_t external_surface_physical_group,
-        const FuncFloatToCmplx& impedance
+        const PhysicalQuantity physical_quantity_type,
+        const FuncFloatToCmplx& physical_quantity_value
     );
-    void add_surface_specific_acoustic_impedance(
+    void add_surface_material(
         const size_t external_surface_physical_group,
-        const char* const impedance
+        const PhysicalQuantity physical_quantity_type,
+        const char* const physical_quantity_value
     );
     void set_result_export_path(
         const char* const path_to_nmvr_file

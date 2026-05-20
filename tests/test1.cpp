@@ -61,7 +61,10 @@ int main()
  
     // add specific surface acoustic impedance
     auto Z = [](auto f) { return std::complex<double>(4000, 4000); };
-    s.add_surface_specific_acoustic_impedance(5, Z);
+    s.add_surface_material(
+        5,
+        PhysicalQuantity::IMPEDANCE, Z
+    );
 
     // set path for result file (.nmvr)
     s.set_result_export_path("result.nmvr");

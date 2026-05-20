@@ -50,3 +50,5 @@
 - RI (Receiver Index)
 
 - NZI (Non-Zero Index)
+
+- PQ (Physical Quantity)

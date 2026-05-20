@@ -98,12 +98,14 @@ public:
     void add_receiver(
         const std::array<Float,DIM>
     );
-    void add_surface_specific_acoustic_impedance(
+    void add_surface_material(
         const size_t,
+        const PhysicalQuantity,
         const FuncFloatToCmplx&
     );
-    void add_surface_specific_acoustic_impedance(
+    void add_surface_material(
         const size_t,
+        const PhysicalQuantity,
         const char* const
     );
     void set_result_export_path(const char* const);
@@ -196,7 +198,7 @@ private:
 
     Float _freq_min;
     Float _freq_max;
-    FrequencySamplingDensity _frequency_sampling_density;
+    FrequencySamplingDensity _freq_sampling_density;
     _FreqTypeDefinedByUser _freq_type_defined_by_user;
     fz::SafePtr<Float> _freq_steps;
 

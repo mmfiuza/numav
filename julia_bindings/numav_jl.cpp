@@ -55,6 +55,9 @@ JLCXX_MODULE define_module_PhysicalQuantity(jlcxx::Module& mod) {
     mod.set_const(
         "pressure", numav::PhysicalQuantity::PRESSURE
     );
+    mod.set_const(
+        "impedance", numav::PhysicalQuantity::IMPEDANCE
+    );
 }
 
 // ElementOrder enum class
@@ -166,56 +169,65 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
         wrapped.module().method("_add_volume_material",
             []( WrappedT& w,
                 const size_t evpg,
-                jlcxx::SafeCFunction rho_real,
-                jlcxx::SafeCFunction rho_imag,
-                jlcxx::SafeCFunction c_real,
-                jlcxx::SafeCFunction c_imag
+                jlcxx::SafeCFunction density_func_real,
+                jlcxx::SafeCFunction density_func_imag,
+                jlcxx::SafeCFunction soundspeed_func_real,
+                jlcxx::SafeCFunction soundspeed_func_imag
             ) { 
                 w.add_volume_material(
                     evpg,
-                    cmplx_func(rho_real, rho_imag),
-                    cmplx_func(c_real, c_imag)
+                    cmplx_func(density_func_real, density_func_imag),
+                    cmplx_func(soundspeed_func_real, soundspeed_func_imag)
                 );
             }
         );
         wrapped.module().method("_add_volume_material",
             []( WrappedT& w,
                 const size_t evpg,
-                const char* const rho,
-                jlcxx::SafeCFunction c_real,
-                jlcxx::SafeCFunction c_imag
-            ) { w.add_volume_material(evpg, rho, cmplx_func(c_real, c_imag)); }
+                const char* const rho_table,
+                jlcxx::SafeCFunction soundspeed_func_real,
+                jlcxx::SafeCFunction soundspeed_func_imag
+            ) { 
+                w.add_volume_material(
+                    evpg,
+                    rho_table,
+                    cmplx_func(soundspeed_func_real, soundspeed_func_imag));
+                }
         );
         wrapped.module().method("_add_volume_material",
             []( WrappedT& w,
                 const size_t evpg,
-                jlcxx::SafeCFunction rho_real,
-                jlcxx::SafeCFunction rho_imag,
-                const char* const c
+                jlcxx::SafeCFunction density_func_real,
+                jlcxx::SafeCFunction density_func_imag,
+                const char* const c_table
             ) { 
-                w.add_volume_material(evpg, cmplx_func(rho_real, rho_imag), c);
+                w.add_volume_material(
+                    evpg,
+                    cmplx_func(density_func_real, density_func_imag),
+                    c_table
+                );
             }
         );
         wrapped.module().method("_add_volume_material",
             []( WrappedT& w,
                 const size_t evpg,
-                const char* const rho,
-                const char* const c
-            ) { w.add_volume_material(evpg, rho, c); }
+                const char* const rho_table,
+                const char* const c_table
+            ) { w.add_volume_material(evpg, rho_table, c_table); }
         );
         wrapped.module().method("_add_sound_source",
             []( WrappedT& w,
                 const numav::TypeOfSource source_type,
                 const jlcxx::ArrayRef<Float> coords,
-                const numav::PhysicalQuantity quantity_type,
-                jlcxx::SafeCFunction quantity_value_real,
-                jlcxx::SafeCFunction quantity_value_imag
+                const numav::PhysicalQuantity pq_type,
+                jlcxx::SafeCFunction pq_func_real,
+                jlcxx::SafeCFunction pq_func_imag
             ) { 
                 w.add_sound_source(
                     source_type,
                     std::array<Float,3UL>{coords[0], coords[1], coords[2]},
-                    quantity_type, 
-                    cmplx_func(quantity_value_real, quantity_value_imag)
+                    pq_type, 
+                    cmplx_func(pq_func_real, pq_func_imag)
                 );
             }
         );
@@ -223,14 +235,14 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
             []( WrappedT& w,
                 const numav::TypeOfSource source_type,
                 const jlcxx::ArrayRef<Float> coords,
-                const numav::PhysicalQuantity quantity_type,
-                const char* const quantity_value
+                const numav::PhysicalQuantity pq_type,
+                const char* const pq_table
             ) { 
                 w.add_sound_source(
                     source_type,
                     std::array<Float,3UL>{coords[0], coords[1], coords[2]},
-                    quantity_type, 
-                    quantity_value
+                    pq_type, 
+                    pq_table
                 );
             }
         );
@@ -238,15 +250,15 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
             []( WrappedT& w,
                 const numav::TypeOfSource source_type,
                 const size_t espg,
-                const numav::PhysicalQuantity quantity_type,
-                jlcxx::SafeCFunction quantity_value_real,
-                jlcxx::SafeCFunction quantity_value_imag
+                const numav::PhysicalQuantity pq_type,
+                jlcxx::SafeCFunction pq_func_real,
+                jlcxx::SafeCFunction pq_func_imag
             ) { 
                 w.add_sound_source(
                     source_type,
                     espg,
-                    quantity_type, 
-                    cmplx_func(quantity_value_real, quantity_value_imag)
+                    pq_type, 
+                    cmplx_func(pq_func_real, pq_func_imag)
                 );
             }
         );
@@ -254,34 +266,43 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
             []( WrappedT& w,
                 const numav::TypeOfSource source_type,
                 const size_t espg,
-                const numav::PhysicalQuantity quantity_type,
-                const char* const quantity_value
+                const numav::PhysicalQuantity pq_type,
+                const char* const pq_table
             ) { 
                 w.add_sound_source(
                     source_type,
                     espg,
-                    quantity_type, 
-                    quantity_value
+                    pq_type, 
+                    pq_table
                 );
             }
         );
-        wrapped.module().method("_add_surface_specific_acoustic_impedance",
+        wrapped.module().method("_add_surface_material",
             []( WrappedT& w,
                 const size_t espg,
-                jlcxx::SafeCFunction impedance_real,
-                jlcxx::SafeCFunction impedance_imag
+                const PhysicalQuantity pq_type,
+                jlcxx::SafeCFunction pq_func_real,
+                jlcxx::SafeCFunction pq_func_imag
             ) {
-                w.add_surface_specific_acoustic_impedance(
+                w.add_surface_material(
                     espg,
-                    cmplx_func(impedance_real, impedance_imag)
+                    pq_type,
+                    cmplx_func(pq_func_real, pq_func_imag)
                 );
             }
         );
-        wrapped.module().method("_add_surface_specific_acoustic_impedance",
+        wrapped.module().method("_add_surface_material",
             []( WrappedT& w,
                 const size_t espg,
-                const char* const impedance
-            ) { w.add_surface_specific_acoustic_impedance(espg, impedance); }
+                const PhysicalQuantity pq_type,
+                const char* const pq_table
+            ) { 
+                w.add_surface_material(
+                    espg,
+                    pq_type,
+                    pq_table
+                );
+            }
         );
         wrapped.module().method("set_result_export_path", 
             []( WrappedT& w,

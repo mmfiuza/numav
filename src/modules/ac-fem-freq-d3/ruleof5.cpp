@@ -32,7 +32,7 @@ SimulationAcFemFreqD3<O>::Impl::Impl() {
     _is_any_source_defined = false;
     _did_run = false;
     _freq_type_defined_by_user = _FreqTypeDefinedByUser::UNDEFINED;
-    _frequency_sampling_density = FrequencySamplingDensity::QUADRATIC;
+    _freq_sampling_density = FrequencySamplingDensity::QUADRATIC;
     _freq_count = NUMAV_DEFAULT_FREQ_STEPS_COUNT;
     _ivpg_count = 0UL;
     _ispgi_count = 0UL;

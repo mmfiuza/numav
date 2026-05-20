@@ -12,7 +12,7 @@ void SimulationAcFemFreqD3<O>::Impl::_define_freq_vector() {
         _freq_min = 0_F;
     }
     if (_freq_type_defined_by_user != _FreqTypeDefinedByUser::STEPS) {
-        switch(_frequency_sampling_density) {
+        switch(_freq_sampling_density) {
             case FrequencySamplingDensity::CONSTANT:
                 _freq_steps = linspace(_freq_min, _freq_max, _freq_count);
                 break;

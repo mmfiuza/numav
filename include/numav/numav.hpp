@@ -33,7 +33,8 @@ namespace numav {
     enum class PhysicalQuantity {
         VOLUME_VELOCITY,
         PARTICLE_VELOCITY,
-        PRESSURE
+        PRESSURE,
+        IMPEDANCE
     };
 
     // declare the general Simulation class

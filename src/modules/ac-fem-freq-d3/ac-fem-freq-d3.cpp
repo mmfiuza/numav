@@ -21,23 +21,23 @@ void SimulationAcFemFreqD3<O>::set_frequency_range(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::set_frequency_steps_count(
-    const size_t frequency_steps_count
+    const size_t freq_steps_count
 ) {
-    _pimpl->set_frequency_steps_count(frequency_steps_count);
+    _pimpl->set_frequency_steps_count(freq_steps_count);
 }
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::set_frequency_sampling_density(
-    const FrequencySamplingDensity frequency_sampling_density
+    const FrequencySamplingDensity freq_sampling_density
 ) {
-    _pimpl->set_frequency_sampling_density(frequency_sampling_density);
+    _pimpl->set_frequency_sampling_density(freq_sampling_density);
 }
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::set_frequency_steps(
-    const std::vector<Float>& frequency_steps
+    const std::vector<Float>& freq_steps
 ) {
-    _pimpl->set_frequency_steps(frequency_steps);
+    _pimpl->set_frequency_steps(freq_steps);
 }
 
 template <ElementOrder O>
@@ -50,120 +50,102 @@ void SimulationAcFemFreqD3<O>::load_mesh(
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::add_volume_material(
     const size_t evpg,
-    const FuncFloatToCmplx& density,
-    const FuncFloatToCmplx& soundspeed
+    const FuncFloatToCmplx& density_func,
+    const FuncFloatToCmplx& soundspeed_func
 ) {
-    _pimpl->add_volume_material(evpg, density, soundspeed);
+    _pimpl->add_volume_material(evpg, density_func, soundspeed_func);
 }
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::add_volume_material(
     const size_t evpg,
-    const char* const density_text_file,
-    const FuncFloatToCmplx& soundspeed
+    const char* const density_table,
+    const FuncFloatToCmplx& soundspeed_func
 ) {
-    _pimpl->add_volume_material(evpg, density_text_file, soundspeed);
+    _pimpl->add_volume_material(evpg, density_table, soundspeed_func);
 }
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::add_volume_material(
     const size_t evpg,
-    const FuncFloatToCmplx& density,
-    const char* const soundspeed_text_file
+    const FuncFloatToCmplx& density_func,
+    const char* const soundspeed_table
 ) {
-    _pimpl->add_volume_material(evpg, density, soundspeed_text_file);
+    _pimpl->add_volume_material(evpg, density_func, soundspeed_table);
 }
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::add_volume_material(
     const size_t evpg,
-    const char* const density_text_file,
-    const char* const soundspeed_text_file
+    const char* const density_table,
+    const char* const soundspeed_table
 ) {
-    _pimpl->add_volume_material(evpg, density_text_file, soundspeed_text_file);
+    _pimpl->add_volume_material(evpg, density_table, soundspeed_table);
 }
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::add_sound_source(
-    const TypeOfSource type_of_source,
-    const std::array<Float,3UL> point_coordinates,
-    const PhysicalQuantity physical_quantity_type,
-    const FuncFloatToCmplx& physical_quantity_value
+    const TypeOfSource source_type,
+    const std::array<Float,3UL> point_coords,
+    const PhysicalQuantity pq_type,
+    const FuncFloatToCmplx& pq_func
 ) {
-    _pimpl->add_sound_source(
-        type_of_source,
-        point_coordinates,
-        physical_quantity_type,
-        physical_quantity_value
-    );
+    _pimpl->add_sound_source(source_type, point_coords, pq_type, pq_func);
 }
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::add_sound_source(
-    const TypeOfSource type_of_source,
-    const std::array<Float,3UL> point_coordinates,
-    const PhysicalQuantity physical_quantity_type,
-    const char* const physical_quantity_value_text_file
+    const TypeOfSource source_type,
+    const std::array<Float,3UL> point_coords,
+    const PhysicalQuantity pq_type,
+    const char* const pq_table
 ) {
-    _pimpl->add_sound_source(
-        type_of_source,
-        point_coordinates,
-        physical_quantity_type,
-        physical_quantity_value_text_file
-    );
+    _pimpl->add_sound_source(source_type, point_coords, pq_type, pq_table);
 }
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::add_sound_source(
-    const TypeOfSource type_of_source,
+    const TypeOfSource source_type,
     const size_t espg,
-    const PhysicalQuantity physical_quantity_type,
-    const FuncFloatToCmplx& physical_quantity_value
+    const PhysicalQuantity pq_type,
+    const FuncFloatToCmplx& pq_func
 ) {
-    _pimpl->add_sound_source(
-        type_of_source,
-        espg,
-        physical_quantity_type,
-        physical_quantity_value
-    );
+    _pimpl->add_sound_source(source_type, espg, pq_type, pq_func);
 }
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::add_sound_source(
-    const TypeOfSource type_of_source,
+    const TypeOfSource source_type,
     const size_t espg,
-    const PhysicalQuantity physical_quantity_type,
-    const char* const physical_quantity_value_text_file
+    const PhysicalQuantity pq_type,
+    const char* const pq_table
 ) {
-    _pimpl->add_sound_source(
-        type_of_source,
-        espg,
-        physical_quantity_type,
-        physical_quantity_value_text_file
-    );
+    _pimpl->add_sound_source(source_type, espg, pq_type, pq_table);
 }
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::add_receiver(
-    const std::array<Float,3UL> point_coordinates
+    const std::array<Float,3UL> point_coords
 ) {
-    _pimpl->add_receiver(point_coordinates);
+    _pimpl->add_receiver(point_coords);
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::add_surface_specific_acoustic_impedance(
+void SimulationAcFemFreqD3<O>::add_surface_material(
     const size_t espg,
-    const FuncFloatToCmplx& impedance
+    const PhysicalQuantity pq_type,
+    const FuncFloatToCmplx& pq_func
 ) {
-    _pimpl->add_surface_specific_acoustic_impedance(espg, impedance);
+    _pimpl->add_surface_material(espg, pq_type, pq_func);
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::add_surface_specific_acoustic_impedance(
+void SimulationAcFemFreqD3<O>::add_surface_material(
     const size_t espg,
-    const char* const impedance_text_file
+    const PhysicalQuantity pq_type,
+    const char* const pq_table
 ) {
-    _pimpl->add_surface_specific_acoustic_impedance(espg, impedance_text_file);
+    _pimpl->add_surface_material(espg, pq_type, pq_table);
 }
 
 template <ElementOrder O>

@@ -26,7 +26,7 @@ export
     load_mesh,
     add_volume_material,
     add_sound_source,
-    add_specific_surface_acoustic_impedance,
+    add_surface_material,
     set_result_export_path,
     simulate
 
@@ -118,22 +118,34 @@ function __init__()
     @initcxx
 end
 
+using Base.Threads
+
+# global storage for user-defined functions
+const _user_functions::Vector{Ref{Function}} = [ ]
+global _next_index::Int = 1
+_lock = ReentrantLock()
+
+function _cmplx_split_and_store(f::Function)
+    idx = lock(_lock) do
+        global _next_index
+        idx = _next_index
+        _next_index += 1
+        push!(_user_functions, f)
+        return idx
+    end
+    name_real = Symbol("_f", idx, "_r")
+    name_imag = Symbol("_f", idx, "_i")
+    @eval begin
+        ($name_real)(x::Float64) = Float64(real(_user_functions[$idx][](x)))
+        ($name_imag)(x::Float64) = Float64(imag(_user_functions[$idx][](x)))
+    end
+    f_real = @eval CxxWrap.@safe_cfunction($(name_real), Float64, (Float64,))
+    f_imag = @eval CxxWrap.@safe_cfunction($(name_imag), Float64, (Float64,))
+    return (f_real, f_imag)
+end
+
 struct _Empty end
 const _empty = _Empty()
-
-function _split_cmplx_func(func::Function)
-    real_cfunc = CxxWrap.@safe_cfunction(
-        x -> Float64(real(func(x))),
-        Float64,
-        (Float64,)
-    )
-    imag_cfunc = CxxWrap.@safe_cfunction(
-        x -> Float64(imag(func(x))),
-        Float64,
-        (Float64,)
-    )
-    return (real_cfunc, imag_cfunc)
-end
 
 function add_volume_material( 
     simulation::Simulation{
@@ -142,17 +154,22 @@ function add_volume_material(
         Domain.frequency,
         Dimension.d3,
         ElementOrder.o1
-    },
+    };
     physical_group::Int,
-    rho::Function,
-    c::Function
+    density::Function,
+    sound_speed::Function
 )
-    rho_real, rho_imag = _split_cmplx_func(rho)
-    c_real, c_imag = _split_cmplx_func(c)
+    density_real, density_imag = _cmplx_split_and_store(density)
+    sound_speed_real, sound_speed_imag = _cmplx_split_and_store(sound_speed)
 
-    # call the C++ function
+    # call the C++ method
     _add_volume_material(
-        simulation, physical_group, rho_real, rho_imag, c_real, c_imag
+        simulation,
+        physical_group,
+        density_real,
+        density_imag,
+        sound_speed_real,
+        sound_speed_imag
     )
 end
 
@@ -203,44 +220,43 @@ function add_sound_source(
     end
 
     # Check if velocity or pressure was given
-    physical_quantity_function = Ref{Function}()
+    pq_func = Ref{Function}()
     if volume_velocity != _empty
-        physical_quantity_type = PhysicalQuantity.volume_velocity
-        physical_quantity_function[] = volume_velocity
+        pq_type = PhysicalQuantity.volume_velocity
+        pq_func[] = volume_velocity
     elseif particle_velocity != _empty
-        physical_quantity_type = PhysicalQuantity.particle_velocity
-        physical_quantity_function[] = particle_velocity
+        pq_type = PhysicalQuantity.particle_velocity
+        pq_func[] = particle_velocity
     elseif pressure != _empty
-        physical_quantity_type = PhysicalQuantity.pressure
-        physical_quantity_function[] = pressure
+        pq_type = PhysicalQuantity.pressure
+        pq_func[] = pressure
     end
 
-    physical_quantity_real, physical_quantity_imag = 
-        _split_cmplx_func(physical_quantity_function[])
+    pq_func_real, pq_func_imag = _cmplx_split_and_store(pq_func[])
 
-    # call the C++ function
+    # call the C++ method
     if coordinates != _empty
         _add_sound_source(
             simulation,
             TypeOfSource.point,
             coordinates,
-            physical_quantity_type, 
-            physical_quantity_real,
-            physical_quantity_imag
+            pq_type, 
+            pq_func_real,
+            pq_func_imag
         )
     else
         _add_sound_source(
             simulation,
             TypeOfSource.surface,
             physical_group,
-            physical_quantity_type,
-            physical_quantity_real,
-            physical_quantity_imag
+            pq_type,
+            pq_func_real,
+            pq_func_imag
         )
     end
 end
 
-function add_specific_surface_acoustic_impedance( 
+function add_surface_material( 
     simulation::Simulation{
         Phenomenon.acoustic,
         NumericalMethod.fem,
@@ -251,13 +267,15 @@ function add_specific_surface_acoustic_impedance(
     physical_group::Int,
     impedance::Function,
 )
-    impedance_real, impedance_imag = _split_cmplx_func(impedance)
-    # call the C++ function
-    _add_surface_specific_acoustic_impedance(
+    pq_func_real, pq_funq_imag = _cmplx_split_and_store(impedance)
+
+    # call the C++ method
+    _add_surface_material(
         simulation,
         physical_group,
-        impedance_real,
-        impedance_imag
+        PhysicalQuantity.impedance,
+        pq_func_real,
+        pq_funq_imag
     )
 end
 

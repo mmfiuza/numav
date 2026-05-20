@@ -23,7 +23,7 @@ Plots.plot(
     xticks = (20: 10 : 100, string.(20: 10 : 100)),
     xlabel = "Frequency (Hz)",
     ylabel = "SPL (dB)",
-    title = "Frequency response",
+    title = "Frequency response (dB)",
     grid = true,
     gridalpha = 0.25,
     legendposition = (0.11, 0.9),
@@ -38,11 +38,11 @@ Plots.plot(
     size = (600, 400),
 )
 Plots.plot!(
-    vec(freq_1), vec(abs.(spl_1[665,:])),
+    vec(freq_1), vec(spl_1[370,:]),
     label = "1"
 )
 Plots.plot!(
-    vec(freq_2), vec(spl_2[665,:]),
+    vec(freq_2), vec(spl_2[370,:]),
     label = "2",
     linestyle = :dash
 )

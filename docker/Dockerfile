@@ -70,6 +70,7 @@ RUN chmod -R 777 ${JULIAUP_DEPOT_PATH}/juliaup
 # install Julia packages
 RUN julia +${JULIA_VERSION} -e 'using Pkg; Pkg.add([ \
     PackageSpec(name="CxxWrap", version="0.17.5"), \
+    PackageSpec(name="libcxxwrap_julia_jll", version="0.14.9"), \
     PackageSpec(name="Plots"), \
     PackageSpec(name="Symbolics"), \
     PackageSpec(name="Revise") \

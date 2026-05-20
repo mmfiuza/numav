@@ -57,13 +57,14 @@ g++ -o my_simulation my_simulation.cpp -I include -L ./build/lib -l numav -Wl,-r
 ## How to build libnumav_jl
 ```
 rm -rf build &&
+rm -rf julia_bindings/override/lib &&
 cmake -B build \
     -D CMAKE_BUILD_TYPE=Release \
     -D SOLVER=EIGEN \
     -D BIND_JULIA=TRUE \
-    -D CMAKE_INSTALL_PREFIX=install \
-    -D CMAKE_PREFIX_PATH=/usr/local/share/julia/artifacts/752d4b39cfdf21d41a0ef67332e5cf4b4bdef3c5 &&
-cmake --build build --parallel ${nproc}
+    -D CMAKE_INSTALL_PREFIX=julia_bindings/override \
+    -D CMAKE_PREFIX_PATH=/usr/local/share/julia/artifacts/662f181f562225e139306f1e6e383c70bc9255f9 &&
+cmake --build build --parallel ${nproc} &&
 cmake --install ./build
 ```
 

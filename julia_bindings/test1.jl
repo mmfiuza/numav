@@ -19,12 +19,12 @@ set_maximum_frequency(s, freq_max)
 load_mesh(s, "tests/test1.bdf")
 
 # add a volume materials
-rho_air_1(f) = 1.20
-c_air_1(f) = 343
-add_volume_material(s, 1, rho_air_1, c_air_1)
-rho_air_2(f) = 1.20 + 2im
-c_air_2(f) = 343 + 3im
-add_volume_material(s, 2, rho_air_2, c_air_2)
+rho1(f) = 1.20
+c1(f) = 343
+add_volume_material(s, physical_group=1, density=rho1, sound_speed=c1)
+rho2(f) = 1.20 + 2im
+c2(f) = 343 + 3im
+add_volume_material(s, physical_group=2, density=rho2, sound_speed=c2)
 
 # add volume velocity sources
 Q(f) = 10/f
@@ -39,7 +39,7 @@ add_sound_source(s, physical_group=3, pressure=P)
 
 # add specific surface acoustic impedance
 Z(f) = 1f + 2im
-add_specific_surface_acoustic_impedance(s, physical_group=4, impedance=Z)
+add_surface_material(s, physical_group=4, impedance=Z)
 
 set_result_export_path(s, "result.nmvr")
 
