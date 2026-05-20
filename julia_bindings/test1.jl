@@ -44,4 +44,4 @@ add_surface_material(s, physical_group=4, impedance=Z)
 set_result_export_path(s, "result.nmvr")
 
 # run the simulation
-result = simulate(s)
+simulate(s)

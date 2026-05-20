@@ -33,7 +33,7 @@ SimulationAcFemFreqD3<O>::Impl::Impl() {
     _did_run = false;
     _freq_type_defined_by_user = _FreqTypeDefinedByUser::UNDEFINED;
     _freq_sampling_density = FrequencySamplingDensity::QUADRATIC;
-    _freq_count = NUMAV_DEFAULT_FREQ_STEPS_COUNT;
+    _freq_count = DEFAULT_FREQ_STEPS_COUNT;
     _ivpg_count = 0UL;
     _ispgi_count = 0UL;
     _pvni_count = 0UL;
@@ -51,69 +51,70 @@ SimulationAcFemFreqD3<O>::Impl::Impl() {
 
 template<ElementOrder O>
 SimulationAcFemFreqD3<O>::Impl::~Impl() {
-    _freq_steps.free();
-    _ni_to_coords.free();
-    _sei_to_ni.free();
-    _vei_to_ni.free();
-    _sei_to_espg.free();
-    _vei_to_evpg.free();
-    _isei_to_sei.free();
-    _vsei_to_sei.free();
-    _psei_to_sei.free();
-    _vei_to_ivpg.free();
-    _isei_to_ispgi.free();
-    _vsei_to_ispgv.free();
-    _psei_to_ispgp.free();
-    _ni_connections.free();
-    _a_vals.free();
-    _b_row_idx.free();
-    _b_vals.free();
-    _ivpg_to_volprop.free();
-    _ispgi_to_impedance.free();
-    _ispgv_to_velocity.free();
-    _ispgp_to_pressure.free();
-    for (size_t ivpg = 0UL; ivpg != _ivpg_count; ++ivpg) {
-        _ivpg_to_stif_fi_part[ivpg].free();
-        _ivpg_to_mass_fi_part[ivpg].free();
-        _ivpg_to_ptr_in_a[ivpg].free();
+    if (!_did_run && _is_mesh_defined) {
+        _ni_to_coords.free();
+        _sei_to_ni.free();
+        _vei_to_ni.free();
+        _sei_to_espg.free();
+        _vei_to_evpg.free();
     }
-    _ivpg_to_stif_fi_part.free();
-    _ivpg_to_mass_fi_part.free();
-    _ivpg_to_ptr_in_a.free();
-    for (size_t ispgi = 0UL; ispgi != _ispgi_count; ++ispgi) {
-        _ispgi_to_damp_fi_part[ispgi].free();
-        _ispgi_to_ptr_in_a[ispgi].free();
+    if (!_did_run &&
+        _freq_type_defined_by_user == _FreqTypeDefinedByUser::STEPS
+    ) {
+        _freq_steps.free();
     }
-    _ispgi_to_damp_fi_part.free();
-    _ispgi_to_ptr_in_a.free();
-    _pvni_to_forc_fi_part.free();
-    _pvni_to_ptr_in_b.free();
-    for (size_t ispgv = 0UL; ispgv != _ispgv_count; ++ispgv) {
-        _ispgv_to_forc_fi_part[ispgv].free();
-        _ispgv_to_ptr_in_b[ispgv].free();
+    if (_did_run) {
+        _freq_steps.free();
+        _a_vals.free();
+        _b_row_idx.free();
+        _b_vals.free();
+        _ivpg_to_volprop.free();
+        _ispgi_to_impedance.free();
+        _ispgv_to_velocity.free();
+        for (size_t ivpg = 0UL; ivpg != _ivpg_count; ++ivpg) {
+            _ivpg_to_stif_fi_part[ivpg].free();
+            _ivpg_to_mass_fi_part[ivpg].free();
+            _ivpg_to_ptr_in_a[ivpg].free();
+        }
+        _ivpg_to_stif_fi_part.free();
+        _ivpg_to_mass_fi_part.free();
+        _ivpg_to_ptr_in_a.free();
+        for (size_t ispgi = 0UL; ispgi != _ispgi_count; ++ispgi) {
+            _ispgi_to_damp_fi_part[ispgi].free();
+            _ispgi_to_ptr_in_a[ispgi].free();
+        }
+        _ispgi_to_damp_fi_part.free();
+        _ispgi_to_ptr_in_a.free();
+        _pvni_to_forc_fi_part.free();
+        _pvni_to_ptr_in_b.free();
+        for (size_t ispgv = 0UL; ispgv != _ispgv_count; ++ispgv) {
+            _ispgv_to_forc_fi_part[ispgv].free();
+            _ispgv_to_ptr_in_b[ispgv].free();
+        }
+        _ispgv_to_forc_fi_part.free();
+        _ispgv_to_ptr_in_b.free();
+        _ispgp_to_pressure.free();
+        _pvi_to_pressure.free();
+        for (size_t pvi = 0UL; pvi != _pvi_count; ++pvi) {
+            _pvi_to_ptr_in_a[pvi].free();
+            _pvi_to_ptr_in_b[pvi].free();
+        }
+        _pvi_to_ptr_in_a.free();
+        _pvi_to_ptr_in_b.free();
+        _x.free();
+        #if NUMAV_SYSTEM_SOLVER == NUMAV_INTERNAL
+            _b_dense.free();
+            _a_diag.free();
+        #elif NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
+            _a_row_idx.free();
+            _a_col_idx.free();
+            _b_row_idx_signed.free();
+        #elif NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
+            _b_dense.free();
+        #elif NUMAV_SYSTEM_SOLVER == NUMAV_MUMPS
+            _b_dense.free();
+        #endif
     }
-    _ispgv_to_forc_fi_part.free();
-    _ispgv_to_ptr_in_b.free();
-    _pvi_to_pressure.free();
-    for (size_t pvi = 0UL; pvi != _pvi_count; ++pvi) {
-        _pvi_to_ptr_in_a[pvi].free();
-        _pvi_to_ptr_in_b[pvi].free();
-    }
-    _pvi_to_ptr_in_a.free();
-    _pvi_to_ptr_in_b.free();
-    _x.free();
-    #if NUMAV_SYSTEM_SOLVER == NUMAV_INTERNAL
-        _b_dense.free();
-        _a_diag.free();
-    #elif NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
-        _a_row_idx.free();
-        _a_col_idx.free();
-        _b_row_idx_signed.free();
-    #elif NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
-        _b_dense.free();
-    #elif NUMAV_SYSTEM_SOLVER == NUMAV_MUMPS
-        _b_dense.free();
-    #endif
 }
 
 template<ElementOrder O>

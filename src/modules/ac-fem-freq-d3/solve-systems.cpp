@@ -12,6 +12,35 @@
 namespace numav {
 
 template<ElementOrder O>
+void SimulationAcFemFreqD3<O>::Impl::_clear_data_not_used_in_freq_iterations()
+{
+    _existing_evpg.clear();
+    _existing_espg.clear();
+    _evpg_to_volprop.clear();
+    _espg_to_impedance.clear();
+    _espg_to_velocity.clear();
+    _espg_to_pressure.clear();
+    _espg_to_ispg.clear();
+    _evpg_to_ivpg.clear();
+    _point_volvel.clear();
+    _point_pressure.clear();
+    _receiver_points.clear();
+    _ni_to_coords.free();
+    _sei_to_ni.free();
+    _vei_to_ni.free();
+    _sei_to_espg.free();
+    _vei_to_evpg.free();
+    _isei_to_sei.free();
+    _vsei_to_sei.free();
+    _psei_to_sei.free();
+    _vei_to_ivpg.free();
+    _isei_to_ispgi.free();
+    _vsei_to_ispgv.free();
+    _psei_to_ispgp.free();
+    _ni_connections.free();
+}
+
+template<ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
 {
     _begin_nmvr_file();
@@ -21,6 +50,8 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
         nmvr::COMPLEX_AMPLITUDE_OF_SOUND_PRESSURE_SOLUTION_CHUNK_ID,
         _ni_count * _freq_count * sizeof(std::complex<double>)
     );
+
+    _clear_data_not_used_in_freq_iterations();
 
     // print start time
     log::print_start_time();

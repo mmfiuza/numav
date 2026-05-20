@@ -138,6 +138,7 @@ private:
     void _post_process();
     void _begin_nmvr_file();
     void _write_simulation_inputs_to_nmvr_file();
+    void _clear_data_not_used_in_freq_iterations();
     void _end_nmvr_file();
     #if NUMAV_SYSTEM_SOLVER == NUMAV_INTERNAL
         void _define_sparsity_pattern_using_internal_solver();
@@ -172,6 +173,7 @@ private:
 
     std::unordered_set<size_t> _existing_evpg;
     std::unordered_set<size_t> _existing_espg;
+
     std::unordered_map<size_t, _VolProp> _evpg_to_volprop;
     std::unordered_map<size_t, FuncFloatToCmplx> _espg_to_impedance;
     std::unordered_map<size_t, FuncFloatToCmplx> _espg_to_velocity;
@@ -185,12 +187,14 @@ private:
     std::vector<std::tuple<size_t, FuncFloatToCmplx>> _point_pressure;
     std::vector<std::array<Float, DIM>> _receiver_points;
 
-    fz::SafePtr<Float> _freq_steps;
+    // members allocated during mesh load
     fz::SafePtr<std::array<Float, DIM>> _ni_to_coords;
     fz::SafePtr<std::array<size_t, NODES_IN_SFC_ELEM<O>>> _sei_to_ni;
     fz::SafePtr<std::array<size_t, NODES_IN_VOL_ELEM<O>>> _vei_to_ni;
     fz::SafePtr<size_t> _sei_to_espg;
     fz::SafePtr<size_t> _vei_to_evpg;
+
+    // members allocated during the simulation run
     fz::SafePtr<size_t> _isei_to_sei;
     fz::SafePtr<size_t> _vsei_to_sei;
     fz::SafePtr<size_t> _psei_to_sei;
@@ -198,10 +202,13 @@ private:
     fz::SafePtr<size_t> _isei_to_ispgi;
     fz::SafePtr<size_t> _vsei_to_ispgv;
     fz::SafePtr<size_t> _psei_to_ispgp;
+    fz::SafePtr<std::pair<size_t, size_t>> _ni_connections;
+    
+    // members used during frequency iterations
+    fz::SafePtr<Float> _freq_steps;
     fz::SafePtr<_VolProp> _ivpg_to_volprop;
     fz::SafePtr<FuncFloatToCmplx> _ispgi_to_impedance;
     fz::SafePtr<FuncFloatToCmplx> _ispgv_to_velocity;
-    fz::SafePtr<FuncFloatToCmplx> _ispgp_to_pressure;
     fz::SafePtr<fz::SafePtr<Float>> _ivpg_to_stif_fi_part;
     fz::SafePtr<fz::SafePtr<Float>> _ivpg_to_mass_fi_part;
     fz::SafePtr<fz::SafePtr<Cmplx*>> _ivpg_to_ptr_in_a;
@@ -211,10 +218,10 @@ private:
     fz::SafePtr<Cmplx*> _pvni_to_ptr_in_b;
     fz::SafePtr<fz::SafePtr<Float>> _ispgv_to_forc_fi_part;
     fz::SafePtr<fz::SafePtr<Cmplx*>> _ispgv_to_ptr_in_b;
+    fz::SafePtr<FuncFloatToCmplx> _ispgp_to_pressure;
     fz::SafePtr<FuncFloatToCmplx> _pvi_to_pressure;
     fz::SafePtr<fz::SafePtr<Cmplx*>> _pvi_to_ptr_in_a;
     fz::SafePtr<fz::SafePtr<Cmplx*>> _pvi_to_ptr_in_b;
-    fz::SafePtr<std::pair<size_t, size_t>> _ni_connections;
     fz::SafePtr<Cmplx> _a_vals;
     fz::SafePtr<size_t> _b_row_idx;
     fz::SafePtr<Cmplx> _b_vals;
