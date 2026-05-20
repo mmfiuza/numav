@@ -184,17 +184,17 @@ void SimulationAcFemFreqD3<O>::Impl::add_volume_material(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
-    const TypeOfSource type_of_source,
-    const std::array<Float,3UL> point_coordinates,
+    const TypeOfSource source_type,
+    const std::array<Float,3UL> point_coords,
     const PhysicalQuantity pq_type,
     const FuncFloatToCmplx& pq_func
 ) {
     _check_if_mesh_is_defined();
     // TODO: check if the point is outside the mesh
-    if (type_of_source != TypeOfSource::POINT) {
+    if (source_type != TypeOfSource::POINT) {
         error("Tried to assign coordinates to a surface sound source.");
     }
-    const size_t closest_ni = _get_closest_point(point_coordinates);
+    const size_t closest_ni = _get_closest_point(point_coords);
     
     if (pq_type == PhysicalQuantity::VOLUME_VELOCITY) {
         _point_volvel.push_back(
@@ -217,16 +217,16 @@ void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
-    const TypeOfSource type_of_source,
-    const std::array<Float,3UL> point_coordinates,
+    const TypeOfSource source_type,
+    const std::array<Float,3UL> point_coords,
     const PhysicalQuantity pq_type,
     const char* const pq_table
 ) {
     FuncFloatToCmplx pq_func = convert_table_to_real_to_cmplx_func(pq_table);
 
     add_sound_source(
-        type_of_source,
-        point_coordinates,
+        source_type,
+        point_coords,
         pq_type,
         pq_func
     );
@@ -247,14 +247,14 @@ void SimulationAcFemFreqD3<O>::Impl::_validate_espg(const size_t espg) {
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
-    const TypeOfSource type_of_source,
+    const TypeOfSource source_type,
     const size_t espg,
     const PhysicalQuantity pq_type,
     const FuncFloatToCmplx& pq_func
 ) {
     _check_if_mesh_is_defined();
     _validate_espg(espg);
-    if (type_of_source != TypeOfSource::SURFACE) {
+    if (source_type != TypeOfSource::SURFACE) {
         error("Tried to assign a tag to a point.");
     }
     
@@ -279,7 +279,7 @@ void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
-    const TypeOfSource type_of_source,
+    const TypeOfSource source_type,
     const size_t espg,
     const PhysicalQuantity pq_type,
     const char* const pq_table
@@ -287,7 +287,7 @@ void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
     FuncFloatToCmplx pq_func = convert_table_to_real_to_cmplx_func(pq_table);
 
     add_sound_source(
-        type_of_source,
+        source_type,
         espg,
         pq_type,
         pq_func
@@ -296,13 +296,13 @@ void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_receiver(
-    const std::array<Float,DIM> point_coordinates
+    const std::array<Float,DIM> point_coords
 ) {
     _check_if_mesh_is_defined();
     // TODO: check if the point is outside the mesh
-    const Float& x = point_coordinates[0UL];
-    const Float& y = point_coordinates[1UL];
-    const Float& z = point_coordinates[2UL];
+    const Float& x = point_coords[0UL];
+    const Float& y = point_coords[1UL];
+    const Float& z = point_coords[2UL];
     _receiver_points.emplace_back(std::array<Float,DIM>{x, y, z});
     ++_ri_count;
 }

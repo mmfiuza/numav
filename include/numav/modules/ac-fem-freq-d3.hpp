@@ -10,12 +10,12 @@
 
 namespace numav {
 
-enum class ElementOrder {
+enum class ElementOrder : size_t {
     O1,
     O2
 };
 
-enum class FrequencySamplingDensity {
+enum class FrequencySamplingDensity : size_t {
     CONSTANT,
     QUADRATIC
 };

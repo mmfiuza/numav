@@ -42,7 +42,7 @@
 namespace numav {
 
 // define the triangular type for the global matrix
-enum class TriangularMatrixType {
+enum class TriangularMatrixType : size_t {
     LOWER,
     UPPER
 };
@@ -63,7 +63,7 @@ enum class TriangularMatrixType {
 #endif
 
 // define the storage order for the global matrix
-enum class MatrixStorageOrder {
+enum class MatrixStorageOrder : size_t {
     ROW_MAJOR,
     COL_MAJOR
 };

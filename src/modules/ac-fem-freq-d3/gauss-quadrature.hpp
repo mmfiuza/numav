@@ -65,7 +65,7 @@ constexpr std::array<std::array<Float,DIM>,N> GAUSS_POINTS_VOL = [] {
         }};
     }
     if constexpr (N == 11UL) {
-        constexpr Float a =  1_F / 4_F;
+        constexpr Float a =  1_F /  4_F;
         constexpr Float b =  1_F / 14_F;
         constexpr Float c = 11_F / 14_F;
         constexpr Float d = 0.399403576166799_F; // TODO: discover the fraction
@@ -77,7 +77,7 @@ constexpr std::array<std::array<Float,DIM>,N> GAUSS_POINTS_VOL = [] {
         }};
     }
     if constexpr (N == 15UL) {
-        constexpr Float a = 1_F / 4_F;
+        constexpr Float a =                     1_F /  4_F;
         constexpr Float b = ( 7_F +     SQRT(15_F)) / 34_F;
         constexpr Float c = ( 7_F -     SQRT(15_F)) / 34_F;
         constexpr Float d = (13_F - 3_F*SQRT(15_F)) / 34_F;
@@ -117,20 +117,20 @@ constexpr std::array<Float,N> GAUSS_WEIGHTS_VOL = [] {
     }
     if constexpr (N == 5UL) {
         constexpr Float a = -2_F / 15_F;
-        constexpr Float b = 3_F / 40_F;
+        constexpr Float b =  3_F / 40_F;
         return std::array<Float,N>({a,b,b,b,b});
     }
     if constexpr (N == 11UL) {
-        constexpr Float a = -74_F / 5625_F;
+        constexpr Float a = -74_F /  5625_F;
         constexpr Float b = 343_F / 45000_F;
-        constexpr Float c = 28_F / 1125_F;
+        constexpr Float c =  28_F /  1125_F;
         return std::array<Float,N>({a,b,b,b,b,c,c,c,c,c,c});
     }
     if constexpr (N == 15UL) {
-        constexpr Float a = 8_F / 405_F;
+        constexpr Float a =                        8_F /    405_F;
         constexpr Float b = (2665_F - 14_F*SQRT(15_F)) / 226800_F;
         constexpr Float c = (2665_F + 14_F*SQRT(15_F)) / 226800_F;
-        constexpr Float d = 5_F / 567_F;
+        constexpr Float d =                        5_F /    567_F;
         return std::array<Float,N>({a,b,b,b,b,c,c,c,c,d,d,d,d,d,d});
     }
 }();
