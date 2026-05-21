@@ -83,45 +83,22 @@ void SimulationAcFemFreqD3<O>::add_volume_material(
     _pimpl->add_volume_material(evpg, density_table, soundspeed_table);
 }
 
-template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::add_sound_source(
-    const TypeOfSource source_type,
-    const std::array<Float,3UL> point_coords,
-    const PhysicalQuantity pq_type,
-    const FuncFloatToCmplx& pq_func
-) {
-    _pimpl->add_sound_source(source_type, point_coords, pq_type, pq_func);
-}
-
-template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::add_sound_source(
-    const TypeOfSource source_type,
-    const std::array<Float,3UL> point_coords,
-    const PhysicalQuantity pq_type,
-    const char* const pq_table
-) {
-    _pimpl->add_sound_source(source_type, point_coords, pq_type, pq_table);
-}
-
-template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::add_sound_source(
-    const TypeOfSource source_type,
-    const size_t espg,
-    const PhysicalQuantity pq_type,
-    const FuncFloatToCmplx& pq_func
-) {
-    _pimpl->add_sound_source(source_type, espg, pq_type, pq_func);
-}
-
-template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::add_sound_source(
-    const TypeOfSource source_type,
-    const size_t espg,
-    const PhysicalQuantity pq_type,
-    const char* const pq_table
-) {
-    _pimpl->add_sound_source(source_type, espg, pq_type, pq_table);
-}
+#define NUMAV_ADD_SOUND_SOURCE_PIMPL(TYPE1, TYPE2) \
+    template <ElementOrder O> \
+    void SimulationAcFemFreqD3<O>::add_sound_source( \
+        const TypeOfSource source_type, \
+        TYPE1 position, \
+        const PhysicalQuantity pq_type, \
+        TYPE2 pq_value \
+    ) { \
+        _pimpl->add_sound_source(source_type, position, pq_type, pq_value); \
+    }
+NUMAV_ADD_SOUND_SOURCE_PIMPL(NUMAV_ARRAY3, const FuncFloatToCmplx&)
+NUMAV_ADD_SOUND_SOURCE_PIMPL(NUMAV_ARRAY3, const Cmplx            )
+NUMAV_ADD_SOUND_SOURCE_PIMPL(NUMAV_ARRAY3, const char* const      )
+NUMAV_ADD_SOUND_SOURCE_PIMPL(const size_t, const FuncFloatToCmplx&)
+NUMAV_ADD_SOUND_SOURCE_PIMPL(const size_t, const Cmplx            )
+NUMAV_ADD_SOUND_SOURCE_PIMPL(const size_t, const char* const      )
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::add_receiver(
@@ -130,23 +107,18 @@ void SimulationAcFemFreqD3<O>::add_receiver(
     _pimpl->add_receiver(point_coords);
 }
 
-template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::add_surface_material(
-    const size_t espg,
-    const PhysicalQuantity pq_type,
-    const FuncFloatToCmplx& pq_func
-) {
-    _pimpl->add_surface_material(espg, pq_type, pq_func);
-}
-
-template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::add_surface_material(
-    const size_t espg,
-    const PhysicalQuantity pq_type,
-    const char* const pq_table
-) {
-    _pimpl->add_surface_material(espg, pq_type, pq_table);
-}
+#define NUMAV_ADD_SURFACE_MATERIAL_PIMPL(TYPE) \
+    template <ElementOrder O> \
+    void SimulationAcFemFreqD3<O>::add_surface_material( \
+        const size_t espg, \
+        const PhysicalQuantity pq_type, \
+        TYPE pq_value \
+    ) { \
+        _pimpl->add_surface_material(espg, pq_type, pq_value); \
+    }
+NUMAV_ADD_SURFACE_MATERIAL_PIMPL(const FuncFloatToCmplx&)
+NUMAV_ADD_SURFACE_MATERIAL_PIMPL(const Cmplx            )
+NUMAV_ADD_SURFACE_MATERIAL_PIMPL(const char* const      )
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::set_result_export_path(

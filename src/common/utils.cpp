@@ -12,7 +12,16 @@ void trim_right_whitespace(std::string_view& sv) {
     sv = (end == std::string_view::npos) ? "" : sv.substr(0UL, end + 1UL);
 }
 
-FuncFloatToCmplx convert_table_to_real_to_cmplx_func(
+FuncFloatToCmplx const2func(
+    const Cmplx constant
+) {
+    return [constant](Float f) -> Cmplx {
+        (void) f;
+        return constant;
+    };
+}
+
+FuncFloatToCmplx table2func(
     const char* const impedance_text_file
 ) {
     // open file

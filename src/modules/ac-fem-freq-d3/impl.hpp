@@ -32,87 +32,9 @@ public:
     Impl(Impl&&) noexcept;
     Impl& operator=(Impl&&) noexcept;
 
-    void set_maximum_frequency(
-        const Float freq_max
-    );
-    void set_frequency_range(
-        const Float freq_min,
-        const Float freq_max
-    );
-    void set_frequency_steps_count(
-        const size_t freq_steps_count
-    );
-    void set_frequency_sampling_density(
-        const FrequencySamplingDensity freq_sampling_density
-    );
-    void set_frequency_steps(
-        const std::vector<Float>& freq_steps
-    );
-    void load_mesh(
-        const char* const path_to_mesh
-    );
-    void add_volume_material(
-        const size_t evpg,
-        const FuncFloatToCmplx& density_func,
-        const FuncFloatToCmplx& soundspeed_func
-    );
-    void add_volume_material(
-        const size_t evpg,
-        const char* const density_table,
-        const FuncFloatToCmplx& soundspeed_func
-    );
-    void add_volume_material(
-        const size_t evpg,
-        const FuncFloatToCmplx& density_func,
-        const char* const soundspeed_table
-    );
-    void add_volume_material(
-        const size_t evpg,
-        const char* const density_table,
-        const char* const soundspeed_table
-    );
-    void add_sound_source(
-        const TypeOfSource source_type,
-        const std::array<Float,3UL> point_coords,
-        const PhysicalQuantity pq_type,
-        const FuncFloatToCmplx& pq_func
-    );
-    void add_sound_source(
-        const TypeOfSource source_type,
-        const std::array<Float,3UL> point_coords,
-        const PhysicalQuantity pq_type,
-        const char* const pq_table
-    );
-    void add_sound_source(
-        const TypeOfSource source_type,
-        const size_t espg,
-        const PhysicalQuantity pq_type,
-        const FuncFloatToCmplx& pq_func
-    );
-    void add_sound_source(
-        const TypeOfSource source_type,
-        const size_t espg,
-        const PhysicalQuantity pq_type,
-        const char* const pq_table
-    );
-    void add_receiver(
-        const std::array<Float,DIM> point_coords
-    );
-    void add_surface_material(
-        const size_t espg,
-        const PhysicalQuantity pq_type,
-        const FuncFloatToCmplx& pq_func
-    );
-    void add_surface_material(
-        const size_t espg,
-        const PhysicalQuantity pq_type,
-        const char* const pq_table
-    );
-    void set_result_export_path(const char* const path_to_result);
-    void run();
+    NUMAV_DECLARE_SIM_AC_FEM_FREQ_D3_PUBLIC_METHODS
 
 private:
-
     void _load_bdf(const char* const path);
     void _generate_extra_nodes();
     size_t _get_closest_point(const std::array<Float,3UL> point_coords);

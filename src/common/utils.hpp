@@ -26,7 +26,11 @@ T parse(std::string_view str) {
     return value;
 }
 
-FuncFloatToCmplx convert_table_to_real_to_cmplx_func(
+FuncFloatToCmplx const2func(
+    const Cmplx constant
+);
+
+FuncFloatToCmplx table2func(
     const char* const impedance_text_file
 );
 

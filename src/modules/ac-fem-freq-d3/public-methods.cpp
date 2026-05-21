@@ -154,8 +154,8 @@ void SimulationAcFemFreqD3<O>::Impl::load_mesh(
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_volume_material(
     const size_t evpg,
-    const FuncFloatToCmplx& density_func,
-    const FuncFloatToCmplx& soundspeed_func
+    const FuncFloatToCmplx& density,
+    const FuncFloatToCmplx& soundspeed
 ) {
     _check_if_mesh_is_defined();
     _check_if_did_run();
@@ -165,48 +165,112 @@ void SimulationAcFemFreqD3<O>::Impl::add_volume_material(
     if (_evpg_to_volprop.contains(evpg)) {
         error("Physical group {} already assigned.", evpg);
     }
-    _evpg_to_volprop.insert({evpg, {density_func, soundspeed_func}});
+    _evpg_to_volprop.insert({evpg, {density, soundspeed}});
     const size_t ivpg = _evpg_to_ivpg.size();
     _evpg_to_ivpg.insert({evpg, ivpg});
     ++_ivpg_count;
 }
-
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_volume_material(
     const size_t evpg,
-    const char* const density_table,
-    const FuncFloatToCmplx& soundspeed_func
+    const FuncFloatToCmplx& density,
+    const Cmplx soundspeed
 ) {
-    FuncFloatToCmplx density_func = 
-        convert_table_to_real_to_cmplx_func(density_table);
-
-    add_volume_material(evpg, density_func, soundspeed_func);
+    add_volume_material(evpg, density, const2func(soundspeed));
+}
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::Impl::add_volume_material(
+    const size_t evpg,
+    const FuncFloatToCmplx& density,
+    const char* const soundspeed
+) {
+    add_volume_material(evpg, density, table2func(soundspeed));
+}
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::Impl::add_volume_material(
+    const size_t evpg,
+    const Cmplx density,
+    const FuncFloatToCmplx& soundspeed
+) {
+    add_volume_material(evpg, const2func(density), soundspeed);
+}
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::Impl::add_volume_material(
+    const size_t evpg,
+    const Cmplx density,
+    const Cmplx soundspeed
+) {
+    add_volume_material(evpg, const2func(density), const2func(soundspeed));
+}
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::Impl::add_volume_material(
+    const size_t evpg,
+    const Cmplx density,
+    const char* const soundspeed
+) {
+    add_volume_material(evpg, const2func(density), table2func(soundspeed));
+}
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::Impl::add_volume_material(
+    const size_t evpg,
+    const char* const density,
+    const FuncFloatToCmplx& soundspeed
+) {
+    add_volume_material(evpg, table2func(density), soundspeed);
+}
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::Impl::add_volume_material(
+    const size_t evpg,
+    const char* const density,
+    const Cmplx soundspeed
+) {
+    add_volume_material(evpg, table2func(density), const2func(soundspeed));
+}
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::Impl::add_volume_material(
+    const size_t evpg,
+    const char* const density,
+    const char* const soundspeed
+) {
+    add_volume_material(evpg, table2func(density), table2func(soundspeed));
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::Impl::add_volume_material(
-    const size_t evpg,
-    const FuncFloatToCmplx& density_func,
-    const char* const soundspeed_table
+void SimulationAcFemFreqD3<O>::Impl::add_surface_material(
+    const size_t espg,
+    const PhysicalQuantity pq_type,
+    const FuncFloatToCmplx& pq_func
 ) {
-    FuncFloatToCmplx soundspeed_func = 
-        convert_table_to_real_to_cmplx_func(soundspeed_table);
-
-    add_volume_material(evpg, density_func, soundspeed_func);
+    _check_if_mesh_is_defined();
+    _check_if_did_run();
+    _validate_espg(espg);
+    if (pq_type != PhysicalQuantity::IMPEDANCE) {
+        error("Possible physical quantity type is only impedance");
+    }
+    const size_t ispgi = _espg_to_impedance.size();
+    _espg_to_impedance.insert({espg, pq_func});
+    _espg_to_ispg.insert({espg, ispgi});
+    ++_ispgi_count;
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::Impl::add_volume_material(
-    const size_t evpg,
-    const char* const density_table,
-    const char* const soundspeed_table
+void SimulationAcFemFreqD3<O>::Impl::add_surface_material(
+    const size_t espg,
+    const PhysicalQuantity pq_type,
+    const Cmplx pq_constant
 ) {
-    FuncFloatToCmplx density_func = 
-        convert_table_to_real_to_cmplx_func(density_table);
-    FuncFloatToCmplx soundspeed_func = 
-        convert_table_to_real_to_cmplx_func(soundspeed_table);
+    FuncFloatToCmplx pq_func = const2func(pq_constant);
+    add_surface_material(espg, pq_type, pq_func);
+}
 
-    add_volume_material(evpg, density_func, soundspeed_func);
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::Impl::add_surface_material(
+    const size_t espg,
+    const PhysicalQuantity pq_type,
+    const char* const pq_table
+) {
+    FuncFloatToCmplx pq_func = table2func(pq_table);
+    add_surface_material(espg, pq_type, pq_func);
 }
 
 template <ElementOrder O>
@@ -248,16 +312,21 @@ void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
     const TypeOfSource source_type,
     const std::array<Float,3UL> point_coords,
     const PhysicalQuantity pq_type,
+    const Cmplx pq_constant
+) {
+    FuncFloatToCmplx pq_func = const2func(pq_constant);
+    add_sound_source(source_type, point_coords, pq_type, pq_func);
+}
+
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
+    const TypeOfSource source_type,
+    const std::array<Float,3UL> point_coords,
+    const PhysicalQuantity pq_type,
     const char* const pq_table
 ) {
-    FuncFloatToCmplx pq_func = convert_table_to_real_to_cmplx_func(pq_table);
-
-    add_sound_source(
-        source_type,
-        point_coords,
-        pq_type,
-        pq_func
-    );
+    FuncFloatToCmplx pq_func = table2func(pq_table);
+    add_sound_source(source_type, point_coords, pq_type, pq_func);
 }
 
 template <ElementOrder O>
@@ -298,16 +367,21 @@ void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
     const TypeOfSource source_type,
     const size_t espg,
     const PhysicalQuantity pq_type,
+    const Cmplx pq_constant
+) {
+    FuncFloatToCmplx pq_func = const2func(pq_constant);
+    add_sound_source(source_type, espg, pq_type, pq_func);
+}
+
+template <ElementOrder O>
+void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
+    const TypeOfSource source_type,
+    const size_t espg,
+    const PhysicalQuantity pq_type,
     const char* const pq_table
 ) {
-    FuncFloatToCmplx pq_func = convert_table_to_real_to_cmplx_func(pq_table);
-
-    add_sound_source(
-        source_type,
-        espg,
-        pq_type,
-        pq_func
-    );
+    FuncFloatToCmplx pq_func = table2func(pq_table);
+    add_sound_source(source_type, espg, pq_type, pq_func);
 }
 
 template <ElementOrder O>
@@ -325,36 +399,14 @@ void SimulationAcFemFreqD3<O>::Impl::add_receiver(
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::Impl::add_surface_material(
-    const size_t espg,
-    const PhysicalQuantity pq_type,
-    const FuncFloatToCmplx& pq_func
+void SimulationAcFemFreqD3<O>::Impl::set_result_export_path(
+    const char* const path_to_result
 ) {
-    _check_if_mesh_is_defined();
     _check_if_did_run();
-    _validate_espg(espg);
-    if (pq_type != PhysicalQuantity::IMPEDANCE) {
-        error("Possible physical quantity type is only impedance");
+    if (!_nmvr_file_path.empty()) {
+        error("Result export path is already defined.");
     }
-    const size_t ispgi = _espg_to_impedance.size();
-    _espg_to_impedance.insert({espg, pq_func});
-    _espg_to_ispg.insert({espg, ispgi});
-    ++_ispgi_count;
-}
-
-template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::Impl::add_surface_material(
-    const size_t espg,
-    const PhysicalQuantity pq_type,
-    const char* const pq_table
-) {
-    FuncFloatToCmplx pq_func = convert_table_to_real_to_cmplx_func(pq_table);
-    
-    add_surface_material(
-        espg,
-        pq_type,
-        pq_func
-    );
+    _nmvr_file_path = path_to_result;
 }
 
 template <ElementOrder O>
@@ -375,17 +427,6 @@ void SimulationAcFemFreqD3<O>::Impl::_check_if_it_can_run() {
             " Call add_volume_material to do so.", evpg);
         }
     }
-}
-
-template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::Impl::set_result_export_path(
-    const char* const path_to_result
-) {
-    _check_if_did_run();
-    if (!_nmvr_file_path.empty()) {
-        error("Result export path is already defined.");
-    }
-    _nmvr_file_path = path_to_result;
 }
 
 template <ElementOrder O>
