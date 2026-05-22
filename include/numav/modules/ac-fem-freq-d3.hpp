@@ -20,26 +20,26 @@ enum class FrequencySamplingDensity : size_t {
     QUADRATIC
 };
 
-#define NUMAV_ADD_VOLUME_MATERIAL(T1, T2) \
+#define NUMAV_ADD_VOL_MAT(T1, T2) \
     void add_volume_material( \
         const size_t external_volume_physical_group, \
         T1 density, \
-        T2 sound_speed\
+        T2 sound_speed \
     );
 
-#define NUMAV_ADD_SURFACE_MATERIAL(TYPE) \
+#define NUMAV_ADD_SFC_MATERIAL(T) \
     void add_surface_material( \
         const size_t external_surface_physical_group, \
         const PhysicalQuantity physical_quantity_type, \
-        TYPE physical_quantity_value \
+        T physical_quantity_value \
     );
 
-#define NUMAV_ADD_SOUND_SOURCE(TYPE1, TYPE2) \
+#define NUMAV_ADD_SOUND_SOURCE(T1, T2) \
     void add_sound_source( \
         const TypeOfSource source_type, \
-        TYPE1 position, \
+        T1 position, \
         const PhysicalQuantity physical_quantity_type, \
-        TYPE2 physical_quantity_value \
+        T2 physical_quantity_value \
     );
 
 #define NUMAV_ARRAY3 const std::array<Float,3UL>
@@ -64,18 +64,18 @@ enum class FrequencySamplingDensity : size_t {
     void load_mesh( \
         const char* const path_to_mesh_file \
     ); \
-    NUMAV_ADD_VOLUME_MATERIAL(const FuncFloatToCmplx&, const FuncFloatToCmplx&)\
-    NUMAV_ADD_VOLUME_MATERIAL(const FuncFloatToCmplx&, const Cmplx            )\
-    NUMAV_ADD_VOLUME_MATERIAL(const FuncFloatToCmplx&, const char* const      )\
-    NUMAV_ADD_VOLUME_MATERIAL(const Cmplx            , const FuncFloatToCmplx&)\
-    NUMAV_ADD_VOLUME_MATERIAL(const Cmplx            , const Cmplx            )\
-    NUMAV_ADD_VOLUME_MATERIAL(const Cmplx            , const char* const      )\
-    NUMAV_ADD_VOLUME_MATERIAL(const char* const      , const FuncFloatToCmplx&)\
-    NUMAV_ADD_VOLUME_MATERIAL(const char* const      , const Cmplx            )\
-    NUMAV_ADD_VOLUME_MATERIAL(const char* const      , const char* const      )\
-    NUMAV_ADD_SURFACE_MATERIAL(const FuncFloatToCmplx&) \
-    NUMAV_ADD_SURFACE_MATERIAL(const Cmplx            ) \
-    NUMAV_ADD_SURFACE_MATERIAL(const char* const      ) \
+    NUMAV_ADD_VOL_MAT(const FuncFloatToCmplx&, const FuncFloatToCmplx&)\
+    NUMAV_ADD_VOL_MAT(const FuncFloatToCmplx&, const Cmplx            )\
+    NUMAV_ADD_VOL_MAT(const FuncFloatToCmplx&, const char* const      )\
+    NUMAV_ADD_VOL_MAT(const Cmplx            , const FuncFloatToCmplx&)\
+    NUMAV_ADD_VOL_MAT(const Cmplx            , const Cmplx            )\
+    NUMAV_ADD_VOL_MAT(const Cmplx            , const char* const      )\
+    NUMAV_ADD_VOL_MAT(const char* const      , const FuncFloatToCmplx&)\
+    NUMAV_ADD_VOL_MAT(const char* const      , const Cmplx            )\
+    NUMAV_ADD_VOL_MAT(const char* const      , const char* const      )\
+    NUMAV_ADD_SFC_MATERIAL(const FuncFloatToCmplx&) \
+    NUMAV_ADD_SFC_MATERIAL(const Cmplx            ) \
+    NUMAV_ADD_SFC_MATERIAL(const char* const      ) \
     NUMAV_ADD_SOUND_SOURCE(NUMAV_ARRAY3, const FuncFloatToCmplx&) \
     NUMAV_ADD_SOUND_SOURCE(NUMAV_ARRAY3, const Cmplx            ) \
     NUMAV_ADD_SOUND_SOURCE(NUMAV_ARRAY3, const char* const      ) \
