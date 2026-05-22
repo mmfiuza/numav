@@ -128,7 +128,6 @@ SimulationAcFemFreqD3<O>::Impl::operator=(
     Impl&& other
 ) noexcept = default;
 
-// explicit instantiation declarations
-INSTANTIATE_SIMULATION_CLASS
-
 } // namespace numav
+
+NUMAV_INSTANTIATE_SIM_AC_FEM_FREQ_D3

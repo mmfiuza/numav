@@ -91,7 +91,6 @@ void SimulationAcFemFreqD3<O>::Impl::_end_nmvr_file(
     _nvmr_file.close();
 }
 
-// explicit instantiation declarations
-INSTANTIATE_SIMULATION_CLASS
-
 } // namespace numav
+
+NUMAV_INSTANTIATE_SIM_AC_FEM_FREQ_D3

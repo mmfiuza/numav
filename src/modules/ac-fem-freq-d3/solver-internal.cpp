@@ -67,9 +67,8 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_using_internal_solver()
     _solver.solve();
 }
 
-// explicit instantiation declarations
-INSTANTIATE_SIMULATION_CLASS
-
 } // namespace numav
+
+NUMAV_INSTANTIATE_SIM_AC_FEM_FREQ_D3
 
 #endif

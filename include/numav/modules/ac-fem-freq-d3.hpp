@@ -2,12 +2,6 @@
 
 #pragma once
 
-#include <functional>
-#include <complex>
-#include <memory>
-#include <array>
-#include <vector>
-
 namespace numav {
 
 enum class ElementOrder : size_t {
@@ -20,76 +14,94 @@ enum class FrequencySamplingDensity : size_t {
     QUADRATIC
 };
 
-#define NUMAV_ADD_VOL_MAT(T1, T2) \
-    void add_volume_material( \
-        const size_t external_volume_physical_group, \
-        T1 density, \
-        T2 sound_speed \
-    );
+#define NUMAV_PUBLIC_METHOD(method_name, ...) void method_name(__VA_ARGS__);
 
-#define NUMAV_ADD_SFC_MATERIAL(T) \
-    void add_surface_material( \
-        const size_t external_surface_physical_group, \
-        const PhysicalQuantity physical_quantity_type, \
-        T physical_quantity_value \
-    );
-
-#define NUMAV_ADD_SOUND_SOURCE(T1, T2) \
-    void add_sound_source( \
-        const TypeOfSource source_type, \
-        T1 position, \
-        const PhysicalQuantity physical_quantity_type, \
-        T2 physical_quantity_value \
-    );
-
-#define NUMAV_ARRAY3 const std::array<Float,3UL>
-
-#define NUMAV_DECLARE_SIM_AC_FEM_FREQ_D3_PUBLIC_METHODS \
-    void set_maximum_frequency( \
-        const Float maximum_frequnecy \
-    ); \
-    void set_frequency_range( \
-        const Float minimum_frequnecy, \
-        const Float maximum_frequnecy \
-    ); \
-    void set_frequency_steps_count( \
-        const size_t frequency_steps_count \
-    ); \
-    void set_frequency_sampling_density( \
-        const FrequencySamplingDensity frequency_sampling_density \
-    ); \
-    void set_frequency_steps( \
-        const std::vector<Float>& frequency_steps \
-    ); \
-    void load_mesh( \
-        const char* const path_to_mesh_file \
-    ); \
-    NUMAV_ADD_VOL_MAT(const FuncFloatToCmplx&, const FuncFloatToCmplx&)\
-    NUMAV_ADD_VOL_MAT(const FuncFloatToCmplx&, const Cmplx            )\
-    NUMAV_ADD_VOL_MAT(const FuncFloatToCmplx&, const char* const      )\
-    NUMAV_ADD_VOL_MAT(const Cmplx            , const FuncFloatToCmplx&)\
-    NUMAV_ADD_VOL_MAT(const Cmplx            , const Cmplx            )\
-    NUMAV_ADD_VOL_MAT(const Cmplx            , const char* const      )\
-    NUMAV_ADD_VOL_MAT(const char* const      , const FuncFloatToCmplx&)\
-    NUMAV_ADD_VOL_MAT(const char* const      , const Cmplx            )\
-    NUMAV_ADD_VOL_MAT(const char* const      , const char* const      )\
-    NUMAV_ADD_SFC_MATERIAL(const FuncFloatToCmplx&) \
-    NUMAV_ADD_SFC_MATERIAL(const Cmplx            ) \
-    NUMAV_ADD_SFC_MATERIAL(const char* const      ) \
-    NUMAV_ADD_SOUND_SOURCE(NUMAV_ARRAY3, const FuncFloatToCmplx&) \
-    NUMAV_ADD_SOUND_SOURCE(NUMAV_ARRAY3, const Cmplx            ) \
-    NUMAV_ADD_SOUND_SOURCE(NUMAV_ARRAY3, const char* const      ) \
-    NUMAV_ADD_SOUND_SOURCE(const size_t, const FuncFloatToCmplx&) \
-    NUMAV_ADD_SOUND_SOURCE(const size_t, const Cmplx            ) \
-    NUMAV_ADD_SOUND_SOURCE(const size_t, const char* const      ) \
-    void add_receiver( \
-        const std::array<Float,3UL> coordinates \
-    ); \
-    void set_result_export_path( \
-        const char* const path_to_nmvr_file \
-    ); \
-    void run( \
-    );
+#define NUMAV_SIM_AC_FEM_FREQ_D3_PUBLIC_METHODS\
+    NUMAV_PUBLIC_METHOD(set_maximum_frequency,\
+        const Float\
+    )\
+    NUMAV_PUBLIC_METHOD(set_frequency_range,\
+        const Float, const Float\
+    )\
+    NUMAV_PUBLIC_METHOD(set_frequency_steps_count,\
+        const size_t\
+    )\
+    NUMAV_PUBLIC_METHOD(set_frequency_sampling_density,\
+        const FrequencySamplingDensity\
+    )\
+    NUMAV_PUBLIC_METHOD(set_frequency_steps,\
+        const std::vector<Float>&\
+    )\
+    NUMAV_PUBLIC_METHOD(load_mesh,\
+        const char* const\
+    )\
+    NUMAV_PUBLIC_METHOD(add_volume_material,\
+        const size_t, const FuncFloatToCmplx&, const FuncFloatToCmplx&\
+    )\
+    NUMAV_PUBLIC_METHOD(add_volume_material,\
+        const size_t, const FuncFloatToCmplx&, const Cmplx\
+    )\
+    NUMAV_PUBLIC_METHOD(add_volume_material,\
+        const size_t, const FuncFloatToCmplx&, const char* const\
+    )\
+    NUMAV_PUBLIC_METHOD(add_volume_material,\
+        const size_t, const Cmplx, const FuncFloatToCmplx&\
+    )\
+    NUMAV_PUBLIC_METHOD(add_volume_material,\
+        const size_t, const Cmplx, const Cmplx\
+    )\
+    NUMAV_PUBLIC_METHOD(add_volume_material,\
+        const size_t, const Cmplx, const char* const\
+    )\
+    NUMAV_PUBLIC_METHOD(add_volume_material,\
+        const size_t, const char* const, const FuncFloatToCmplx&\
+    )\
+    NUMAV_PUBLIC_METHOD(add_volume_material,\
+        const size_t, const char* const, const Cmplx\
+    )\
+    NUMAV_PUBLIC_METHOD(add_volume_material,\
+        const size_t, const char* const, const char* const\
+    )\
+    NUMAV_PUBLIC_METHOD(add_surface_material,\
+        const size_t, const PhysicalQuantity, const FuncFloatToCmplx&\
+    )\
+    NUMAV_PUBLIC_METHOD(add_surface_material,\
+        const size_t, const PhysicalQuantity, const Cmplx\
+    )\
+    NUMAV_PUBLIC_METHOD(add_surface_material,\
+        const size_t, const PhysicalQuantity, const char* const\
+    )\
+    NUMAV_PUBLIC_METHOD(add_sound_source,\
+        const TypeOfSource, const Coord,\
+        const PhysicalQuantity, const FuncFloatToCmplx&\
+    )\
+    NUMAV_PUBLIC_METHOD(add_sound_source,\
+        const TypeOfSource, const Coord,\
+        const PhysicalQuantity, const Cmplx\
+    )\
+    NUMAV_PUBLIC_METHOD(add_sound_source,\
+        const TypeOfSource, const Coord,\
+        const PhysicalQuantity, const char* const\
+    )\
+    NUMAV_PUBLIC_METHOD(add_sound_source,\
+        const TypeOfSource, const size_t,\
+        const PhysicalQuantity, const FuncFloatToCmplx&\
+    )\
+    NUMAV_PUBLIC_METHOD(add_sound_source,\
+        const TypeOfSource, const size_t,\
+        const PhysicalQuantity, const Cmplx\
+    )\
+    NUMAV_PUBLIC_METHOD(add_sound_source,\
+        const TypeOfSource, const size_t,\
+        const PhysicalQuantity, const char* const\
+    )\
+    NUMAV_PUBLIC_METHOD(add_receiver,\
+        const Coord\
+    )\
+    NUMAV_PUBLIC_METHOD(set_result_export_path,\
+        const char* const\
+    )\
+    NUMAV_PUBLIC_METHOD(run)
 
 template<ElementOrder O>
 class Simulation<
@@ -107,7 +119,7 @@ public:
     Simulation(Simulation&&) noexcept;
     Simulation& operator=(Simulation&&) noexcept;
     
-    NUMAV_DECLARE_SIM_AC_FEM_FREQ_D3_PUBLIC_METHODS
+    NUMAV_SIM_AC_FEM_FREQ_D3_PUBLIC_METHODS
 
 private:
     class Impl;

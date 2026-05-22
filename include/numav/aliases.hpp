@@ -2,13 +2,14 @@
 
 #pragma once
 
-#include <complex>
 #include <functional>
+#include <complex>
 
 namespace numav {
 
     using Float = double;
     using Cmplx = typename std::complex<Float>;
     using FuncFloatToCmplx = typename std::function<Cmplx(const Float)>;
+    using Coord = typename std::array<Float,3UL>;
 
 } // namespace numav

@@ -3,18 +3,20 @@
 #pragma once
 
 // explicit instantiation declarations
-#define INSTANTIATE_SIMULATION_CLASS \
-    template class Simulation< \
-        Phenomenon::ACOUSTIC, \
-        NumericalMethod::FEM, \
-        Domain::FREQUENCY, \
-        Dimension::D3, \
-        ElementOrder::O1 \
-    >; \
-    template class Simulation< \
-        Phenomenon::ACOUSTIC, \
-        NumericalMethod::FEM, \
-        Domain::FREQUENCY, \
-        Dimension::D3, \
-        ElementOrder::O2 \
-    >;
+#define NUMAV_INSTANTIATE_SIM_AC_FEM_FREQ_D3 \
+    namespace numav { \
+        template class Simulation< \
+            Phenomenon::ACOUSTIC, \
+            NumericalMethod::FEM, \
+            Domain::FREQUENCY, \
+            Dimension::D3, \
+            ElementOrder::O1 \
+        >; \
+        template class Simulation< \
+            Phenomenon::ACOUSTIC, \
+            NumericalMethod::FEM, \
+            Domain::FREQUENCY, \
+            Dimension::D3, \
+            ElementOrder::O2 \
+        >; \
+    }

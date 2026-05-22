@@ -32,7 +32,7 @@ public:
     Impl(Impl&&) noexcept;
     Impl& operator=(Impl&&) noexcept;
 
-    NUMAV_DECLARE_SIM_AC_FEM_FREQ_D3_PUBLIC_METHODS
+    NUMAV_SIM_AC_FEM_FREQ_D3_PUBLIC_METHODS
 
 private:
     void _load_bdf(const char* const path);

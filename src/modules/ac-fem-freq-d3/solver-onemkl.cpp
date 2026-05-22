@@ -127,9 +127,8 @@ void SimulationAcFemFreqD3<O>::Impl::_terminate_onemkl_solver()
     }
 }
 
-// explicit instantiation declarations
-INSTANTIATE_SIMULATION_CLASS
-
 } // namespace numav
+
+NUMAV_INSTANTIATE_SIM_AC_FEM_FREQ_D3
 
 #endif

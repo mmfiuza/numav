@@ -2,6 +2,10 @@
 
 #pragma once
 
+#include <memory>
+#include <array>
+#include <vector>
+
 #include "numav/aliases.hpp"
 
 namespace numav {
@@ -25,7 +29,7 @@ namespace numav {
         D3
     };
 
-    enum class TypeOfSource : size_t {
+    enum class TypeOfSource : size_t { // TODO: rename to SourceType
         POINT,
         SURFACE
     };

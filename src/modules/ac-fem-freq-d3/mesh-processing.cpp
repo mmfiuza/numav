@@ -206,7 +206,6 @@ void SimulationAcFemFreqD3<ElementOrder::O2>::Impl::_generate_extra_nodes()
     }
 }
 
-// explicit instantiation declarations
-INSTANTIATE_SIMULATION_CLASS
-
 } // namespace numav
+
+NUMAV_INSTANTIATE_SIM_AC_FEM_FREQ_D3

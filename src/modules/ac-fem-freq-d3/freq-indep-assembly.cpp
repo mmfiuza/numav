@@ -858,7 +858,6 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_freq_independent_parts()
     _assemble_fi_part_for_pressure();
 }
 
-// explicit instantiation declarations
-INSTANTIATE_SIMULATION_CLASS
-
 } // namespace numav
+
+NUMAV_INSTANTIATE_SIM_AC_FEM_FREQ_D3
