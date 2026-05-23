@@ -57,12 +57,12 @@ g++ -o my_simulation my_simulation.cpp -I include -L ./build/lib -l numav -Wl,-r
 ## How to build libnumav_jl
 ```
 rm -rf build &&
-rm -rf julia_bindings/override/lib &&
+rm -rf julia-bindings/override/lib &&
 cmake -B build \
     -D CMAKE_BUILD_TYPE=Release \
     -D SOLVER=EIGEN \
     -D BIND_JULIA=TRUE \
-    -D CMAKE_INSTALL_PREFIX=julia_bindings/override \
+    -D CMAKE_INSTALL_PREFIX=julia-bindings/override \
     -D CMAKE_PREFIX_PATH=/usr/local/share/julia/artifacts/662f181f562225e139306f1e6e383c70bc9255f9 &&
 cmake --build build --parallel ${nproc} &&
 cmake --install ./build
@@ -70,20 +70,20 @@ cmake --install ./build
 
 ## How to build the JLL
 ```
-julia +1.7.3 /workspace/julia_bindings/build_tarballs.jl --deploy-jll=local
+julia +1.7.3 /workspace/julia-bindings/build_tarballs.jl --deploy-jll=local
 
 ```
 
 ## How to generate the libnumav_jl_jll override
 ```
-rm -rf /workspace/julia_bindings/override
-mkdir /workspace/julia_bindings/override
-tar -xzvf /workspace/products/libnumav_jl.v0.1.0.x86_64-linux-gnu-cxx11-julia_version+1.11.0.tar.gz -C /workspace/julia_bindings/override
-julia /workspace/julia_bindings/generate_override.jl
+rm -rf /workspace/julia-bindings/override
+mkdir /workspace/julia-bindings/override
+tar -xzvf /workspace/products/libnumav_jl.v0.1.0.x86_64-linux-gnu-cxx11-julia_version+1.11.0.tar.gz -C /workspace/julia-bindings/override
+julia /workspace/julia-bindings/generate_override.jl
 ```
 
 ## Dev the Julia packages
 ```
 ] dev /usr/local/share/julia/dev/libnumav_jl_jll
-] dev /workspace/julia_bindings/Numav
+] dev /workspace/julia-bindings/Numav
 ```

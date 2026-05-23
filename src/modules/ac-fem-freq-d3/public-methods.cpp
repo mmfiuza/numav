@@ -238,17 +238,17 @@ void SimulationAcFemFreqD3<O>::Impl::add_volume_material(
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_surface_material(
     const size_t espg,
-    const PhysicalQuantity pq_type,
-    const FuncFloatToCmplx& pq
+    const PhysicalQuantity pq,
+    const FuncFloatToCmplx& pqv
 ) {
     _check_if_mesh_is_defined();
     _check_if_did_run();
     _validate_espg(espg);
-    if (pq_type != PhysicalQuantity::IMPEDANCE) {
+    if (pq != PhysicalQuantity::IMPEDANCE) {
         error("Possible physical quantity type is only impedance");
     }
     const size_t ispgi = _espg_to_impedance.size();
-    _espg_to_impedance.insert({espg, pq});
+    _espg_to_impedance.insert({espg, pqv});
     _espg_to_ispg.insert({espg, ispgi});
     ++_ispgi_count;
 }
@@ -256,45 +256,45 @@ void SimulationAcFemFreqD3<O>::Impl::add_surface_material(
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_surface_material(
     const size_t espg,
-    const PhysicalQuantity pq_type,
-    const Cmplx pq
+    const PhysicalQuantity pq,
+    const Cmplx pqv
 ) {
-    add_surface_material(espg, pq_type, const2func(pq));
+    add_surface_material(espg, pq, const2func(pqv));
 }
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_surface_material(
     const size_t espg,
-    const PhysicalQuantity pq_type,
-    const char* const pq
+    const PhysicalQuantity pq,
+    const char* const pqv
 ) {
-    add_surface_material(espg, pq_type, table2func(pq));
+    add_surface_material(espg, pq, table2func(pqv));
 }
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
-    const TypeOfSource source_type,
+    const SourceType source_type,
     const std::array<Float,3UL> point_coords,
-    const PhysicalQuantity pq_type,
-    const FuncFloatToCmplx& pq
+    const PhysicalQuantity pq,
+    const FuncFloatToCmplx& pqv
 ) {
     _check_if_mesh_is_defined();
     _check_if_did_run();
     // TODO: check if the point is outside the mesh
-    if (source_type != TypeOfSource::POINT) {
+    if (source_type != SourceType::POINT) {
         error("Tried to assign coordinates to a surface sound source.");
     }
     const size_t closest_ni = _get_closest_point(point_coords);
     
-    if (pq_type == PhysicalQuantity::VOLUME_VELOCITY) {
+    if (pq == PhysicalQuantity::VOLUME_VELOCITY) {
         _point_volvel.push_back(
-            std::make_tuple(closest_ni, pq)
+            std::make_tuple(closest_ni, pqv)
         );
         ++_pvni_count;
     }
-    else if (pq_type == PhysicalQuantity::PRESSURE) {
+    else if (pq == PhysicalQuantity::PRESSURE) {
         _point_pressure.push_back(
-            std::make_tuple(closest_ni, pq)
+            std::make_tuple(closest_ni, pqv)
         );
         ++_ppni_count;
     }
@@ -306,46 +306,46 @@ void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
 }
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
-    const TypeOfSource source_type,
+    const SourceType source_type,
     const std::array<Float,3UL> point_coords,
-    const PhysicalQuantity pq_type,
-    const Cmplx pq
+    const PhysicalQuantity pq,
+    const Cmplx pqv
 ) {
-    add_sound_source(source_type, point_coords, pq_type, const2func(pq));
+    add_sound_source(source_type, point_coords, pq, const2func(pqv));
 }
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
-    const TypeOfSource source_type,
+    const SourceType source_type,
     const std::array<Float,3UL> point_coords,
-    const PhysicalQuantity pq_type,
-    const char* const pq
+    const PhysicalQuantity pq,
+    const char* const pqv
 ) {
-    add_sound_source(source_type, point_coords, pq_type, table2func(pq));
+    add_sound_source(source_type, point_coords, pq, table2func(pqv));
 }
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
-    const TypeOfSource source_type,
+    const SourceType source_type,
     const size_t espg,
-    const PhysicalQuantity pq_type,
-    const FuncFloatToCmplx& pq
+    const PhysicalQuantity pq,
+    const FuncFloatToCmplx& pqv
 ) {
     _check_if_mesh_is_defined();
     _check_if_did_run();
     _validate_espg(espg);
-    if (source_type != TypeOfSource::SURFACE) {
+    if (source_type != SourceType::SURFACE) {
         error("Tried to assign a physical group to a point.");
     }
     
-    if (pq_type == PhysicalQuantity::PARTICLE_VELOCITY) {
+    if (pq == PhysicalQuantity::PARTICLE_VELOCITY) {
         const size_t ispgv = _espg_to_velocity.size();
-        _espg_to_velocity.insert({espg, pq});
+        _espg_to_velocity.insert({espg, pqv});
         _espg_to_ispg.insert({espg, ispgv});
         ++_ispgv_count;
     }
-    else if (pq_type == PhysicalQuantity::PRESSURE) {
+    else if (pq == PhysicalQuantity::PRESSURE) {
         const size_t ispgp = _espg_to_pressure.size();
-        _espg_to_pressure.insert({espg, pq});
+        _espg_to_pressure.insert({espg, pqv});
         _espg_to_ispg.insert({espg, ispgp});
         ++_ispgp_count;
     }
@@ -357,21 +357,21 @@ void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
 }
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
-    const TypeOfSource source_type,
+    const SourceType source_type,
     const size_t espg,
-    const PhysicalQuantity pq_type,
-    const Cmplx pq
+    const PhysicalQuantity pq,
+    const Cmplx pqv
 ) {
-    add_sound_source(source_type, espg, pq_type, const2func(pq));
+    add_sound_source(source_type, espg, pq, const2func(pqv));
 }
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
-    const TypeOfSource source_type,
+    const SourceType source_type,
     const size_t espg,
-    const PhysicalQuantity pq_type,
-    const char* const pq
+    const PhysicalQuantity pq,
+    const char* const pqv
 ) {
-    add_sound_source(source_type, espg, pq_type, table2func(pq));
+    add_sound_source(source_type, espg, pq, table2func(pqv));
 }
 
 template <ElementOrder O>

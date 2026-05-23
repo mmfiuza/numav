@@ -98,7 +98,7 @@ if(BIND_JULIA)
     get_filename_component(JlCxx_location ${JlCxx_location} DIRECTORY)
     
     add_library(numav_jl SHARED
-        ${CMAKE_CURRENT_SOURCE_DIR}/julia_bindings/numav_jl.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/julia-bindings/numav_jl.cpp
     )
     target_link_libraries(numav_jl
         numav

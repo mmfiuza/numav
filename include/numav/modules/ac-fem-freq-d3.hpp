@@ -72,27 +72,27 @@ enum class FrequencySamplingDensity : size_t {
         const size_t, const PhysicalQuantity, const char* const\
     )\
     NUMAV_PUBLIC_METHOD(add_sound_source,\
-        const TypeOfSource, const Coord,\
+        const SourceType, const Coord,\
         const PhysicalQuantity, const FuncFloatToCmplx&\
     )\
     NUMAV_PUBLIC_METHOD(add_sound_source,\
-        const TypeOfSource, const Coord,\
+        const SourceType, const Coord,\
         const PhysicalQuantity, const Cmplx\
     )\
     NUMAV_PUBLIC_METHOD(add_sound_source,\
-        const TypeOfSource, const Coord,\
+        const SourceType, const Coord,\
         const PhysicalQuantity, const char* const\
     )\
     NUMAV_PUBLIC_METHOD(add_sound_source,\
-        const TypeOfSource, const size_t,\
+        const SourceType, const size_t,\
         const PhysicalQuantity, const FuncFloatToCmplx&\
     )\
     NUMAV_PUBLIC_METHOD(add_sound_source,\
-        const TypeOfSource, const size_t,\
+        const SourceType, const size_t,\
         const PhysicalQuantity, const Cmplx\
     )\
     NUMAV_PUBLIC_METHOD(add_sound_source,\
-        const TypeOfSource, const size_t,\
+        const SourceType, const size_t,\
         const PhysicalQuantity, const char* const\
     )\
     NUMAV_PUBLIC_METHOD(add_receiver,\
@@ -101,7 +101,8 @@ enum class FrequencySamplingDensity : size_t {
     NUMAV_PUBLIC_METHOD(set_result_export_path,\
         const char* const\
     )\
-    NUMAV_PUBLIC_METHOD(run)
+    NUMAV_PUBLIC_METHOD(run\
+    )
 
 template<ElementOrder O>
 class Simulation<

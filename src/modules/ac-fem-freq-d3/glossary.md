@@ -52,3 +52,5 @@
 - NZI (Non-Zero Index)
 
 - PQ (Physical Quantity)
+
+- PQV (Physical Quantity Value)

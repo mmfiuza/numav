@@ -29,7 +29,7 @@ namespace numav {
         D3
     };
 
-    enum class TypeOfSource : size_t { // TODO: rename to SourceType
+    enum class SourceType : size_t {
         POINT,
         SURFACE
     };

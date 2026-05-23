@@ -8,7 +8,7 @@ export
     NumericalMethod,
     Domain,
     Dimension,
-    TypeOfSource,
+    SourceType,
     PhysicalQuantity,
     ElementOrder,
     FrequencySamplingDensity
@@ -70,11 +70,11 @@ module Dimension
     end
 end
 
-# wrap the TypeOfSource enum class
-module TypeOfSource
+# wrap the SourceType enum class
+module SourceType
     using CxxWrap
     using libnumav_jl_jll
-    @wrapmodule(() -> libnumav_jl, :define_module_TypeOfSource)
+    @wrapmodule(() -> libnumav_jl, :define_module_SourceType)
     function __init__()
         @initcxx
     end
@@ -156,20 +156,57 @@ function add_volume_material(
         ElementOrder.o1
     };
     physical_group::Int,
-    density::Function,
-    sound_speed::Function
+    density::Union{Function, Number, String},
+    sound_speed::Union{Function, Number, String}
 )
-    density_real, density_imag = _cmplx_split_and_store(density)
-    sound_speed_real, sound_speed_imag = _cmplx_split_and_store(sound_speed)
+    density_args =
+    if density isa Function
+        _cmplx_split_and_store(density)
+    elseif density isa Number
+        (ComplexF64(density),)
+    else
+        (density,)
+    end
 
-    # call the C++ method
+    sound_speed_args =
+    if sound_speed isa Function
+        _cmplx_split_and_store(sound_speed)
+    elseif sound_speed isa Number
+        (ComplexF64(sound_speed),)
+    else
+        (sound_speed,)
+    end
+
     _add_volume_material(
+        simulation, physical_group, density_args..., sound_speed_args...
+    )
+end
+
+function add_surface_material( 
+    simulation::Simulation{
+        Phenomenon.acoustic,
+        NumericalMethod.fem,
+        Domain.frequency,
+        Dimension.d3,
+        ElementOrder.o1
+    };
+    physical_group::Int,
+    impedance::Union{Function, Number, String, _Empty},
+)
+    impedance_args =
+    if impedance isa Function
+        _cmplx_split_and_store(impedance)
+    elseif impedance isa Number
+        (ComplexF64(impedance),)
+    elseif impedance isa String
+        (impedance,)
+    end
+
+    _add_surface_material(
         simulation,
         physical_group,
-        density_real,
-        density_imag,
-        sound_speed_real,
-        sound_speed_imag
+        PhysicalQuantity.impedance,
+        impedance_args...
     )
 end
 
@@ -183,9 +220,9 @@ function add_sound_source(
     };
     coordinates::Union{Vector, _Empty} = _empty,
     physical_group::Union{Int, _Empty}  = _empty,
-    volume_velocity::Union{Function, _Empty} = _empty,
-    particle_velocity::Union{Function, _Empty} = _empty,
-    pressure::Union{Function, _Empty} = _empty
+    volume_velocity::Union{Function, Number, String, _Empty} = _empty,
+    particle_velocity::Union{Function, Number, String, _Empty} = _empty,
+    pressure::Union{Function, Number, String, _Empty} = _empty
 )
     if coordinates == _empty && physical_group == _empty
         throw(ArgumentError(
@@ -219,64 +256,36 @@ function add_sound_source(
         ))
     end
 
-    # Check if velocity or pressure was given
-    pq_func = Ref{Function}()
+    # Check if volume_velocity, particle_velocity or pressure was given
+    pqv = Ref{Any}()
     if volume_velocity != _empty
         pq_type = PhysicalQuantity.volume_velocity
-        pq_func[] = volume_velocity
+        pqv[] = volume_velocity
     elseif particle_velocity != _empty
         pq_type = PhysicalQuantity.particle_velocity
-        pq_func[] = particle_velocity
+        pqv[] = particle_velocity
     elseif pressure != _empty
         pq_type = PhysicalQuantity.pressure
-        pq_func[] = pressure
+        pqv[] = pressure
     end
 
-    pq_func_real, pq_func_imag = _cmplx_split_and_store(pq_func[])
+    pq_args =
+    if pqv[] isa Function
+        _cmplx_split_and_store(pqv[])
+    elseif pqv[] isa Number
+        (ComplexF64(pqv[]),)
+    elseif pqv[] isa String
+        (pqv[],)
+    end
 
-    # call the C++ method
+    source_args =
     if coordinates != _empty
-        _add_sound_source(
-            simulation,
-            TypeOfSource.point,
-            coordinates,
-            pq_type, 
-            pq_func_real,
-            pq_func_imag
-        )
-    else
-        _add_sound_source(
-            simulation,
-            TypeOfSource.surface,
-            physical_group,
-            pq_type,
-            pq_func_real,
-            pq_func_imag
-        )
+        (SourceType.point, coordinates)
+    elseif physical_group != _empty
+        (SourceType.surface, physical_group)
     end
-end
 
-function add_surface_material( 
-    simulation::Simulation{
-        Phenomenon.acoustic,
-        NumericalMethod.fem,
-        Domain.frequency,
-        Dimension.d3,
-        ElementOrder.o1
-    };
-    physical_group::Int,
-    impedance::Function,
-)
-    pq_func_real, pq_funq_imag = _cmplx_split_and_store(impedance)
-
-    # call the C++ method
-    _add_surface_material(
-        simulation,
-        physical_group,
-        PhysicalQuantity.impedance,
-        pq_func_real,
-        pq_funq_imag
-    )
+    _add_sound_source(simulation, source_args..., pq_type, pq_args...)
 end
 
 end # module Numav

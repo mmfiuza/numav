@@ -12,5 +12,5 @@ end
 # generate Overrides.toml
 open("/usr/local/share/julia/artifacts/Overrides.toml", "w") do file
     write(file, "[" * uuid * "]\n")
-    write(file, "libnumav_jl = \"/workspace/julia_bindings/override\"\n")
+    write(file, "libnumav_jl = \"/workspace/julia-bindings/override\"\n")
 end
