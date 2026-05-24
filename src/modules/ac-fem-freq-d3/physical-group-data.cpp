@@ -28,14 +28,14 @@ void SimulationAcFemFreqD3<O>::Impl::_organize_impedance_physical_group_data()
     }
     _isei_count = 0UL;
     for (size_t sei = 0UL; sei != _sei_count; ++sei) {
-        if (_espg_to_impedance.contains(_sei_to_espg[sei])) {
+        if (_espg_to_impedance.count(_sei_to_espg[sei]) > 0) {
             ++_isei_count;
         }
     }
     _isei_to_sei = fz::SafePtr<size_t>(_isei_count);
     size_t isei = 0UL;
     for (size_t sei = 0UL; sei != _sei_count; ++sei) {
-        if (_espg_to_impedance.contains(_sei_to_espg[sei])) {
+        if (_espg_to_impedance.count(_sei_to_espg[sei]) > 0) {
             _isei_to_sei[isei] = sei;
             ++isei;
         }
@@ -57,14 +57,14 @@ void SimulationAcFemFreqD3<O>::Impl::_organize_velocity_physical_group_data()
     }
     _vsei_count = 0UL;
     for (size_t sei = 0UL; sei != _sei_count; ++sei) {
-        if (_espg_to_velocity.contains(_sei_to_espg[sei])) {
+        if (_espg_to_velocity.count(_sei_to_espg[sei]) > 0) {
             ++_vsei_count;
         }
     }
     _vsei_to_sei = fz::SafePtr<size_t>(_vsei_count);
     size_t vsei = 0UL;
     for (size_t sei = 0UL; sei != _sei_count; ++sei) {
-        if (_espg_to_velocity.contains(_sei_to_espg[sei])) {
+        if (_espg_to_velocity.count(_sei_to_espg[sei]) > 0) {
             _vsei_to_sei[vsei] = sei;
             ++vsei;
         }
@@ -86,14 +86,14 @@ void SimulationAcFemFreqD3<O>::Impl::_organize_pressure_physical_group_data()
     }
     _psei_count = 0UL;
     for (size_t sei = 0UL; sei != _sei_count; ++sei) {
-        if (_espg_to_pressure.contains(_sei_to_espg[sei])) {
+        if (_espg_to_pressure.count(_sei_to_espg[sei]) > 0) {
             ++_psei_count;
         }
     }
     _psei_to_sei = fz::SafePtr<size_t>(_psei_count);
     size_t psei = 0UL;
     for (size_t sei = 0UL; sei != _sei_count; ++sei) {
-        if (_espg_to_pressure.contains(_sei_to_espg[sei])) {
+        if (_espg_to_pressure.count(_sei_to_espg[sei]) > 0) {
             _psei_to_sei[psei] = sei;
             ++psei;
         }

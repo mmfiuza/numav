@@ -31,5 +31,6 @@ template<ElementOrder O> constexpr size_t EXTRA_NODES_IN_VOL_ELEM = [] {
 constexpr size_t DIM = 3UL;
 constexpr Cmplx PENALTY_METHOD_CONSTANT = Cmplx(1e12_F, 0_F);
 constexpr size_t DEFAULT_FREQ_STEPS_COUNT = 4096UL;
+constexpr Float PI = 3.14159265358979323846_F;
 
 } // namespace numav

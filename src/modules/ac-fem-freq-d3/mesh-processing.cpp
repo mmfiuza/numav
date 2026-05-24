@@ -143,7 +143,7 @@ void SimulationAcFemFreqD3<ElementOrder::O2>::Impl::_generate_extra_nodes()
                 _vei_to_ni[vei][VTX_PAIRS_VOL[i][0UL]],
                 _vei_to_ni[vei][VTX_PAIRS_VOL[i][1UL]]
             );
-            if (!idxs_extra_nodes.contains(tup)) {
+            if (!(idxs_extra_nodes.count(tup) > 0)) {
                 is_extra_node[vei][i] = true;
                 _vei_to_ni[vei][NODES_IN_VOL_ELEM<ElementOrder::O1> + i] =
                     _ni_count;

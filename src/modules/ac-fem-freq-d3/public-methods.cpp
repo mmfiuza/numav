@@ -26,12 +26,12 @@ void SimulationAcFemFreqD3<O>::Impl::_check_if_did_run() {
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::_validate_espg(const size_t espg) {
-    if (!_existing_espg.contains(espg)) {
+    if (!(_existing_espg.count(espg) > 0)) {
         error("Physical group {} not found in mesh file.", espg);
     }
-    if (_espg_to_pressure.contains(espg) ||
-        _espg_to_velocity.contains(espg) ||
-        _espg_to_impedance.contains(espg)
+    if (_espg_to_pressure.count(espg) > 0 ||
+        _espg_to_velocity.count(espg) > 0 ||
+        _espg_to_impedance.count(espg) > 0
     ) {
         error("Physical group {} already assigned.", espg);
     }
@@ -159,10 +159,10 @@ void SimulationAcFemFreqD3<O>::Impl::add_volume_material(
 ) {
     _check_if_mesh_is_defined();
     _check_if_did_run();
-    if (!_existing_evpg.contains(evpg)) {
+    if (!(_existing_evpg.count(evpg) > 0)) {
         error("Physical group {} not found in mesh file.", evpg);
     }
-    if (_evpg_to_volprop.contains(evpg)) {
+    if (_evpg_to_volprop.count(evpg) > 0) {
         error("Physical group {} already assigned.", evpg);
     }
     _evpg_to_volprop.insert({evpg, {density, soundspeed}});
@@ -412,7 +412,7 @@ void SimulationAcFemFreqD3<O>::Impl::_check_if_it_can_run() {
             " Call set_maximum_frequency to do so.");
     }
     for (auto& evpg : _existing_evpg) {
-        if (!_evpg_to_volprop.contains(evpg)) {
+        if (!(_evpg_to_volprop.count(evpg) > 0)) {
             error("Volume physical group {} was not assigned."
             " Call add_volume_material to do so.", evpg);
         }

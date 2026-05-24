@@ -18,9 +18,29 @@ void trim_right_whitespace(std::string_view& sv);
 template<typename T>
 T parse(std::string_view str) {
     trim_right_whitespace(str);
+    const std::string tmp(str); // strto* requires null-termination
+    char* end;
+    errno = 0;
     T value;
-    auto result = std::from_chars(str.data(), str.data() + str.size(), value);
-    if (result.ec != std::errc{} || result.ptr != str.data()+str.size()) {
+    if constexpr (std::is_same_v<T, float>) {
+        value = std::strtof(tmp.c_str(), &end);
+    }
+    else if constexpr (std::is_same_v<T, double>) {
+        value = std::strtod(tmp.c_str(), &end);
+    }
+    else if constexpr (std::is_same_v<T, long double>) {
+        value = std::strtold(tmp.c_str(), &end);
+    }
+    else if constexpr (std::is_integral_v<T> && std::is_signed_v<T>) {
+        value = static_cast<T>(std::strtoll(tmp.c_str(), &end, 10));
+    }
+    else if constexpr (std::is_integral_v<T> && std::is_unsigned_v<T>) {
+        value = static_cast<T>(std::strtoull(tmp.c_str(), &end, 10));
+    }
+    else {
+        static_assert(!sizeof(T), "unsupported type for parse()");
+    }
+    if (end != tmp.c_str() + tmp.size() || errno == ERANGE) {
         throw std::invalid_argument("invalid number format");
     }
     return value;
@@ -52,15 +72,17 @@ constexpr auto concat_constexpr_arrays(const std::array<T, Sizes>... arrays)
 {
     constexpr std::size_t total_size = (Sizes + ...);
     std::array<T, total_size> result{};
-    
     std::size_t index = 0UL;
     (
         (
-            std::copy(arrays.begin(), arrays.end(), result.begin() + index), 
+            [&]() {
+                for (std::size_t i = 0UL; i < arrays.size(); ++i) {
+                    result[index + i] = arrays[i];
+                }
+            }(),
             index += arrays.size()
         ), ...
     );
-    
     return result;
 }
 

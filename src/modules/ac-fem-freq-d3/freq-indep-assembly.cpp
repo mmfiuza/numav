@@ -169,7 +169,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
             const std::pair<size_t,size_t> pair = make_ordered_rowcol_pair(
                 _vei_to_ni[vei][eni[0UL]], _vei_to_ni[vei][eni[1UL]]
             );
-            if (!ivpg_to_map_to_fipi[ivpg].contains(pair)) {
+            if (!(ivpg_to_map_to_fipi[ivpg].count(pair) > 0)) {
                 const size_t fipi = ivpg_to_map_to_fipi[ivpg].size();
                 ivpg_to_map_to_fipi[ivpg].insert({pair, fipi});
             }
@@ -412,7 +412,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_impedance()
             const std::pair<size_t,size_t> pair = make_ordered_rowcol_pair(
                 _sei_to_ni[sei][eni[0UL]], _sei_to_ni[sei][eni[1UL]]
             );
-            if (!ispgi_to_map_to_fipi[ispgi].contains(pair)) {
+            if (!(ispgi_to_map_to_fipi[ispgi].count(pair) > 0)) {
                 const size_t fipi = ispgi_to_map_to_fipi[ispgi].size();
                 ispgi_to_map_to_fipi[ispgi].insert({pair, fipi});
             }
@@ -566,7 +566,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_velocity()
         const size_t sei = _vsei_to_sei[vsei];
         for (size_t eni = 0UL; eni != NODES_IN_SFC_ELEM<O>; ++eni) {
             const size_t ni = _sei_to_ni[sei][eni];
-            if (!ispgv_to_map_to_fipi[ispgv].contains(ni)) {
+            if (!(ispgv_to_map_to_fipi[ispgv].count(ni) > 0)) {
                 const size_t fipi = ispgv_to_map_to_fipi[ispgv].size();
                 ispgv_to_map_to_fipi[ispgv].insert({ni, fipi});
             }

@@ -38,24 +38,24 @@ int main()
     // add volume velocity sources
     auto q = [](auto f) { return 1/f; };
     s.add_sound_source(
-        TypeOfSource::POINT, {3.0, 2.0, 1.0},
+        SourceType::POINT, {3.0, 2.0, 1.0},
         PhysicalQuantity::VOLUME_VELOCITY, q
     );
     auto u = [](auto f) { return 1/f; };
     s.add_sound_source(
-        TypeOfSource::SURFACE, 2,
+        SourceType::SURFACE, 2,
         PhysicalQuantity::PARTICLE_VELOCITY, u
     );
 
     // add pressure sources
     auto p0 = [](auto f) { return 1; };
     s.add_sound_source(
-        TypeOfSource::POINT, {4.0, 1.0, 0.5},
+        SourceType::POINT, {4.0, 1.0, 0.5},
         PhysicalQuantity::PRESSURE, p0
     );
     auto p1 = [](auto f) { return 2; };
     s.add_sound_source(
-        TypeOfSource::SURFACE, 3,
+        SourceType::SURFACE, 3,
         PhysicalQuantity::PRESSURE, p1
     );
  

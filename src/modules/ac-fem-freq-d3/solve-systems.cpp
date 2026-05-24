@@ -3,7 +3,6 @@
 #include "modules/ac-fem-freq-d3/impl.hpp"
 
 #include <cmath>
-#include <numbers>
 
 #include "common/nmvr-format.hpp"
 #include "common/utils.hpp"
@@ -66,7 +65,7 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
     {
         // frequency calculations
         const Float freq = _freq_steps[fi];
-        const Float omega = 2_F * std::numbers::pi * freq;
+        const Float omega = 2_F * PI * freq;
         const Float omega_squared = omega * omega;
         if (freq == 0_F) {
             _x.fill(Cmplx(0_F, 0_F));

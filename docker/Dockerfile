@@ -84,7 +84,7 @@ RUN chmod -R 777 ${JULIA_DEPOT_PATH}
 ENV BINARYBUILDER_RUNNER=privileged
 
 # agree to the Xcode license terms
-# ENV BINARYBUILDER_AUTOMATIC_APPLE=true
+ENV BINARYBUILDER_AUTOMATIC_APPLE=true
 
 # set the entrypoint
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh

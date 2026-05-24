@@ -15,9 +15,7 @@ run(
 name = "libnumav_jl"
 version = v"0.1.0"
 
-sources = [
-    DirectorySource("/tmp/binary_builder")
-]
+sources = [ DirectorySource("/tmp/binary_builder") ]
 
 script = raw"""
     mkdir build && cd build
@@ -34,10 +32,20 @@ script = raw"""
     cmake --build . --config Release --target install -- -j${nproc}
 """
 
-platforms = [Platform("x86_64", "linux"; libc=:glibc, julia_version=v"1.11")]
+julia_version = v"1.11"
+
+platforms = [
+    Platform("x86_64" , "linux"  ; libc=:glibc, julia_version=julia_version),
+    Platform("aarch64", "linux"  ; libc=:glibc, julia_version=julia_version),
+    Platform("x86_64" , "linux"  ; libc=:musl , julia_version=julia_version),
+    Platform("aarch64", "linux"  ; libc=:musl , julia_version=julia_version),
+    Platform("x86_64" , "windows";              julia_version=julia_version),
+    Platform("x86_64" , "macos"  ;              julia_version=julia_version),
+    Platform("aarch64", "macos"  ;              julia_version=julia_version)
+]
 platforms = expand_cxxstring_abis(platforms)
 
-products = [LibraryProduct("libnumav_jl", :libnumav_jl)]
+products = [ LibraryProduct("libnumav_jl", :libnumav_jl) ]
 
 dependencies = [
     Dependency("libcxxwrap_julia_jll", compat="0.14.9"),
