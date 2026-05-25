@@ -23,7 +23,8 @@ RUN apt-get update && apt-get install -y \
     sudo=1.9.13p3-1+deb12u3 \
     libblas-dev=3.11.0-2 \
     liblapack-dev=3.11.0-2 \
-    libmumps-seq-dev=5.5.1-1
+    libmumps-seq-dev=5.5.1-1 \
+    patchelf=0.14.3-1+b1
 
 # install Eigen
 ARG EIGEN_VERSION="5.0.1"

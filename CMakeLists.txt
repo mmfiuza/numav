@@ -23,16 +23,10 @@ elseif(SOLVER STREQUAL "EIGEN")
     # set(SOLVER_SPECIFIC_DEFINITIONS EIGEN_USE_BLAS)
 elseif(SOLVER STREQUAL "ONEMKL")
     set(SELECTED_SOLVER_DEFINITION NUMAV_USE_ONEMKL_SOLVER)
-    set(SOLVER_SPECIFIC_INCLUDE_DIRECTORIES
-        /opt/intel/oneapi/mkl/2025.2/include
-    )
+    set(MKL_LINK dynamic)
+    find_package(MKL REQUIRED)
     set(SOLVER_SPECIFIC_LINK_LIBRARIES
-        -Wl,--start-group
-        /opt/intel/oneapi/mkl/2025.2/lib/libmkl_gf_ilp64.a
-        /opt/intel/oneapi/mkl/2025.2/lib/libmkl_gnu_thread.a
-        /opt/intel/oneapi/mkl/2025.2/lib/libmkl_core.a
-        -Wl,--end-group
-        -lgomp
+        MKL::MKL
     )
     set(SOLVER_SPECIFIC_DEFINITIONS MKL_ILP64)
 elseif(SOLVER STREQUAL "MUMPS")

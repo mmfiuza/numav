@@ -37,7 +37,10 @@ cmake --build build --parallel ${nproc}
 Run:
 ```
 rm -rf build &&
-cmake -B build -D CMAKE_BUILD_TYPE=Release -D BUILD_TESTS=TRUE &&
+cmake -B build \
+    -D CMAKE_BUILD_TYPE=Release \
+    -D BUILD_TESTS=TRUE \
+    -D CMAKE_PREFIX_PATH=/opt/intel/oneapi/mkl/2025.2/lib/cmake &&
 cmake --build build --parallel ${nproc} &&
 ./build/tests_bin/test1
 ```
@@ -80,6 +83,7 @@ rm -rf /workspace/julia-bindings/override
 mkdir /workspace/julia-bindings/override
 tar -xzvf /workspace/products/libnumav_jl.v0.1.0.x86_64-linux-gnu-cxx11-julia_version+1.11.0.tar.gz -C /workspace/julia-bindings/override
 julia /workspace/julia-bindings/generate_override.jl
+patchelf --add-rpath /usr/local/share/julia/artifacts/27edf95310a71d47422663c3aea849f56efb1360/lib /workspace/julia-bindings/override/lib/libnumav_jl.so
 ```
 
 ## Dev the Julia packages
