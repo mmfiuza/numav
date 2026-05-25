@@ -67,6 +67,7 @@ target_compile_definitions(numav PUBLIC
     EIGEN_FAST_MATH
     ${SELECTED_SOLVER_DEFINITION}
     ${SOLVER_SPECIFIC_DEFINITIONS}
+    ${ADDITIONAL_COMPILE_DEFINITIONS}
 )
 
 target_link_libraries(numav PRIVATE
