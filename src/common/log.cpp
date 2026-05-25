@@ -19,13 +19,14 @@ namespace numav::log {
 
     void print_opening() {
         std::cout << std::string(80UL,'-') << "\n";
-        std::cout << std::string(34UL,' ') <<
-            "Numav Solver" << std::string(34UL,' ') << "\n";
+        std::cout << std::string(37UL,' ') <<
+            "Numav" << std::string(38UL,' ') << "\n";
         std::cout << std::string(20UL,' ') <<
             "Copyright (c) 2026 Matheus Machado Fiuza" <<
             std::string(20UL,' ') << "\n";
-        std::cout << std::string(30UL,' ') << "All rights reserved." << 
-            std::string(30UL,' ') << "\n";
+        std::cout << std::string(21UL,' ') << 
+            "Licensed under the AGPL3 Licence." << 
+            std::string(22UL,' ') << "\n";
         std::cout << std::string(80UL, '-') << "\n";
     }
 

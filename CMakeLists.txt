@@ -10,6 +10,10 @@ option(BUILD_EXAMPLES "Build examples" OFF)
 option(BUILD_SHARED_LIBS "Build shared library" OFF)
 option(GDB "Build with debug symbols for gdb" OFF)
 
+# find dependencies
+find_package(Eigen3 REQUIRED)
+find_package(spdlog REQUIRED)
+
 # solver-specific configuration
 set(SOLVER "ONEMKL" CACHE STRING "The linear system solver")
 set_property(CACHE SOLVER PROPERTY STRINGS "INTERNAL" "EIGEN" "ONEMKL" "MUMPS")
@@ -50,8 +54,6 @@ target_include_directories(numav
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${CMAKE_CURRENT_SOURCE_DIR}/third-party/indicators/include
         ${CMAKE_CURRENT_SOURCE_DIR}/third-party/safe-ptr/include
-        ${CMAKE_CURRENT_SOURCE_DIR}/third-party/eigen3/include
-        ${CMAKE_CURRENT_SOURCE_DIR}/third-party/spdlog/include
         ${CMAKE_CURRENT_SOURCE_DIR}/third-party/fmt/include
         ${SOLVER_SPECIFIC_INCLUDE_DIRECTORIES}
 )
@@ -68,6 +70,8 @@ target_compile_definitions(numav PUBLIC
 )
 
 target_link_libraries(numav PRIVATE
+    Eigen3::Eigen
+    spdlog::spdlog_header_only
     ${SOLVER_SPECIFIC_LINK_LIBRARIES}
 )
 

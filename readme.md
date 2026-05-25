@@ -1,6 +1,6 @@
-# Numav Solver
+# Numav (work in progress)
 
-The Numav Solver is a C++ library to perform acoustics and vibrations simulations.
+The Numav is a C++ library with Julia bindings to perform acoustics and vibrations simulations.
 
 ## How to start the development container
 The development container can be started in two ways:

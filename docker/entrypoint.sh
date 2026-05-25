@@ -11,20 +11,6 @@ set -e
 HOST_UID=${HOST_UID:-0}
 HOST_GID=${HOST_GID:-$HOST_UID}   # default GID to UID if not provided
 
-# Move libraries to third-party directory (common to both root and non‑root)
-# eigen3
-rm -rf /workspace/third-party/eigen3
-mkdir -p /workspace/third-party/eigen3/include
-cp -r /opt/include/eigen3/* /workspace/third-party/eigen3/include
-# spdlog
-rm -rf /workspace/third-party/spdlog
-mkdir -p /workspace/third-party/spdlog/include/spdlog
-cp -r /usr/include/spdlog/* /workspace/third-party/spdlog/include/spdlog
-# fmt
-rm -rf /workspace/third-party/fmt
-mkdir -p /workspace/third-party/fmt/include/fmt
-cp -r /usr/include/fmt/* /workspace/third-party/fmt/include/fmt
-
 if [ "$HOST_UID" != "0" ]; then
     EXISTING_USER=$(getent passwd $HOST_UID | cut -d: -f1)
     if [ -z "$EXISTING_USER" ]; then
