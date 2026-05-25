@@ -1,18 +1,14 @@
 Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
-All rights reserved.
-No modification or redistribution allowed.
-Commercial use is prohibited unless explicitly licensed.
+Numav is free software. You can redistribute it and/or modify it under the 
+terms of the GNU Affero General Public License (AGPL), either version 3 or (at 
+your option) any later version.
 
 Numav incorporates components from the following third-party projects:
 
   * SafePtr - <https://github.com/mmfiuza/safe-ptr>
   - Copyright: 2026 Matheus Machado Fiuza
   - License: AGPL3
-
-  * LDLT Solver - <https://github.com/mmfiuza/ldlt-solver>
-  - Copyright: 2026 Matheus Machado Fiuza
-  - License: None
 
   * Eigen - <https://gitlab.com/libeigen/eigen>
   - Copyright: 2006 The Eigen Authors, listed in: https://libeigen.gitlab.io/
@@ -1124,7 +1120,7 @@ Exhibit B - "Incompatible With Secondary Licenses" Notice
   defined by the Mozilla Public License, v. 2.0.
 
 ================================================================================
-ISSL
+ISSL License:
 ================================================================================
 Intel Simplified Software License (Version October 2022)
 
