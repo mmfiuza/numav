@@ -24,9 +24,9 @@ namespace numav::log {
         std::cout << std::string(20UL,' ') <<
             "Copyright (c) 2026 Matheus Machado Fiuza" <<
             std::string(20UL,' ') << "\n";
-        std::cout << std::string(21UL,' ') << 
+        std::cout << std::string(22UL,' ') << 
             "Licensed under the AGPL3 Licence." << 
-            std::string(22UL,' ') << "\n";
+            std::string(21UL,' ') << "\n";
         std::cout << std::string(80UL, '-') << "\n";
     }
 
