@@ -13,7 +13,7 @@ services:
     working_dir: /workspace
     volumes:
       - ..:/workspace
-      - ${SSH_AUTH_SOCK}:/ssh-agent
+      - ${SSH_AUTH_SOCK:-/tmp/no-ssh-agent}:/ssh-agent
       - ${HOME}/.gitconfig:/home/devuser/.gitconfig
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro

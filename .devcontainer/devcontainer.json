@@ -12,6 +12,8 @@
   "service": "numav",
   // The working folder inside the container
   "workspaceFolder": "/workspace",
+  
+  "overrideCommand": false,
 
   // Run this script on the host *before* the container is created
   "initializeCommand": "${localWorkspaceFolder}/.devcontainer/initialize.sh",

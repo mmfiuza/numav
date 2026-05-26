@@ -6,25 +6,25 @@ FROM debian@sha256:${DEB_DIGEST}
 
 # install apt dependencies
 RUN apt-get update && apt-get install -y \
-    libc6-dev=2.36-9+deb12u13 \
-    git=1:2.39.5-0+deb12u2 \
-    gcc=4:12.2.0-3 \
-    g++=4:12.2.0-3 \
-    gdb=13.1-3 \
-    clang=1:14.0-55.7~deb12u1 \
-    make=4.3-4.1 \
-    cmake=3.25.1-1 \
-    curl=7.88.1-10+deb12u14 \
-    squashfs-tools=1:4.5.1-1 \
-    libspdlog-dev=1:1.10.0+ds-0.4 \
-    wget=1.21.3-1+deb12u1 \
-    gosu=1.14-1+b10 \
-    tree=2.1.0-1 \
-    sudo=1.9.13p3-1+deb12u3 \
-    libblas-dev=3.11.0-2 \
-    liblapack-dev=3.11.0-2 \
-    libmumps-seq-dev=5.5.1-1 \
-    patchelf=0.14.3-1+b1
+    libc6-dev \
+    git \
+    gcc \
+    g++ \
+    gdb \
+    clang \
+    make \
+    cmake \
+    curl \
+    squashfs-tools \
+    libspdlog-dev \
+    wget \
+    gosu \
+    tree \
+    sudo \
+    libblas-dev \
+    liblapack-dev \
+    libmumps-seq-dev \
+    patchelf
 
 # install Eigen
 ARG EIGEN_VERSION="5.0.1"
@@ -86,6 +86,17 @@ ENV BINARYBUILDER_RUNNER=privileged
 
 # agree to the Xcode license terms
 ENV BINARYBUILDER_AUTOMATIC_APPLE=true
+
+# create devuser
+ARG DEFAULT_UID=1000
+ARG DEFAULT_GID=1000
+RUN groupadd -g ${DEFAULT_GID} devgroup && \
+    useradd -m -u ${DEFAULT_UID} -g devgroup -G sudo -s /bin/bash devuser && \
+    echo "devuser ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/devuser && \
+    chmod 440 /etc/sudoers.d/devuser
+
+# pre-create SSH agent socket target so bind-mount works
+RUN touch /ssh-agent
 
 # set the entrypoint
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
