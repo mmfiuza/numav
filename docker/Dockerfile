@@ -1,7 +1,7 @@
 # Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
 # start from debian:bookworm-slim
-ARG DEB_DIGEST=df52e55e3361a81ac1bead266f3373ee55d29aa50cf0975d440c2be3483d8ed3
+ARG DEB_DIGEST=2477d9ee0ead4370c778ce3aa42258a0b07684d1a84ded8f4af518383fbc3f2d
 FROM debian@sha256:${DEB_DIGEST}
 
 # install apt dependencies
@@ -74,7 +74,8 @@ RUN julia +${JULIA_VERSION} -e 'using Pkg; Pkg.add([ \
     PackageSpec(name="libcxxwrap_julia_jll", version="0.14.9"), \
     PackageSpec(name="Plots"), \
     PackageSpec(name="Symbolics"), \
-    PackageSpec(name="Revise") \
+    PackageSpec(name="Revise"), \
+    PackageSpec(name="HDF5") \
 ])'
 RUN julia +${BINARY_BUILDER_JULIA_VERSION} -e 'using Pkg; Pkg.add([ \
     PackageSpec(name="BinaryBuilder", version="0.6.6") \
@@ -86,6 +87,12 @@ ENV BINARYBUILDER_RUNNER=privileged
 
 # agree to the Xcode license terms
 ENV BINARYBUILDER_AUTOMATIC_APPLE=true
+
+# install HDF5
+RUN wget https://github.com/HDFGroup/hdf5/releases/\
+download/2.1.1/hdf5-2.1.1-ubuntu-2404_gcc.deb
+RUN apt install ./hdf5-2.1.1-ubuntu-2404_gcc.deb
+RUN rm hdf5-2.1.1-ubuntu-2404_gcc.deb
 
 # create devuser
 ARG DEFAULT_UID=1000

@@ -1,6 +1,6 @@
 # Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 project(numav LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -13,6 +13,7 @@ option(GDB "Build with debug symbols for gdb" OFF)
 # find dependencies
 find_package(Eigen3 REQUIRED)
 find_package(spdlog REQUIRED)
+find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
 
 # solver-specific configuration
 set(SOLVER "ONEMKL" CACHE STRING "The linear system solver")
@@ -73,6 +74,8 @@ target_compile_definitions(numav PUBLIC
 target_link_libraries(numav PRIVATE
     Eigen3::Eigen
     spdlog::spdlog_header_only
+    hdf5::hdf5_cpp
+    hdf5::hdf5_hl
     ${SOLVER_SPECIFIC_LINK_LIBRARIES}
 )
 

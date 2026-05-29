@@ -17,7 +17,8 @@
 #include "Eigen/Eigen"
 #include "Eigen/OrderingMethods"
 #include "SafePtr.hpp"
-#include <indicators/progress_bar.hpp>
+#include "indicators/progress_bar.hpp"
+#include "H5Cpp.h"
 
 namespace numav {
 
@@ -59,10 +60,10 @@ private:
     void _assemble_freq_independent_parts();
     void _solve_systems();
     void _post_process();
-    void _begin_nmvr_file();
-    void _write_simulation_inputs_to_nmvr_file();
+    H5::DataSet _begin_hdf5_file();
+    void _write_simulation_inputs_to_hdf5_file();
+    void _write_solution_for_one_freq(H5::DataSet& ds, const size_t fi);
     void _clear_data_not_used_in_freq_iterations();
-    void _end_nmvr_file();
     #if NUMAV_SYSTEM_SOLVER == NUMAV_INTERNAL
         void _define_sparsity_pattern_using_internal_solver();
         void _solve_using_internal_solver();
@@ -92,7 +93,7 @@ private:
         FuncFloatToCmplx soundspeed;
     };
 
-    std::ofstream _nvmr_file;
+    H5::H5File _hdf5_file;
 
     std::unordered_set<size_t> _existing_evpg;
     std::unordered_set<size_t> _existing_espg;
@@ -104,7 +105,7 @@ private:
     std::unordered_map<size_t, size_t> _espg_to_ispg;
     std::unordered_map<size_t, size_t> _evpg_to_ivpg;
 
-    std::string _nmvr_file_path;
+    std::string _hdf5_file_path;
 
     std::vector<std::tuple<size_t, FuncFloatToCmplx>> _point_volvel;
     std::vector<std::tuple<size_t, FuncFloatToCmplx>> _point_pressure;

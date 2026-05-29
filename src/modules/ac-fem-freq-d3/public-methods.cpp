@@ -393,10 +393,10 @@ void SimulationAcFemFreqD3<O>::Impl::set_result_export_path(
     const char* const path_to_result
 ) {
     _check_if_did_run();
-    if (!_nmvr_file_path.empty()) {
+    if (!_hdf5_file_path.empty()) {
         error("Result export path is already defined.");
     }
-    _nmvr_file_path = path_to_result;
+    _hdf5_file_path = path_to_result;
 }
 
 template <ElementOrder O>

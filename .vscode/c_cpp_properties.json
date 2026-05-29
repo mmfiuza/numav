@@ -6,7 +6,8 @@
                 "${workspaceFolder}/**",
                 "/opt/intel/oneapi/mkl/2025.2/include",
                 "/opt/include/eigen3",
-                "/usr/local/share/julia/artifacts/662f181f562225e139306f1e6e383c70bc9255f9/include/"
+                "/usr/local/share/julia/artifacts/662f181f562225e139306f1e6e383c70bc9255f9/include/",
+                "/HDF_Group/HDF5/2.1.1/include"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/g++",
