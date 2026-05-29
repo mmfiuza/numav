@@ -1,14 +1,14 @@
 # Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
-include("../utils/read_nmvr.jl")
+using HDF5
 
-data_1 = read_nmvr("result.nmvr")
-data_2 = read_nmvr("result.nmvr")
+file_1 = h5open("result.h5")
+file_2 = h5open("result.h5")
 
-pressure_1 = data_1["cpx_pres"]
-pressure_2 = data_2["cpx_pres"]
+pressure_1 = file_1["/results/pressure"][:,:]
+pressure_2 = file_2["/results/pressure"][:,:]
 
-freq_1 = data_1["freq_stp"]
+freq_1 = data_2["freq_stp"]
 freq_2 = data_2["freq_stp"]
 
 spl_1 = 20*log10.(abs.(pressure_1)/sqrt(2)/20e-6);

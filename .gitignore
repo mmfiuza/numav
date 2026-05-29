@@ -44,7 +44,7 @@
 *.tar.gz
 
 # simulation results
-*.nmvr
+*.h5
 
 # internally stored environment variables
 .env

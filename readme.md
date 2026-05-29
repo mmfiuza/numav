@@ -38,9 +38,11 @@ Run:
 ```
 rm -rf build &&
 cmake -B build \
-    -D CMAKE_BUILD_TYPE=Release \
-    -D BUILD_TESTS=TRUE \
-    -D CMAKE_PREFIX_PATH=/opt/intel/oneapi/mkl/2025.2/lib/cmake &&
+-D CMAKE_BUILD_TYPE=Release \
+-D BUILD_TESTS=TRUE \
+-D CMAKE_PREFIX_PATH="\
+/opt/intel/oneapi/mkl/2025.2/lib/cmake;\
+/HDF_Group/HDF5/2.1.1/cmake" &&
 cmake --build build --parallel ${nproc} &&
 ./build/tests_bin/test1
 ```

@@ -4,7 +4,6 @@
 
 #include <cmath>
 
-#include "common/nmvr-format.hpp"
 #include "common/utils.hpp"
 #include "common/log.hpp"
 
@@ -42,13 +41,8 @@ void SimulationAcFemFreqD3<O>::Impl::_clear_data_not_used_in_freq_iterations()
 template<ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
 {
-    _begin_nmvr_file();
-    _write_simulation_inputs_to_nmvr_file();
-    nmvr::write_data_chunk_header(
-        _nvmr_file,
-        nmvr::COMPLEX_AMPLITUDE_OF_SOUND_PRESSURE_SOLUTION_CHUNK_ID,
-        _ni_count * _freq_count * sizeof(std::complex<double>)
-    );
+    H5::DataSet pressure_data_set = _begin_hdf5_file();
+    _write_simulation_inputs_to_hdf5_file();
 
     _clear_data_not_used_in_freq_iterations();
 
@@ -69,7 +63,7 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
         const Float omega_squared = omega * omega;
         if (freq == 0_F) {
             _x.fill(Cmplx(0_F, 0_F));
-            goto write_results_to_nmvr_and_continue;
+            goto write_results_to_file_and_continue;
         }
 
         // reset values of A matrix and b vector
@@ -162,18 +156,11 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
         // increment progress bar
         log::increment_progress_bar(_progress_bar, bar_progress);
 
-        write_results_to_nmvr_and_continue:
-
-        // write solution to nmvr file
-        nmvr::write_data_chunk_body(
-            _nvmr_file,
-            _ni_count * sizeof(std::complex<double>),
-            static_cast_contiguous_data<std::complex<double>>(
-                _x.data(), _ni_count
-            ).get()
-        );
+        write_results_to_file_and_continue:
+        
+        // write solution to hdf5 file
+        _write_solution_for_one_freq(pressure_data_set, fi);
     }
-    _end_nmvr_file();
 
     // terminate solver
     #if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL

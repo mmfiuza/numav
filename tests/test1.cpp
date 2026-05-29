@@ -66,8 +66,8 @@ int main()
         PhysicalQuantity::IMPEDANCE,  Z
     );
 
-    // set path for result file (.nmvr)
-    s.set_result_export_path("result.nmvr");
+    // set path for result file (.h5)
+    s.set_result_export_path("result.h5");
 
     // run the simulation
     s.run();

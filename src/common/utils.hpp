@@ -98,4 +98,16 @@ std::unique_ptr<T1[]> static_cast_contiguous_data(
     return ptr;
 }
 
+template< typename T>
+std::unique_ptr<size_t[]> to_one_based_index(
+    const T* const data,
+    const size_t element_count
+) {
+    std::unique_ptr<size_t[]> ptr = std::make_unique<size_t[]>(element_count);
+    for (size_t i = 0UL; i!= element_count; ++i){
+        ptr[i] = data[i] + 1UL;
+    }
+    return ptr;
+}
+
 } // namespace numav
