@@ -33,8 +33,8 @@ export
 # wrap the Phenomenon enum class
 module Phenomenon
     using CxxWrap
-    using libnumav_jl_jll
-    @wrapmodule(() -> libnumav_jl, :define_module_Phenomenon)
+    using numav_julia_jll
+    @wrapmodule(() -> numav_julia, :define_module_Phenomenon)
     function __init__()
         @initcxx
     end
@@ -43,8 +43,8 @@ end
 # wrap the NumericalMethod enum class
 module NumericalMethod
     using CxxWrap
-    using libnumav_jl_jll
-    @wrapmodule(() -> libnumav_jl, :define_module_NumericalMethod)
+    using numav_julia_jll
+    @wrapmodule(() -> numav_julia, :define_module_NumericalMethod)
     function __init__()
         @initcxx
     end
@@ -53,8 +53,8 @@ end
 # wrap the Domain enum class
 module Domain
     using CxxWrap
-    using libnumav_jl_jll
-    @wrapmodule(() -> libnumav_jl, :define_module_Domain)
+    using numav_julia_jll
+    @wrapmodule(() -> numav_julia, :define_module_Domain)
     function __init__()
         @initcxx
     end
@@ -63,8 +63,8 @@ end
 # wrap the Dimension enum class
 module Dimension
     using CxxWrap
-    using libnumav_jl_jll
-    @wrapmodule(() -> libnumav_jl, :define_module_Dimension)
+    using numav_julia_jll
+    @wrapmodule(() -> numav_julia, :define_module_Dimension)
     function __init__()
         @initcxx
     end
@@ -73,8 +73,8 @@ end
 # wrap the SourceType enum class
 module SourceType
     using CxxWrap
-    using libnumav_jl_jll
-    @wrapmodule(() -> libnumav_jl, :define_module_SourceType)
+    using numav_julia_jll
+    @wrapmodule(() -> numav_julia, :define_module_SourceType)
     function __init__()
         @initcxx
     end
@@ -83,8 +83,8 @@ end
 # wrap the PhysicalQuantity enum class
 module PhysicalQuantity
     using CxxWrap
-    using libnumav_jl_jll
-    @wrapmodule(() -> libnumav_jl, :define_module_PhysicalQuantity)
+    using numav_julia_jll
+    @wrapmodule(() -> numav_julia, :define_module_PhysicalQuantity)
     function __init__()
         @initcxx
     end
@@ -93,8 +93,8 @@ end
 # wrap the ElementOrder enum class
 module ElementOrder
     using CxxWrap
-    using libnumav_jl_jll
-    @wrapmodule(() -> libnumav_jl, :define_module_ElementOrder)
+    using numav_julia_jll
+    @wrapmodule(() -> numav_julia, :define_module_ElementOrder)
     function __init__()
         @initcxx
     end
@@ -103,8 +103,8 @@ end
 # wrap the FrequencySamplingDensity enum class
 module FrequencySamplingDensity
     using CxxWrap
-    using libnumav_jl_jll
-    @wrapmodule(() -> libnumav_jl, :define_module_FrequencySamplingDensity)
+    using numav_julia_jll
+    @wrapmodule(() -> numav_julia, :define_module_FrequencySamplingDensity)
     function __init__()
         @initcxx
     end
@@ -112,8 +112,8 @@ end
 
 # wrap the main Numav module
 using CxxWrap
-using libnumav_jl_jll
-@wrapmodule(() -> libnumav_jl)
+using numav_julia_jll
+@wrapmodule(() -> numav_julia)
 function __init__()
     @initcxx
 end

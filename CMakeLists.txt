@@ -96,15 +96,15 @@ if(BIND_JULIA)
     get_target_property(JlCxx_location JlCxx::cxxwrap_julia LOCATION)
     get_filename_component(JlCxx_location ${JlCxx_location} DIRECTORY)
     
-    add_library(numav_jl SHARED
-        ${CMAKE_CURRENT_SOURCE_DIR}/julia-bindings/numav_jl.cpp
+    add_library(numav_julia SHARED
+        ${CMAKE_CURRENT_SOURCE_DIR}/julia-bindings/numav_julia.cpp
     )
-    target_link_libraries(numav_jl
+    target_link_libraries(numav_julia
         numav
         JlCxx::cxxwrap_julia
         JlCxx::cxxwrap_julia_stl
     )
-    install(TARGETS numav_jl LIBRARY DESTINATION lib)
+    install(TARGETS numav_julia LIBRARY DESTINATION lib)
 endif()
 
 # add subdirectories

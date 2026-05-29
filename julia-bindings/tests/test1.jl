@@ -44,7 +44,7 @@ Z(f) = 1f + 2im
 add_surface_material(s, physical_group=4, 
     impedance="julia-bindings/tests/pqv.txt")
 
-set_result_export_path(s, "result.nmvr")
+set_result_export_path(s, "result.h5")
 
 # run the simulation
 simulate(s)

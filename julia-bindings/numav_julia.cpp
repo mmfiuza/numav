@@ -356,8 +356,8 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
         );
         wrapped.module().method("set_result_export_path", 
             []( WrappedT& w,
-                const char* const path_to_nmvr_file
-            ) { w.set_result_export_path(path_to_nmvr_file); }
+                const char* const path_to_hdf5_file
+            ) { w.set_result_export_path(path_to_hdf5_file); }
         );
         // "run" is a native Julia function, so we choose simulate as a name
         wrapped.module().method("simulate", 

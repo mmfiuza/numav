@@ -1,7 +1,7 @@
 # Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
-# get libnumav_jl_jll uuid
-lines = readlines("/usr/local/share/julia/dev/libnumav_jl_jll/Project.toml")
+# get numav_julia_jll uuid
+lines = readlines("/usr/local/share/julia/dev/numav_julia_jll/Project.toml")
 for line in lines
     if(startswith(line, "uuid"))
         global uuid = strip(line[5:end], ['\"', ' ', '='])
@@ -12,5 +12,5 @@ end
 # generate Overrides.toml
 open("/usr/local/share/julia/artifacts/Overrides.toml", "w") do file
     write(file, "[" * uuid * "]\n")
-    write(file, "libnumav_jl = \"/workspace/julia-bindings/override\"\n")
+    write(file, "numav_julia = \"/workspace/julia-bindings/override\"\n")
 end
