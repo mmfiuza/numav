@@ -34,7 +34,7 @@ export
 module Phenomenon
     using CxxWrap
     using numav_julia_jll
-    @wrapmodule(() -> numav_julia, :define_module_Phenomenon)
+    @wrapmodule(() -> libnumav_julia, :define_module_Phenomenon)
     function __init__()
         @initcxx
     end
@@ -44,7 +44,7 @@ end
 module NumericalMethod
     using CxxWrap
     using numav_julia_jll
-    @wrapmodule(() -> numav_julia, :define_module_NumericalMethod)
+    @wrapmodule(() -> libnumav_julia, :define_module_NumericalMethod)
     function __init__()
         @initcxx
     end
@@ -54,7 +54,7 @@ end
 module Domain
     using CxxWrap
     using numav_julia_jll
-    @wrapmodule(() -> numav_julia, :define_module_Domain)
+    @wrapmodule(() -> libnumav_julia, :define_module_Domain)
     function __init__()
         @initcxx
     end
@@ -64,7 +64,7 @@ end
 module Dimension
     using CxxWrap
     using numav_julia_jll
-    @wrapmodule(() -> numav_julia, :define_module_Dimension)
+    @wrapmodule(() -> libnumav_julia, :define_module_Dimension)
     function __init__()
         @initcxx
     end
@@ -74,7 +74,7 @@ end
 module SourceType
     using CxxWrap
     using numav_julia_jll
-    @wrapmodule(() -> numav_julia, :define_module_SourceType)
+    @wrapmodule(() -> libnumav_julia, :define_module_SourceType)
     function __init__()
         @initcxx
     end
@@ -84,7 +84,7 @@ end
 module PhysicalQuantity
     using CxxWrap
     using numav_julia_jll
-    @wrapmodule(() -> numav_julia, :define_module_PhysicalQuantity)
+    @wrapmodule(() -> libnumav_julia, :define_module_PhysicalQuantity)
     function __init__()
         @initcxx
     end
@@ -94,7 +94,7 @@ end
 module ElementOrder
     using CxxWrap
     using numav_julia_jll
-    @wrapmodule(() -> numav_julia, :define_module_ElementOrder)
+    @wrapmodule(() -> libnumav_julia, :define_module_ElementOrder)
     function __init__()
         @initcxx
     end
@@ -104,7 +104,7 @@ end
 module FrequencySamplingDensity
     using CxxWrap
     using numav_julia_jll
-    @wrapmodule(() -> numav_julia, :define_module_FrequencySamplingDensity)
+    @wrapmodule(() -> libnumav_julia, :define_module_FrequencySamplingDensity)
     function __init__()
         @initcxx
     end
@@ -113,7 +113,7 @@ end
 # wrap the main Numav module
 using CxxWrap
 using numav_julia_jll
-@wrapmodule(() -> numav_julia)
+@wrapmodule(() -> libnumav_julia)
 function __init__()
     @initcxx
 end

@@ -50,9 +50,9 @@ RUN sh ./intel-onemkl-2025.2.0.629_offline.sh -a --silent --eula accept
 RUN rm intel-onemkl-2025.2.0.629_offline.sh
 
 # install Julia
-ARG JULIA_VERSION="1.11.9"
-ARG BINARY_BUILDER_JULIA_VERSION="1.7.3"
 ARG JULIAUP_VERSION="1.20.1"
+ARG BINARY_BUILDER_JULIA_VERSION="1.12.4"
+ARG BINARY_BUILDER_VERSION="0.6.6"
 ENV JULIA_DEPOT_PATH=/usr/local/share/julia
 ENV JULIAUP_DEPOT_PATH=/usr/local/share
 RUN case "$(uname -m)" in \
@@ -63,29 +63,28 @@ RUN case "$(uname -m)" in \
 curl -fsSL "https://github.com/JuliaLang/juliaup/releases/download/\
 v${JULIAUP_VERSION}/juliaup-${JULIAUP_VERSION}-${JULIAUP_ARCH}\
 -unknown-linux-musl-portable.tar.gz" | tar -xz -C /usr/local/bin
-RUN juliaup add ${JULIA_VERSION}
+RUN juliaup add release
+RUN juliaup default release
+RUN juliaup add 1.10
+RUN juliaup add 1.11
+RUN juliaup add 1.12
+RUN juliaup add 1.13
 RUN juliaup add ${BINARY_BUILDER_JULIA_VERSION}
-RUN juliaup default ${JULIA_VERSION}
 RUN chmod -R 777 ${JULIAUP_DEPOT_PATH}/juliaup
 
 # install Julia packages
-RUN julia +${JULIA_VERSION} -e 'using Pkg; Pkg.add([ \
-    PackageSpec(name="CxxWrap", version="0.17.5"), \
-    PackageSpec(name="libcxxwrap_julia_jll", version="0.14.9"), \
+RUN julia +release -e 'using Pkg; Pkg.add([ \
     PackageSpec(name="Plots"), \
     PackageSpec(name="Symbolics"), \
     PackageSpec(name="Revise"), \
     PackageSpec(name="HDF5") \
 ])'
-RUN julia +${BINARY_BUILDER_JULIA_VERSION} -e 'using Pkg; Pkg.add([ \
-    PackageSpec(name="BinaryBuilder", version="0.6.6") \
-])'
+RUN julia +${BINARY_BUILDER_JULIA_VERSION} -e "using Pkg; Pkg.add([ \
+    PackageSpec(name=\"BinaryBuilder\",version=\"${BINARY_BUILDER_VERSION}\") \
+])"
 RUN chmod -R 777 ${JULIA_DEPOT_PATH}
 
-# set privileged mode environment variable
-ENV BINARYBUILDER_RUNNER=privileged
-
-# agree to the Xcode license terms
+# agree to the Xcode license terms (needed to run BinaryBuilder)
 ENV BINARYBUILDER_AUTOMATIC_APPLE=true
 
 # install HDF5

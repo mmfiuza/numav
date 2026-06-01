@@ -8,17 +8,14 @@ version = v"0.1.0"
 sources = [ 
     GitSource(
         "https://github.com/mmfiuza/numav.git", 
-        "09d7c407a396ebf7018b2b7f757ff6647abe57b8"
+        "f0f0b67e98ad47b2a0e9b451f9e97fffa7d6bc8a"
     )
 ]
 
 script = raw"""
     # oneMKL is picked for the available platforms, otherwise Eigen is picked
-    if [[
-        ${target} == x86_64-linux-gnu* ||
-        ${target} == x86_64-w64* ||
-        ${target} == x86_64-apple*
-    ]]; then
+    if [[ ${target} == x86_64-linux-gnu* || ${target} == x86_64-w64* ]];
+    then
         SOLVER=ONEMKL
     else
         SOLVER=EIGEN
@@ -38,51 +35,49 @@ script = raw"""
     cmake --build . --config Release --target install -- -j${nproc}
 """
 
-julia_ver = "1.11" # Julia version that the user can use numav_julia_jll
-jl_ver_num = VersionNumber(julia_ver)
+julia_versions = [ "1.10", "1.11", "1.12", "1.13", "1.14" ]
 
-platforms = [
-    Platform("x86_64" , "linux"  ; libc=:glibc, julia_version=jl_ver_num),
-    # Platform("aarch64", "linux"  ; libc=:glibc, julia_version=jl_ver_num),
-    # Platform("x86_64" , "linux"  ; libc=:musl , julia_version=jl_ver_num),
-    # Platform("aarch64", "linux"  ; libc=:musl , julia_version=jl_ver_num),
-    # Platform("x86_64" , "windows";              julia_version=jl_ver_num),
-    # Platform("x86_64" , "macos"  ;              julia_version=jl_ver_num),
-    # Platform("aarch64", "macos"  ;              julia_version=jl_ver_num),
-]
+platforms = Platform[]
+for v in VersionNumber.(julia_versions)
+    append!(platforms,
+        [
+            Platform("x86_64" , "linux"  ; libc=:glibc, julia_version=v),
+            Platform("aarch64", "linux"  ; libc=:glibc, julia_version=v),
+            Platform("x86_64" , "linux"  ; libc=:musl , julia_version=v),
+            Platform("aarch64", "linux"  ; libc=:musl , julia_version=v),
+            Platform("x86_64" , "windows";              julia_version=v),
+            Platform("x86_64" , "macos"  ;              julia_version=v),
+            Platform("aarch64", "macos"  ;              julia_version=v),
+        ]
+    )
+end
 platforms = expand_cxxstring_abis(platforms)
 
-products = [ LibraryProduct("numav_julia", :numav_julia) ]
+products = [ LibraryProduct("libnumav_julia", :libnumav_julia) ]
 
-mkl_linux_windows = filter(p ->
+mkl_platforms = filter(p ->
     (arch(p) == "x86_64" && Sys.islinux(p) && libc(p) == "glibc") ||
     (arch(p) == "x86_64" && Sys.iswindows(p)),
     platforms
 )
-mkl_macos = filter(p -> arch(p) == "x86_64" && Sys.isapple(p), platforms)
 
 dependencies = [
-    Dependency("libcxxwrap_julia_jll", compat="0.14.9"),
-    BuildDependency(PackageSpec(;name="libjulia_jll", version=julia_ver*".1")),
-    BuildDependency(PackageSpec(;name="Eigen_jll", version="5.0.1")),
-    BuildDependency(PackageSpec(;name="spdlog_jll", version="1.15.0")),
+    Dependency("libcxxwrap_julia_jll", compat="0.14.10"),
+    Dependency("HDF5_jll", compat="2.1"),
+    Dependency("spdlog_jll", compat="1.15.0"),
+    BuildDependency(PackageSpec(name="libjulia_jll", version="1.11.0")),
+    BuildDependency(PackageSpec(name="Eigen_jll", version="5.0.1")),
 
-    # oneMKL for x86_64 Linux(glibc) and Windows
-    Dependency("MKL_jll", compat="=2025.2.0"; platforms=mkl_linux_windows),
+    # oneMKL for x86_64-linux-gnu and x86_64-w64
+    Dependency("MKL_jll", compat="=2025.2.0"; platforms=mkl_platforms),
     BuildDependency(
-        PackageSpec(;name="MKL_Headers_jll", version="2025.2.0");
-        platforms=mkl_linux_windows
-    ),
-
-    # oneMKL for x86_64 MacOS is 2023.2 (last supported version for MacOS)
-    Dependency("MKL_jll", compat="=2023.2.0"; platforms=mkl_macos),
-    BuildDependency(
-        PackageSpec(;name="MKL_Headers_jll", version="2023.2.0");
-        platforms=mkl_macos
+        PackageSpec(name="MKL_Headers_jll", version="2025.2.0");
+        platforms=mkl_platforms
     ),
 ]
 
 build_tarballs(
     ARGS, name, version, sources, script, platforms, products, dependencies;
-    preferred_gcc_version=v"10", julia_compat="~"*julia_ver
+    preferred_gcc_version=v"10",
+    julia_compat=join("~".*julia_versions, ", ")
 )
