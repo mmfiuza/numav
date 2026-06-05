@@ -63,7 +63,7 @@ int main()
     auto Z = [](auto f) { return std::complex<double>(4000, 4000); };
     s.add_surface_material(
         5,
-        PhysicalQuantity::IMPEDANCE,  Z
+        PhysicalQuantity::IMPEDANCE, Z
     );
 
     // set path for result file (.h5)

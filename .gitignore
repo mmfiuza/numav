@@ -49,6 +49,9 @@
 # internally stored environment variables
 .env
 
+# Yggdrasil
+julia-bindings/Yggdrasil
+
 # third-party
 /third-party/eigen3
 /third-party/fmt

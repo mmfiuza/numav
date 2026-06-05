@@ -116,6 +116,9 @@ using numav_julia_jll
 @wrapmodule(() -> libnumav_julia)
 function __init__()
     @initcxx
+    # Set env variables to enable MKL in SDL mode to configure at runtime
+    ENV["MKL_INTERFACE_LAYER"] = "ILP64"
+    ENV["MKL_THREADING_LAYER"] = "INTEL"
 end
 
 using Base.Threads
