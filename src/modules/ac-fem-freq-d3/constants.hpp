@@ -7,24 +7,24 @@
 
 namespace numav {
 
-template<ElementOrder O> constexpr size_t NODES_IN_SFC_ELEM = [] {
+template<ElementOrder O> constexpr size_t ENI_COUNT_SFC = [] {
     if constexpr (O == ElementOrder::O1) { return 3UL; }
     if constexpr (O == ElementOrder::O2) { return 6UL; }
     return 0UL;
 }();
 
-template<ElementOrder O> constexpr size_t EXTRA_NODES_IN_SFC_ELEM = [] {
-    return NODES_IN_SFC_ELEM<O> - NODES_IN_SFC_ELEM<ElementOrder::O1>;
+template<ElementOrder O> constexpr size_t EXTRA_ENI_COUNT_SFC = [] {
+    return ENI_COUNT_SFC<O> - ENI_COUNT_SFC<ElementOrder::O1>;
 }();
 
-template<ElementOrder O> constexpr size_t NODES_IN_VOL_ELEM = [] {
+template<ElementOrder O> constexpr size_t ENI_COUNT_VOL = [] {
     if constexpr (O == ElementOrder::O1) { return 4UL;  }
     if constexpr (O == ElementOrder::O2) { return 10UL; }
     return 0UL;
 }();
 
-template<ElementOrder O> constexpr size_t EXTRA_NODES_IN_VOL_ELEM = [] {
-    return NODES_IN_VOL_ELEM<O> - NODES_IN_VOL_ELEM<ElementOrder::O1>;
+template<ElementOrder O> constexpr size_t EXTRA_ENI_COUNT_VOL = [] {
+    return ENI_COUNT_VOL<O> - ENI_COUNT_VOL<ElementOrder::O1>;
 }();
 
 // dimension count in space (not the dimension of mesh elements)

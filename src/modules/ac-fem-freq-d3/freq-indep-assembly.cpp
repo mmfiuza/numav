@@ -63,13 +63,13 @@ void SimulationAcFemFreqD3<O>::Impl::_allocate_a()
     #if NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
         constexpr std::array<
             std::array<size_t, 2UL>,
-            PERMUTATION_REP_SIZE<NODES_IN_VOL_ELEM<O>, 2UL>
-        > ENI_PAIRS = PERMUTATION_REP<NODES_IN_VOL_ELEM<O>>;
+            PERMUTATION_REP_SIZE<ENI_COUNT_VOL<O>, 2UL>
+        > ENI_PAIRS = PERMUTATION_REP<ENI_COUNT_VOL<O>>;
     #else
         constexpr std::array<
             std::array<size_t, 2UL>,
-            COMBINATION_REP_SIZE<NODES_IN_VOL_ELEM<O>, 2UL>
-        > ENI_PAIRS = COMBINATION_REP<NODES_IN_VOL_ELEM<O>>;
+            COMBINATION_REP_SIZE<ENI_COUNT_VOL<O>, 2UL>
+        > ENI_PAIRS = COMBINATION_REP<ENI_COUNT_VOL<O>>;
     #endif
     std::unordered_set<std::pair<size_t,size_t>> existing_pairs;
     for (size_t vei = 0UL; vei != _vei_count; ++vei) {
@@ -109,7 +109,7 @@ void SimulationAcFemFreqD3<O>::Impl::_allocate_b()
     std::unordered_set<size_t> existing_source_nodes;
     for (size_t vsei = 0UL; vsei != _vsei_count; ++vsei) {
         const size_t sei = _vsei_to_sei[vsei];
-        for (size_t eni = 0UL; eni != NODES_IN_SFC_ELEM<O>; ++eni) {
+        for (size_t eni = 0UL; eni != ENI_COUNT_SFC<O>; ++eni) {
             const size_t ni = _sei_to_ni[sei][eni];
             existing_source_nodes.insert(ni);
         }
@@ -119,7 +119,7 @@ void SimulationAcFemFreqD3<O>::Impl::_allocate_b()
     }
     for (size_t psei = 0UL; psei != _psei_count; ++psei) {
         const size_t sei = _psei_to_sei[psei];
-        for (size_t eni = 0UL; eni != NODES_IN_SFC_ELEM<O>; ++eni) {
+        for (size_t eni = 0UL; eni != ENI_COUNT_SFC<O>; ++eni) {
             const size_t ni = _sei_to_ni[sei][eni];
             existing_source_nodes.insert(ni);
         }
@@ -149,13 +149,13 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
     #if NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
         constexpr std::array<
             std::array<size_t, 2UL>,
-            PERMUTATION_REP_SIZE<NODES_IN_VOL_ELEM<O>, 2UL>
-        > ENI_PAIRS = PERMUTATION_REP<NODES_IN_VOL_ELEM<O>>;
+            PERMUTATION_REP_SIZE<ENI_COUNT_VOL<O>, 2UL>
+        > ENI_PAIRS = PERMUTATION_REP<ENI_COUNT_VOL<O>>;
     #else
         constexpr std::array<
             std::array<size_t, 2UL>,
-            COMBINATION_REP_SIZE<NODES_IN_VOL_ELEM<O>, 2UL>
-        > ENI_PAIRS = COMBINATION_REP<NODES_IN_VOL_ELEM<O>>;
+            COMBINATION_REP_SIZE<ENI_COUNT_VOL<O>, 2UL>
+        > ENI_PAIRS = COMBINATION_REP<ENI_COUNT_VOL<O>>;
     #endif
 
     // count the fipi for each ivpg
@@ -228,8 +228,8 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
         #if \
         NUMAV_STIF_INTEGRATION_METHOD == NUMAV_GAUSS_QUADRATURE || \
         NUMAV_MASS_INTEGRATION_METHOD == NUMAV_GAUSS_QUADRATURE
-            Eigen::Matrix<Float,NODES_IN_VOL_ELEM<O>,DIM> coords_matrix;
-            for (size_t eni = 0UL; eni != NODES_IN_VOL_ELEM<O>; ++eni) {
+            Eigen::Matrix<Float,ENI_COUNT_VOL<O>,DIM> coords_matrix;
+            for (size_t eni = 0UL; eni != ENI_COUNT_VOL<O>; ++eni) {
                 const size_t ni = _vei_to_ni[vei][eni];
                 for (size_t di = 0UL; di != DIM; ++di) {
                     coords_matrix(eni,di) = _ni_to_coords[ni][di];
@@ -255,7 +255,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
                 GAUSS_POINTS_STIF = GAUSS_POINTS_VOL<NGP_STIF<O>>;
             for (size_t gpi = 0UL; gpi != NGP_STIF<O>; ++gpi)
             {
-                const Eigen::Matrix<Float,DIM,NODES_IN_VOL_ELEM<O>> nabla_n =
+                const Eigen::Matrix<Float,DIM,ENI_COUNT_VOL<O>> nabla_n =
                     shape_func_vol_gradient<O>(
                         GAUSS_POINTS_STIF[gpi][0UL],
                         GAUSS_POINTS_STIF[gpi][1UL],
@@ -268,18 +268,18 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
                 const Eigen::Matrix<Float,DIM,DIM> inv_jac =
                     jac_matrix.inverse();
                 
-                const Eigen::Matrix<Float,DIM,NODES_IN_VOL_ELEM<O>> b_matrix =
+                const Eigen::Matrix<Float,DIM,ENI_COUNT_VOL<O>> b_matrix =
                     inv_jac * nabla_n;
                 
                 const
-                Eigen::Matrix<Float,NODES_IN_VOL_ELEM<O>,NODES_IN_VOL_ELEM<O>>
+                Eigen::Matrix<Float,ENI_COUNT_VOL<O>,ENI_COUNT_VOL<O>>
                     btb = b_matrix.transpose() * b_matrix;
                 
                 const Float det_jac = std::abs(jac_matrix.determinant());
                 
                 // todo: multiply detj and w without creating another matrix
                 const
-                Eigen::Matrix<Float,NODES_IN_VOL_ELEM<O>,NODES_IN_VOL_ELEM<O>>
+                Eigen::Matrix<Float,ENI_COUNT_VOL<O>,ENI_COUNT_VOL<O>>
                     btb_detj_w = 
                         btb * det_jac * GAUSS_WEIGHTS_VOL<NGP_STIF<O>>[gpi];
 
@@ -290,11 +290,11 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
             }
         #elif NUMAV_STIF_INTEGRATION_METHOD == NUMAV_ANALYTIC
             const
-            Eigen::Matrix<Float, NODES_IN_VOL_ELEM<O>, NODES_IN_VOL_ELEM<O>>
+            Eigen::Matrix<Float, ENI_COUNT_VOL<O>, ENI_COUNT_VOL<O>>
                 stif_matrix_const_part = get_stif_matrix_const_part<O>(coords);
 
             const
-            Eigen::Matrix<Float, NODES_IN_VOL_ELEM<O>, NODES_IN_VOL_ELEM<O>>
+            Eigen::Matrix<Float, ENI_COUNT_VOL<O>, ENI_COUNT_VOL<O>>
                 stif_fi_part = stif_matrix_const_part / (36_F * tet_volume);
 
             for (size_t nci = 0UL; nci != ENI_PAIRS.size(); ++nci) {
@@ -309,7 +309,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
                 GAUSS_POINTS_MASS = GAUSS_POINTS_VOL<NGP_MASS<O>>;
             for (size_t gpi = 0UL; gpi != NGP_MASS<O>; ++gpi)
             {
-                const Eigen::Matrix<Float,DIM,NODES_IN_VOL_ELEM<O>> nabla_n =
+                const Eigen::Matrix<Float,DIM,ENI_COUNT_VOL<O>> nabla_n =
                     shape_func_vol_gradient<O>(
                         GAUSS_POINTS_MASS[gpi][0UL],
                         GAUSS_POINTS_MASS[gpi][1UL],
@@ -321,7 +321,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
                 
                 const Float det_jac = std::abs(jac_matrix.determinant());
 
-                const Eigen::Matrix<Float,NODES_IN_VOL_ELEM<O>,1UL> n =
+                const Eigen::Matrix<Float,ENI_COUNT_VOL<O>,1UL> n =
                     shape_func_vol<O>(
                         GAUSS_POINTS_MASS[gpi][0UL],
                         GAUSS_POINTS_MASS[gpi][1UL],
@@ -329,12 +329,12 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
                     );
 
                 const
-                Eigen::Matrix<Float,NODES_IN_VOL_ELEM<O>,NODES_IN_VOL_ELEM<O>>
+                Eigen::Matrix<Float,ENI_COUNT_VOL<O>,ENI_COUNT_VOL<O>>
                     nnt = n * n.transpose();
                 
                 // todo: multiply detj and w without creating another matrix
                 const
-                Eigen::Matrix<Float,NODES_IN_VOL_ELEM<O>,NODES_IN_VOL_ELEM<O>>
+                Eigen::Matrix<Float,ENI_COUNT_VOL<O>,ENI_COUNT_VOL<O>>
                     nnt_detj_w =
                         nnt * det_jac * GAUSS_WEIGHTS_VOL<NGP_MASS<O>>[gpi];
                 
@@ -345,11 +345,11 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
             }
         #elif NUMAV_MASS_INTEGRATION_METHOD == NUMAV_ANALYTIC
             const 
-            Eigen::Matrix<Float,NODES_IN_VOL_ELEM<O>,NODES_IN_VOL_ELEM<O>>
+            Eigen::Matrix<Float,ENI_COUNT_VOL<O>,ENI_COUNT_VOL<O>>
                 mass_matrix_const_part = MASS_MATRIX_CONST_PART<O>;
             
             const
-            Eigen::Matrix<Float,NODES_IN_VOL_ELEM<O>,NODES_IN_VOL_ELEM<O>>
+            Eigen::Matrix<Float,ENI_COUNT_VOL<O>,ENI_COUNT_VOL<O>>
                 mass_fi_part = mass_matrix_const_part * tet_volume;
             
             for (size_t nci = 0UL; nci != ENI_PAIRS.size(); ++nci) {
@@ -362,11 +362,11 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
 }
 
 template<ElementOrder O>
-std::array<Eigen::Vector2d, NODES_IN_SFC_ELEM<O>> project_triangle_to_2d(
-    const std::array<Eigen::Vector3d, NODES_IN_SFC_ELEM<O>> vertices_3d
+std::array<Eigen::Vector2d, ENI_COUNT_SFC<O>> project_triangle_to_2d(
+    const std::array<Eigen::Vector3d, ENI_COUNT_SFC<O>> vertices_3d
 ) {
-    std::array<Eigen::Vector3d, NODES_IN_SFC_ELEM<O>> point_minus_origin;
-    for (size_t eni = 0UL; eni != NODES_IN_SFC_ELEM<O>; ++eni) {
+    std::array<Eigen::Vector3d, ENI_COUNT_SFC<O>> point_minus_origin;
+    for (size_t eni = 0UL; eni != ENI_COUNT_SFC<O>; ++eni) {
         point_minus_origin[eni] = vertices_3d[eni] - vertices_3d[0UL];
     }
     const Eigen::Vector3d& u = point_minus_origin[1UL];
@@ -376,8 +376,8 @@ std::array<Eigen::Vector2d, NODES_IN_SFC_ELEM<O>> project_triangle_to_2d(
     Eigen::Vector3d y = n.cross(u);
     y /= y.norm();
 
-    std::array<Eigen::Vector2d, NODES_IN_SFC_ELEM<O>> vertices_2d;
-    for (size_t eni = 0UL; eni != NODES_IN_SFC_ELEM<O>; ++eni) {
+    std::array<Eigen::Vector2d, ENI_COUNT_SFC<O>> vertices_2d;
+    for (size_t eni = 0UL; eni != ENI_COUNT_SFC<O>; ++eni) {
         vertices_2d[eni] = Eigen::Vector2d(
             point_minus_origin[eni].dot(x), point_minus_origin[eni].dot(y)
         );
@@ -391,13 +391,13 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_impedance()
     #if NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
         constexpr std::array<
             std::array<size_t, 2UL>,
-            PERMUTATION_REP_SIZE<NODES_IN_SFC_ELEM<O>, 2UL>
-        > ENI_PAIRS = PERMUTATION_REP<NODES_IN_SFC_ELEM<O>>;
+            PERMUTATION_REP_SIZE<ENI_COUNT_SFC<O>, 2UL>
+        > ENI_PAIRS = PERMUTATION_REP<ENI_COUNT_SFC<O>>;
     #else
         constexpr std::array<
             std::array<size_t, 2UL>,
-            COMBINATION_REP_SIZE<NODES_IN_SFC_ELEM<O>, 2UL>
-        > ENI_PAIRS = COMBINATION_REP<NODES_IN_SFC_ELEM<O>>;
+            COMBINATION_REP_SIZE<ENI_COUNT_SFC<O>, 2UL>
+        > ENI_PAIRS = COMBINATION_REP<ENI_COUNT_SFC<O>>;
     #endif
 
     // count the fipi for each ispgi
@@ -468,8 +468,8 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_impedance()
 
         #if NUMAV_DAMP_INTEGRATION_METHOD == NUMAV_GAUSS_QUADRATURE
             // coordinates matrix
-            std::array<Eigen::Vector3d, NODES_IN_SFC_ELEM<O>> triangle_3d;
-            for (size_t eni = 0UL; eni != NODES_IN_SFC_ELEM<O>; ++eni) {
+            std::array<Eigen::Vector3d, ENI_COUNT_SFC<O>> triangle_3d;
+            for (size_t eni = 0UL; eni != ENI_COUNT_SFC<O>; ++eni) {
                 const size_t ni = _sei_to_ni[sei][eni];
                 triangle_3d[eni] = Eigen::Vector3d(
                     _ni_to_coords[ni][0UL],
@@ -477,10 +477,10 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_impedance()
                     _ni_to_coords[ni][2UL]
                 );
             }
-            std::array<Eigen::Vector2d, NODES_IN_SFC_ELEM<O>> triangle_2d =
+            std::array<Eigen::Vector2d, ENI_COUNT_SFC<O>> triangle_2d =
                 project_triangle_to_2d<O>(triangle_3d);
-            Eigen::Matrix<Float,NODES_IN_SFC_ELEM<O>,2UL> coords_matrix;
-            for (size_t eni = 0UL; eni != NODES_IN_SFC_ELEM<O>; ++eni) {
+            Eigen::Matrix<Float,ENI_COUNT_SFC<O>,2UL> coords_matrix;
+            for (size_t eni = 0UL; eni != ENI_COUNT_SFC<O>; ++eni) {
                 coords_matrix(eni,0UL) = triangle_2d[eni](0UL);
                 coords_matrix(eni,1UL) = triangle_2d[eni](1UL);
             }
@@ -506,7 +506,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_impedance()
                 GAUSS_POINTS_DAMP = GAUSS_POINTS_SFC<NGP_DAMP<O>>;
             for (size_t gpi = 0UL; gpi != NGP_DAMP<O>; ++gpi)
             {
-                const Eigen::Matrix<Float,2UL,NODES_IN_SFC_ELEM<O>> nabla_n =
+                const Eigen::Matrix<Float,2UL,ENI_COUNT_SFC<O>> nabla_n =
                     shape_func_sfc_gradient<O>(
                         GAUSS_POINTS_DAMP[gpi][0UL], GAUSS_POINTS_DAMP[gpi][1UL]
                     ); // todo: try putting constexpr here
@@ -514,18 +514,18 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_impedance()
                     nabla_n * coords_matrix;
                 const Float det_jac = std::abs(jac_matrix.determinant());
                 
-                const Eigen::Matrix<Float,NODES_IN_SFC_ELEM<O>,1UL> n =
+                const Eigen::Matrix<Float,ENI_COUNT_SFC<O>,1UL> n =
                 shape_func_sfc<O>(
                     GAUSS_POINTS_DAMP[gpi][0UL], GAUSS_POINTS_DAMP[gpi][1UL]
                 );
                 
                 const
-                Eigen::Matrix<Float,NODES_IN_SFC_ELEM<O>,NODES_IN_SFC_ELEM<O>>
+                Eigen::Matrix<Float,ENI_COUNT_SFC<O>,ENI_COUNT_SFC<O>>
                     nnt = n * n.transpose();
                 
                 // todo: multiply detj and w without creating another matrix
                 const
-                Eigen::Matrix<Float,NODES_IN_SFC_ELEM<O>,NODES_IN_SFC_ELEM<O>>
+                Eigen::Matrix<Float,ENI_COUNT_SFC<O>,ENI_COUNT_SFC<O>>
                     nnt_detj_w =
                         nnt * det_jac * GAUSS_WEIGHTS_SFC<NGP_DAMP<O>>[gpi];
                 
@@ -536,11 +536,11 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_impedance()
             }
         #elif NUMAV_DAMP_INTEGRATION_METHOD == NUMAV_ANALYTIC
             const 
-            Eigen::Matrix<Float,NODES_IN_SFC_ELEM<O>,NODES_IN_SFC_ELEM<O>>
+            Eigen::Matrix<Float,ENI_COUNT_SFC<O>,ENI_COUNT_SFC<O>>
                 damp_matrix_const_part = DAMP_MATRIX_CONST_PART<O>;
             
             const
-            Eigen::Matrix<Float,NODES_IN_SFC_ELEM<O>,NODES_IN_SFC_ELEM<O>>
+            Eigen::Matrix<Float,ENI_COUNT_SFC<O>,ENI_COUNT_SFC<O>>
                 damp_fi_part = damp_matrix_const_part * triangle_area;
             
             for (size_t nci = 0UL; nci != ENI_PAIRS.size(); ++nci) {
@@ -564,7 +564,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_velocity()
     for (size_t vsei = 0UL; vsei != _vsei_count; ++vsei) {
         const size_t ispgv = _vsei_to_ispgv[vsei];
         const size_t sei = _vsei_to_sei[vsei];
-        for (size_t eni = 0UL; eni != NODES_IN_SFC_ELEM<O>; ++eni) {
+        for (size_t eni = 0UL; eni != ENI_COUNT_SFC<O>; ++eni) {
             const size_t ni = _sei_to_ni[sei][eni];
             if (!(ispgv_to_map_to_fipi[ispgv].count(ni) > 0)) {
                 const size_t fipi = ispgv_to_map_to_fipi[ispgv].size();
@@ -585,14 +585,14 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_velocity()
     }
 
     // assemble elementary force vectors
-    std::array<size_t, NODES_IN_SFC_ELEM<O>> fipi_forc;
+    std::array<size_t, ENI_COUNT_SFC<O>> fipi_forc;
     for (size_t vsei = 0UL; vsei != _vsei_count; ++vsei)
     {
         const size_t ispgv = _vsei_to_ispgv[vsei];
         const size_t sei = _vsei_to_sei[vsei];
 
         // Create _ispgv_to_ptr_in_b
-        for (size_t eni = 0UL; eni != NODES_IN_SFC_ELEM<O>; ++eni)
+        for (size_t eni = 0UL; eni != ENI_COUNT_SFC<O>; ++eni)
         {
             const size_t ni = _sei_to_ni[sei][eni];
             fipi_forc[eni] = ispgv_to_map_to_fipi[ispgv].at(ni);
@@ -607,8 +607,8 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_velocity()
 
         #if NUMAV_FORC_INTEGRATION_METHOD == NUMAV_GAUSS_QUADRATURE
             // coordinates matrix
-            std::array<Eigen::Vector3d, NODES_IN_SFC_ELEM<O>> triangle_3d;
-            for (size_t eni = 0UL; eni != NODES_IN_SFC_ELEM<O>; ++eni) {
+            std::array<Eigen::Vector3d, ENI_COUNT_SFC<O>> triangle_3d;
+            for (size_t eni = 0UL; eni != ENI_COUNT_SFC<O>; ++eni) {
                 const size_t node_idx = _sei_to_ni[sei][eni];
                 triangle_3d[eni] = Eigen::Vector3d(
                     _ni_to_coords[node_idx][0UL],
@@ -616,10 +616,10 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_velocity()
                     _ni_to_coords[node_idx][2UL]
                 );
             }
-            std::array<Eigen::Vector2d, NODES_IN_SFC_ELEM<O>> triangle_2d =
+            std::array<Eigen::Vector2d, ENI_COUNT_SFC<O>> triangle_2d =
                 project_triangle_to_2d<O>(triangle_3d);
-            Eigen::Matrix<Float,NODES_IN_SFC_ELEM<O>,2UL> coords_matrix;
-            for (size_t eni = 0UL; eni != NODES_IN_SFC_ELEM<O>; ++eni) {
+            Eigen::Matrix<Float,ENI_COUNT_SFC<O>,2UL> coords_matrix;
+            for (size_t eni = 0UL; eni != ENI_COUNT_SFC<O>; ++eni) {
                 coords_matrix(eni,0UL) = triangle_2d[eni](0UL);
                 coords_matrix(eni,1UL) = triangle_2d[eni](1UL);
             }
@@ -645,7 +645,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_velocity()
                 GAUSS_POINTS_FORC = GAUSS_POINTS_SFC<NGP_FORC<O>>;
             for (size_t gpi = 0UL; gpi != NGP_FORC<O>; ++gpi)
             {
-                const Eigen::Matrix<Float,2UL,NODES_IN_SFC_ELEM<O>> nabla_n =
+                const Eigen::Matrix<Float,2UL,ENI_COUNT_SFC<O>> nabla_n =
                     shape_func_sfc_gradient<O>(
                         GAUSS_POINTS_FORC[gpi][0UL], GAUSS_POINTS_FORC[gpi][1UL]
                     ); // todo: try putting constexpr here
@@ -653,30 +653,30 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_velocity()
                     nabla_n * coords_matrix;
                 const Float det_jac = jac_matrix.determinant();
 
-                const Eigen::Matrix<Float,NODES_IN_SFC_ELEM<O>,1UL> n =
+                const Eigen::Matrix<Float,ENI_COUNT_SFC<O>,1UL> n =
                     shape_func_sfc<O>(
                         GAUSS_POINTS_FORC[gpi][0UL], GAUSS_POINTS_FORC[gpi][1UL]
                     );
 
                 // todo: multiply detj and w without creating another matrix
-                const Eigen::Matrix<Float,NODES_IN_SFC_ELEM<O>,1UL> n_detj_w =
+                const Eigen::Matrix<Float,ENI_COUNT_SFC<O>,1UL> n_detj_w =
                     n * det_jac * GAUSS_WEIGHTS_SFC<NGP_FORC<O>>[gpi];
                 
-                for (size_t eni = 0UL; eni != NODES_IN_SFC_ELEM<O>; ++eni) {
+                for (size_t eni = 0UL; eni != ENI_COUNT_SFC<O>; ++eni) {
                     _ispgv_to_forc_fi_part[ispgv][fipi_forc[eni]] +=
                         n_detj_w(eni);
                 }
             }
         #elif NUMAV_FORC_INTEGRATION_METHOD == NUMAV_ANALYTIC
             const 
-            Eigen::Matrix<Float,NODES_IN_SFC_ELEM<O>,1UL>
+            Eigen::Matrix<Float,ENI_COUNT_SFC<O>,1UL>
                 forc_vector_const_part = FORC_VECTOR_CONST_PART<O>;
             
             const
-            Eigen::Matrix<Float,NODES_IN_SFC_ELEM<O>,1UL>
+            Eigen::Matrix<Float,ENI_COUNT_SFC<O>,1UL>
                 forc_fi_part = forc_vector_const_part * triangle_area;
             
-            for (size_t eni = 0UL; eni != NODES_IN_SFC_ELEM<O>; ++eni) {
+            for (size_t eni = 0UL; eni != ENI_COUNT_SFC<O>; ++eni) {
                 _ispgv_to_forc_fi_part[ispgv][fipi_forc[eni]] +=
                     forc_fi_part(eni);
             }
@@ -741,7 +741,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_pressure()
         for (size_t psei = 0UL; psei != _psei_count; ++psei) {
             if (_psei_to_ispgp[psei] == ispgp){
                 const size_t sei = _psei_to_sei[psei];
-                for (size_t eni = 0UL; eni != NODES_IN_SFC_ELEM<O>; ++eni) {
+                for (size_t eni = 0UL; eni != ENI_COUNT_SFC<O>; ++eni) {
                     const size_t ni = _sei_to_ni[sei][eni];
                     unique_nodes.insert(ni);
                 }
