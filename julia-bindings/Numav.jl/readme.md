@@ -1,6 +1,6 @@
 # Numav.jl
 
-Numav.jl is a Julia wrapper for the C++ library Numav, to perform acoustics and vibrations. Currently, it only supports frequency domain FEM simulations for acoustics. However, it is a plan to cover more numerical methods soon.
+Numav.jl is a Julia wrapper for the C++ library Numav, to perform acoustics and vibrations simulations. Currently, it only supports frequency domain FEM simulations for acoustics. However, it is a plan to cover more numerical methods soon.
 
 ---
 
