@@ -1,6 +1,6 @@
-# Numav (work in progress)
+# Numav
 
-Numav is a C++ library with Julia bindings to perform acoustics and vibrations simulations.
+Numav is a C++ library with Julia bindings to perform acoustics and vibrations simulations. To use it, it is highly recommended to use the Julia bindnings. More information about it is under [julia-bindings/Numav.jl](julia-bindings/Numav.jl).
 
 ## How to start the development container
 The development container can be started in two ways:
@@ -47,19 +47,7 @@ cmake --build build --parallel ${nproc} &&
 ./build/tests_bin/test1
 ```
 
-## How to link a code against libnumav.a (Static Numav)
-Run:
-```
-g++ -o my_simulation my_simulation.cpp -Iinclude -L./build/lib -L/opt/intel/oneapi/mkl/2025.2/lib -Wl,--start-group -l:libmkl_core.a -l:libmkl_gf_ilp64.a -l:libmkl_gnu_thread.a -Wl,--end-group -lgomp -lpthread -lm -ldl -lnumav -m64 -flto
-```
-
-## How to link a code against libnumav.so (Dynamic Numav)
-Run:
-```
-g++ -o my_simulation my_simulation.cpp -I include -L ./build/lib -l numav -Wl,-rpath,./build/lib
-```
-
-## How to build numav_julia
+## How to build numav_julia for local testing
 ```
 rm -rf build &&
 rm -rf julia-bindings/override/lib &&
@@ -87,5 +75,5 @@ rm -rf build && rm -rf install && rm -rf products && julia +1.12.4 \
 ## Dev the Julia packages
 ```
 dev numav_julia_jll
-dev /workspace/julia-bindings/Numav
+dev /workspace/julia-bindings/Numav.jl
 ```
