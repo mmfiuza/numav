@@ -21,7 +21,6 @@ void SimulationAcFemFreqD3<O>::Impl::_clear_data_not_used_in_freq_iterations()
     _espg_to_ispg.clear();
     _evpg_to_ivpg.clear();
     _point_volvel.clear();
-    _point_pressure.clear();
     _receiver_points.clear();
     _ni_to_coords.free();
     _sei_to_ni.free();
