@@ -35,9 +35,10 @@
 /build
 /products
 
-# meshes (with exception of the tests directory)
+# meshes (with exception in any test directory)
 *.bdf
-!tests/*.bdf
+!*tests/*.bdf
+!*test/*.bdf
 
 # compressed files
 *.zip
