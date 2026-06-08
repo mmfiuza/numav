@@ -24,7 +24,8 @@ RUN apt-get update && apt-get install -y \
     libblas-dev \
     liblapack-dev \
     libmumps-seq-dev \
-    patchelf
+    patchelf \
+    libboost-dev
 
 # install Eigen
 ARG EIGEN_VERSION="5.0.1"

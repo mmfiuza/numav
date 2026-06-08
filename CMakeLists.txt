@@ -14,6 +14,7 @@ option(GDB "Build with debug symbols for gdb" OFF)
 find_package(Eigen3 REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(HDF5 REQUIRED COMPONENTS C CXX HL)
+find_package(Boost CONFIG REQUIRED)
 
 # solver-specific configuration
 set(SOLVER "ONEMKL" CACHE STRING "The linear system solver")
@@ -74,6 +75,7 @@ target_link_libraries(numav PRIVATE
     spdlog::spdlog_header_only
     hdf5::hdf5_cpp
     hdf5::hdf5_hl
+    Boost::boost
     ${SOLVER_SPECIFIC_LINK_LIBRARIES}
 )
 
