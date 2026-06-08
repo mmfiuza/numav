@@ -9,7 +9,7 @@ pressure_1 = file_1["/results/pressure"][:,:]
 pressure_2 = file_2["/results/pressure"][:,:]
 
 freq_1 = file_1["inputs/simulated_frequencies"][:]
-freq_2 = file_1["inputs/simulated_frequencies"][:]
+freq_2 = file_2["inputs/simulated_frequencies"][:]
 
 spl_1 = 20*log10.(abs.(pressure_1)/sqrt(2)/20e-6);
 spl_2 = 20*log10.(abs.(pressure_2)/sqrt(2)/20e-6);
