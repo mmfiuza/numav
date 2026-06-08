@@ -16,21 +16,16 @@ void SimulationAcFemFreqD3<O>::Impl::_organize_volume_physical_group_data()
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::_organize_impedance_physical_group_data()
 {
-    _ispgi_to_impedance = fz::SafePtr<FuncFloatToCmplx>(_ispgi_count);
-    for (const auto& [espg, impedance] : _espg_to_impedance) {
-        const size_t ispgi = _espg_to_ispg.at(espg);
-        _ispgi_to_impedance[ispgi] = impedance;
-    }
     _isei_count = 0UL;
     for (size_t sei = 0UL; sei != _sei_count; ++sei) {
-        if (_espg_to_impedance.count(_sei_to_espg[sei]) > 0) {
+        if (_espg_ispgi_bimap.left.count(_sei_to_espg[sei]) > 0) {
             ++_isei_count;
         }
     }
     _isei_to_sei = fz::SafePtr<size_t>(_isei_count);
     size_t isei = 0UL;
     for (size_t sei = 0UL; sei != _sei_count; ++sei) {
-        if (_espg_to_impedance.count(_sei_to_espg[sei]) > 0) {
+        if (_espg_ispgi_bimap.left.count(_sei_to_espg[sei]) > 0) {
             _isei_to_sei[isei] = sei;
             ++isei;
         }
@@ -38,28 +33,23 @@ void SimulationAcFemFreqD3<O>::Impl::_organize_impedance_physical_group_data()
     _isei_to_ispgi = fz::SafePtr<size_t>(_isei_count);
     for (size_t isei = 0UL; isei != _isei_count; ++isei) {
         const size_t sei = _isei_to_sei[isei];
-        _isei_to_ispgi[isei] = _espg_to_ispg.at(_sei_to_espg[sei]);
+        _isei_to_ispgi[isei] = _espg_ispgi_bimap.left.at(_sei_to_espg[sei]);
     }
 }
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::_organize_velocity_physical_group_data()
 {
-    _ispgv_to_velocity = fz::SafePtr<FuncFloatToCmplx>(_ispgv_count);
-    for (const auto& [espg, volvel] : _espg_to_velocity) {
-        const size_t ispgv = _espg_to_ispg.at(espg);
-        _ispgv_to_velocity[ispgv] = volvel;
-    }
     _vsei_count = 0UL;
     for (size_t sei = 0UL; sei != _sei_count; ++sei) {
-        if (_espg_to_velocity.count(_sei_to_espg[sei]) > 0) {
+        if (_espg_ispgv_bimap.left.count(_sei_to_espg[sei]) > 0) {
             ++_vsei_count;
         }
     }
     _vsei_to_sei = fz::SafePtr<size_t>(_vsei_count);
     size_t vsei = 0UL;
     for (size_t sei = 0UL; sei != _sei_count; ++sei) {
-        if (_espg_to_velocity.count(_sei_to_espg[sei]) > 0) {
+        if (_espg_ispgv_bimap.left.count(_sei_to_espg[sei]) > 0) {
             _vsei_to_sei[vsei] = sei;
             ++vsei;
         }
@@ -67,28 +57,23 @@ void SimulationAcFemFreqD3<O>::Impl::_organize_velocity_physical_group_data()
     _vsei_to_ispgv = fz::SafePtr<size_t>(_vsei_count);
     for (size_t vsei = 0UL; vsei != _vsei_count; ++vsei) {
         const size_t sei = _vsei_to_sei[vsei];
-        _vsei_to_ispgv[vsei] = _espg_to_ispg.at(_sei_to_espg[sei]);
+        _vsei_to_ispgv[vsei] = _espg_ispgv_bimap.left.at(_sei_to_espg[sei]);
     }
 }
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::_organize_pressure_physical_group_data()
 {
-    _ispgp_to_pressure = fz::SafePtr<FuncFloatToCmplx>(_ispgp_count);
-    for (const auto& [espg, pressure] : _espg_to_pressure) {
-        const size_t ispgp = _espg_to_ispg.at(espg);
-        _ispgp_to_pressure[ispgp] = pressure;
-    }
     _psei_count = 0UL;
     for (size_t sei = 0UL; sei != _sei_count; ++sei) {
-        if (_espg_to_pressure.count(_sei_to_espg[sei]) > 0) {
+        if (_espg_ispgp_bimap.left.count(_sei_to_espg[sei]) > 0) {
             ++_psei_count;
         }
     }
     _psei_to_sei = fz::SafePtr<size_t>(_psei_count);
     size_t psei = 0UL;
     for (size_t sei = 0UL; sei != _sei_count; ++sei) {
-        if (_espg_to_pressure.count(_sei_to_espg[sei]) > 0) {
+        if (_espg_ispgp_bimap.left.count(_sei_to_espg[sei]) > 0) {
             _psei_to_sei[psei] = sei;
             ++psei;
         }
@@ -96,7 +81,7 @@ void SimulationAcFemFreqD3<O>::Impl::_organize_pressure_physical_group_data()
     _psei_to_ispgp = fz::SafePtr<size_t>(_psei_count);
     for (size_t psei = 0UL; psei != _psei_count; ++psei) {
         const size_t sei = _psei_to_sei[psei];
-        _psei_to_ispgp[psei] = _espg_to_ispg.at(_sei_to_espg[sei]);
+        _psei_to_ispgp[psei] = _espg_ispgp_bimap.left.at(_sei_to_espg[sei]);
     }
 }
 

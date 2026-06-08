@@ -29,9 +29,9 @@ void SimulationAcFemFreqD3<O>::Impl::_validate_espg(const size_t espg) {
     if (!(_existing_espg.count(espg) > 0)) {
         error("Physical group {} not found in mesh file.", espg);
     }
-    if (_espg_to_pressure.count(espg) > 0 ||
-        _espg_to_velocity.count(espg) > 0 ||
-        _espg_to_impedance.count(espg) > 0
+    if (_espg_ispgi_bimap.left.count(espg) > 0 ||
+        _espg_ispgv_bimap.left.count(espg) > 0 ||
+        _espg_ispgp_bimap.left.count(espg) > 0
     ) {
         error("Physical group {} already assigned.", espg);
     }
@@ -124,7 +124,6 @@ void SimulationAcFemFreqD3<O>::Impl::set_frequency_steps(
         _freq_steps[i] = freq_steps[i];
     }
     _freq_type_defined_by_user = _FreqTypeDefinedByUser::STEPS;
-
 }
 
 template <ElementOrder O>
@@ -247,10 +246,10 @@ void SimulationAcFemFreqD3<O>::Impl::add_surface_material(
     if (pq != PhysicalQuantity::IMPEDANCE) {
         error("Possible physical quantity type is only impedance");
     }
-    const size_t ispgi = _espg_to_impedance.size();
-    _espg_to_impedance.insert({espg, pqv});
-    _espg_to_ispg.insert({espg, ispgi});
+    const size_t ispgi = _ispgi_count;
     ++_ispgi_count;
+    _espg_ispgi_bimap.insert({espg, ispgi});
+    _ispgi_to_impedance.emplace_back(pqv);
 }
 
 template <ElementOrder O>
@@ -338,16 +337,16 @@ void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
     }
     
     if (pq == PhysicalQuantity::PARTICLE_VELOCITY) {
-        const size_t ispgv = _espg_to_velocity.size();
-        _espg_to_velocity.insert({espg, pqv});
-        _espg_to_ispg.insert({espg, ispgv});
+        const size_t ispgv = _ispgv_count;
         ++_ispgv_count;
+        _espg_ispgv_bimap.insert({espg, ispgv});
+        _ispgv_to_velocity.emplace_back(pqv);
     }
     else if (pq == PhysicalQuantity::PRESSURE) {
-        const size_t ispgp = _espg_to_pressure.size();
-        _espg_to_pressure.insert({espg, pqv});
-        _espg_to_ispg.insert({espg, ispgp});
+        const size_t ispgp = _ispgp_count;
         ++_ispgp_count;
+        _espg_ispgp_bimap.insert({espg, ispgp});
+        _ispgp_to_pressure.emplace_back(pqv);
     }
     else {
         error("Possible physical quantity types are particle velocity, "

@@ -99,12 +99,15 @@ private:
     std::unordered_set<size_t> _existing_evpg;
     std::unordered_set<size_t> _existing_espg;
 
-    std::vector<_VolProp> _ivpg_to_volprop;
-    std::unordered_map<size_t, FuncFloatToCmplx> _espg_to_impedance;
-    std::unordered_map<size_t, FuncFloatToCmplx> _espg_to_velocity;
-    std::unordered_map<size_t, FuncFloatToCmplx> _espg_to_pressure;
-    std::unordered_map<size_t, size_t> _espg_to_ispg;
     boost::bimap<size_t, size_t> _evpg_ivpg_bimap;
+    boost::bimap<size_t, size_t> _espg_ispgi_bimap;
+    boost::bimap<size_t, size_t> _espg_ispgv_bimap;
+    boost::bimap<size_t, size_t> _espg_ispgp_bimap;
+
+    std::vector<_VolProp>         _ivpg_to_volprop;
+    std::vector<FuncFloatToCmplx> _ispgi_to_impedance;
+    std::vector<FuncFloatToCmplx> _ispgv_to_velocity;
+    std::vector<FuncFloatToCmplx> _ispgp_to_pressure;
 
     std::string _hdf5_file_path;
 
@@ -131,8 +134,6 @@ private:
     
     // members used during frequency iterations
     fz::SafePtr<Float> _freq_steps;
-    fz::SafePtr<FuncFloatToCmplx> _ispgi_to_impedance;
-    fz::SafePtr<FuncFloatToCmplx> _ispgv_to_velocity;
     fz::SafePtr<fz::SafePtr<Float>> _ivpg_to_stif_fi_part;
     fz::SafePtr<fz::SafePtr<Float>> _ivpg_to_mass_fi_part;
     fz::SafePtr<fz::SafePtr<Cmplx*>> _ivpg_to_ptr_in_a;
@@ -142,7 +143,6 @@ private:
     fz::SafePtr<Cmplx*> _pvni_to_ptr_in_b;
     fz::SafePtr<fz::SafePtr<Float>> _ispgv_to_forc_fi_part;
     fz::SafePtr<fz::SafePtr<Cmplx*>> _ispgv_to_ptr_in_b;
-    fz::SafePtr<FuncFloatToCmplx> _ispgp_to_pressure;
     fz::SafePtr<FuncFloatToCmplx> _pvi_to_pressure;
     fz::SafePtr<fz::SafePtr<Cmplx*>> _pvi_to_ptr_in_a;
     fz::SafePtr<fz::SafePtr<Cmplx*>> _pvi_to_ptr_in_b;
