@@ -51,7 +51,7 @@ H5::DataSet SimulationAcFemFreqD3<O>::Impl::_begin_hdf5_file(
     H5::DataSet pressure_data_set = create_cmplx128_dataset(
         solution_grp,
         "pressure",
-        _freq_count,
+        _fi_count,
         _ni_count
     );
     write_string_attr(pressure_data_set, "units", "Pa");
@@ -72,9 +72,9 @@ void SimulationAcFemFreqD3<O>::Impl::_write_simulation_inputs_to_hdf5_file(
             inputs_grp,
             "simulated_frequencies",
             static_cast_contiguous_data<double>(
-                _freq_steps.data(), _freq_count
+                _fi_to_freq.data(), _fi_count
             ).get(),
-            _freq_count
+            _fi_count
         );
         write_string_attr(data_set, "units", "Hz");
         H5DSset_label(data_set.getId(), 0, "frequency_index");
@@ -169,11 +169,11 @@ void SimulationAcFemFreqD3<O>::Impl::_write_simulation_inputs_to_hdf5_file(
         H5DSset_label(data_set.getId(), 0, "volume_material_index");
     }
     {   // density
-        fz::SafePtr<Cmplx> density(_ivpg_count * _freq_count);
+        fz::SafePtr<Cmplx> density(_ivpg_count * _fi_count);
         for (size_t ivpg = 0UL; ivpg != _ivpg_count; ++ivpg) {
-            for (size_t fi = 0UL; fi != _freq_count; ++fi) {
-                const Float freq = _freq_steps[fi];
-                density[ivpg*_freq_count + fi] = 
+            for (size_t fi = 0UL; fi != _fi_count; ++fi) {
+                const Float freq = _fi_to_freq[fi];
+                density[ivpg*_fi_count + fi] = 
                     (_ivpg_to_volprop[ivpg].density)(freq);
             }
         }
@@ -182,7 +182,7 @@ void SimulationAcFemFreqD3<O>::Impl::_write_simulation_inputs_to_hdf5_file(
             "density",
             density.data(),
             _ivpg_count,
-            _freq_count
+            _fi_count
         );
         density.free();
         write_string_attr(data_set, "units", "kg/m^3");
@@ -190,11 +190,11 @@ void SimulationAcFemFreqD3<O>::Impl::_write_simulation_inputs_to_hdf5_file(
         H5DSset_label(data_set.getId(), 1, "frequency_index");
     }
     {   // sound_speed
-        fz::SafePtr<Cmplx> soundspeed(_ivpg_count * _freq_count);
+        fz::SafePtr<Cmplx> soundspeed(_ivpg_count * _fi_count);
         for (size_t ivpg = 0UL; ivpg != _ivpg_count; ++ivpg) {
-            for (size_t fi = 0UL; fi != _freq_count; ++fi) {
-                const Float freq = _freq_steps[fi];
-                soundspeed[ivpg*_freq_count + fi] = 
+            for (size_t fi = 0UL; fi != _fi_count; ++fi) {
+                const Float freq = _fi_to_freq[fi];
+                soundspeed[ivpg*_fi_count + fi] = 
                     (_ivpg_to_volprop[ivpg].soundspeed)(freq);
             }
         }
@@ -203,7 +203,7 @@ void SimulationAcFemFreqD3<O>::Impl::_write_simulation_inputs_to_hdf5_file(
             "sound_speed",
             soundspeed.data(),
             _ivpg_count,
-            _freq_count
+            _fi_count
         );
         soundspeed.free();
         write_string_attr(data_set, "units", "kg/m^3");

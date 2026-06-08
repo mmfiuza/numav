@@ -133,7 +133,7 @@ private:
     fz::SafePtr<std::pair<size_t, size_t>> _ni_connections;
     
     // members used during frequency iterations
-    fz::SafePtr<Float> _freq_steps;
+    fz::SafePtr<Float> _fi_to_freq;
     fz::SafePtr<fz::SafePtr<Float>> _ivpg_to_stif_fi_part;
     fz::SafePtr<fz::SafePtr<Float>> _ivpg_to_mass_fi_part;
     fz::SafePtr<fz::SafePtr<Cmplx*>> _ivpg_to_ptr_in_a;
@@ -151,6 +151,7 @@ private:
     fz::SafePtr<Cmplx> _b_vals;
     fz::SafePtr<Cmplx> _x;
 
+    size_t _fi_count;
     size_t _ni_count;
     size_t _sei_count;
     size_t _vei_count;
@@ -164,7 +165,6 @@ private:
     size_t _ppni_count;
     size_t _ispgp_count;
     size_t _pvi_count;
-    size_t _freq_count;
     size_t _ri_count;
 
     Float _freq_min;

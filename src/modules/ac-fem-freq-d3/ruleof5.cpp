@@ -33,7 +33,7 @@ SimulationAcFemFreqD3<O>::Impl::Impl() {
     _did_run = false;
     _freq_type_defined_by_user = _FreqTypeDefinedByUser::UNDEFINED;
     _freq_sampling_density = FrequencySamplingDensity::QUADRATIC;
-    _freq_count = DEFAULT_FREQ_STEPS_COUNT;
+    _fi_count = DEFAULT_FREQ_STEPS_COUNT;
     _ivpg_count = 0UL;
     _ispgi_count = 0UL;
     _pvni_count = 0UL;
@@ -61,10 +61,10 @@ SimulationAcFemFreqD3<O>::Impl::~Impl() {
     if (!_did_run &&
         _freq_type_defined_by_user == _FreqTypeDefinedByUser::STEPS
     ) {
-        _freq_steps.free();
+        _fi_to_freq.free();
     }
     if (_did_run) {
-        _freq_steps.free();
+        _fi_to_freq.free();
         _a_vals.free();
         _b_row_idx.free();
         _b_vals.free();

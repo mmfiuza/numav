@@ -52,14 +52,14 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
 
     // start progress bar
     const size_t bar_progress_max =
-        (_freq_steps[0UL] == 0_F) ? _freq_count - 1UL : _freq_count;
+        (_fi_to_freq[0UL] == 0_F) ? _fi_count - 1UL : _fi_count;
     size_t bar_progress = 
         log::start_progress_bar(_progress_bar, bar_progress_max);
 
-    for (size_t fi = 0UL; fi != _freq_count; ++fi)
+    for (size_t fi = 0UL; fi != _fi_count; ++fi)
     {
         // frequency calculations
-        const Float freq = _freq_steps[fi];
+        const Float freq = _fi_to_freq[fi];
         const Float omega = 2_F * PI * freq;
         const Float omega_squared = omega * omega;
         if (freq == 0_F) {

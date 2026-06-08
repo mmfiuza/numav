@@ -90,7 +90,7 @@ void SimulationAcFemFreqD3<O>::Impl::set_frequency_steps_count(
     if (_freq_type_defined_by_user == _FreqTypeDefinedByUser::STEPS) {
         error("Simulation frequency steps already defined.");
     }
-    _freq_count = freq_steps_count;
+    _fi_count = freq_steps_count;
 }
 
 template <ElementOrder O>
@@ -116,12 +116,12 @@ void SimulationAcFemFreqD3<O>::Impl::set_frequency_steps(
     if (_freq_type_defined_by_user != _FreqTypeDefinedByUser::UNDEFINED) {
         error("Simulation frequency is already defined.");
     }
-    _freq_count = freq_steps.size();
+    _fi_count = freq_steps.size();
     _freq_min = freq_steps.front();
     _freq_max = freq_steps.back();
-    _freq_steps = fz::SafePtr<Float>(_freq_count);
-    for (size_t i = 0UL; i != _freq_count; ++i) {
-        _freq_steps[i] = freq_steps[i];
+    _fi_to_freq = fz::SafePtr<Float>(_fi_count);
+    for (size_t i = 0UL; i != _fi_count; ++i) {
+        _fi_to_freq[i] = freq_steps[i];
     }
     _freq_type_defined_by_user = _FreqTypeDefinedByUser::STEPS;
 }
