@@ -48,6 +48,8 @@ RUN wget https://registrationcenter-download.intel.com/akdlm/IRC_NAS/\
 47c7d946-fca1-441a-b0df-b094e3f045ea/intel-onemkl-2025.2.0.629_offline.sh
 RUN sh ./intel-onemkl-2025.2.0.629_offline.sh -a --silent --eula accept
 RUN rm intel-onemkl-2025.2.0.629_offline.sh
+ENV MKL_INTERFACE_LAYER="ILP64"
+ENV MKL_THREADING_LAYER="GNU"
 
 # install Julia
 ARG JULIAUP_VERSION="1.20.1"
