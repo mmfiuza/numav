@@ -36,9 +36,9 @@ SimulationAcFemFreqD3<O>::Impl::Impl() {
     _fi_count = DEFAULT_FREQ_STEPS_COUNT;
     _ivpg_count = 0UL;
     _ispgi_count = 0UL;
-    _pvni_count = 0UL;
+    _vpi_count = 0UL;
     _ispgv_count = 0UL;
-    _ppni_count = 0UL;
+    _ppi_count = 0UL;
     _ispgp_count = 0UL;
     _ri_count = 0UL;
     #if NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
@@ -82,21 +82,21 @@ SimulationAcFemFreqD3<O>::Impl::~Impl() {
         }
         _ispgi_to_damp_fi_part.free();
         _ispgi_to_ptr_in_a.free();
-        _pvni_to_forc_fi_part.free();
-        _pvni_to_ptr_in_b.free();
+        _vpi_to_forc_fi_part.free();
+        _vpi_to_ptr_in_b.free();
         for (size_t ispgv = 0UL; ispgv != _ispgv_count; ++ispgv) {
             _ispgv_to_forc_fi_part[ispgv].free();
             _ispgv_to_ptr_in_b[ispgv].free();
         }
         _ispgv_to_forc_fi_part.free();
         _ispgv_to_ptr_in_b.free();
-        _pvi_to_pressure.free();
-        for (size_t pvi = 0UL; pvi != _pvi_count; ++pvi) {
-            _pvi_to_ptr_in_a[pvi].free();
-            _pvi_to_ptr_in_b[pvi].free();
+        _apvi_to_pressure.free();
+        for (size_t apvi = 0UL; apvi != _apvi_count; ++apvi) {
+            _apvi_to_ptr_in_a[apvi].free();
+            _apvi_to_ptr_in_b[apvi].free();
         }
-        _pvi_to_ptr_in_a.free();
-        _pvi_to_ptr_in_b.free();
+        _apvi_to_ptr_in_a.free();
+        _apvi_to_ptr_in_b.free();
         _x.free();
         #if NUMAV_SYSTEM_SOLVER == NUMAV_INTERNAL
             _b_dense.free();

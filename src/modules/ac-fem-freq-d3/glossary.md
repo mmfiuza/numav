@@ -41,11 +41,11 @@
 
 - ENI (Elementary Node Index)
 
-- PVNI (Point Velocity Node Index)
+- VPI (Velocity Point Index)
 
-- PPNI (Point Pressure Node Index)
+- PPI (Pressure Point Index)
 
-- PVI (Pressure Value Index)
+- APVI (Average Pressure Value Index)
 
 - RI (Receiver Index)
 

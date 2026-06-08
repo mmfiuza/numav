@@ -75,10 +75,10 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
         _b_vals.fill(Cmplx(0_F, 0_F));
 
         // add point volume velocity to b vector
-        for (size_t pvni = 0UL; pvni != _pvni_count; ++pvni)
+        for (size_t vpi = 0UL; vpi != _vpi_count; ++vpi)
         {
-            const Cmplx volvel = (_pvni_to_forc_fi_part[pvni])(freq);
-            *_pvni_to_ptr_in_b[pvni] += Cmplx(0_F, -omega) * volvel;
+            const Cmplx volvel = (_vpi_to_forc_fi_part[vpi])(freq);
+            *_vpi_to_ptr_in_b[vpi] += Cmplx(0_F, -omega) * volvel;
         }
 
         // add surface velocity to b vector
@@ -129,14 +129,14 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
         }
 
         // add pressure to a and b
-        for (size_t pvi = 0UL; pvi != _pvi_count; ++pvi)
+        for (size_t apvi = 0UL; apvi != _apvi_count; ++apvi)
         {
-            const Cmplx pressure = (_pvi_to_pressure[pvi])(freq);
+            const Cmplx pressure = (_apvi_to_pressure[apvi])(freq);
             for (size_t fipi = 0UL;
-                fipi != _pvi_to_ptr_in_a[pvi].size(); ++fipi
+                fipi != _apvi_to_ptr_in_a[apvi].size(); ++fipi
             ) {
-                *_pvi_to_ptr_in_a[pvi][fipi] += PENALTY_METHOD_CONSTANT;
-                *_pvi_to_ptr_in_b[pvi][fipi] +=
+                *_apvi_to_ptr_in_a[apvi][fipi] += PENALTY_METHOD_CONSTANT;
+                *_apvi_to_ptr_in_b[apvi][fipi] +=
                     PENALTY_METHOD_CONSTANT * pressure;
             }
         }

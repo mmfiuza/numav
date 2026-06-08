@@ -114,8 +114,8 @@ void SimulationAcFemFreqD3<O>::Impl::_allocate_b()
             existing_source_nodes.insert(ni);
         }
     }
-    for (size_t pvni = 0UL; pvni != _pvni_count; ++pvni) {
-        existing_source_nodes.insert(std::get<size_t>(_point_volvel[pvni]));
+    for (size_t vpi = 0UL; vpi != _vpi_count; ++vpi) {
+        existing_source_nodes.insert(std::get<size_t>(_point_volvel[vpi]));
     }
     for (size_t psei = 0UL; psei != _psei_count; ++psei) {
         const size_t sei = _psei_to_sei[psei];
@@ -124,8 +124,8 @@ void SimulationAcFemFreqD3<O>::Impl::_allocate_b()
             existing_source_nodes.insert(ni);
         }
     }
-    for (size_t ppni = 0UL; ppni != _ppni_count; ++ppni) {
-        existing_source_nodes.insert(std::get<size_t>(_point_pressure[ppni]));
+    for (size_t ppi = 0UL; ppi != _ppi_count; ++ppi) {
+        existing_source_nodes.insert(std::get<size_t>(_point_pressure[ppi]));
     }
     _b_row_idx = fz::SafePtr<size_t>(existing_source_nodes.size());
     std::copy(
@@ -690,19 +690,19 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_velocity()
 template<ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_point_velocity()
 {
-    _pvni_to_forc_fi_part = fz::SafePtr<FuncFloatToCmplx>(_pvni_count);
-    _pvni_to_ptr_in_b = fz::SafePtr<Cmplx*>(_pvni_count);
-    for (size_t pvni = 0UL; pvni != _pvni_count; ++pvni)
+    _vpi_to_forc_fi_part = fz::SafePtr<FuncFloatToCmplx>(_vpi_count);
+    _vpi_to_ptr_in_b = fz::SafePtr<Cmplx*>(_vpi_count);
+    for (size_t vpi = 0UL; vpi != _vpi_count; ++vpi)
     {
-        _pvni_to_forc_fi_part[pvni] = 
-            std::get<FuncFloatToCmplx>(_point_volvel[pvni]);
+        _vpi_to_forc_fi_part[vpi] = 
+            std::get<FuncFloatToCmplx>(_point_volvel[vpi]);
 
-        const size_t ni = std::get<size_t>(_point_volvel[pvni]);
+        const size_t ni = std::get<size_t>(_point_volvel[vpi]);
         const size_t* const ni_ptr = std::lower_bound(
             _b_row_idx.begin(), _b_row_idx.end(), ni
         );
         const size_t ptrdiff = ni_ptr - _b_row_idx.begin();
-        _pvni_to_ptr_in_b[pvni] = _b_vals.begin() + ptrdiff;
+        _vpi_to_ptr_in_b[vpi] = _b_vals.begin() + ptrdiff;
     }
 }
 
@@ -731,10 +731,10 @@ template<ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_pressure()
 {
     // create the mathmatical sets of nodes for each pressure value assigned
-    fz::SafePtr<fz::SafePtr<size_t>> sets(_ppni_count + _ispgp_count);
-    for (size_t ppni = 0UL; ppni != _ppni_count; ++ppni) {
-        sets[ppni] = fz::SafePtr<size_t>(1UL);
-        sets[ppni][0UL] = std::get<size_t>(_point_pressure[ppni]);
+    fz::SafePtr<fz::SafePtr<size_t>> sets(_ppi_count + _ispgp_count);
+    for (size_t ppi = 0UL; ppi != _ppi_count; ++ppi) {
+        sets[ppi] = fz::SafePtr<size_t>(1UL);
+        sets[ppi][0UL] = std::get<size_t>(_point_pressure[ppi]);
     }
     for (size_t ispgp = 0UL; ispgp != _ispgp_count; ++ispgp) {
         std::set<size_t> unique_nodes; // TODO: review the use of set
@@ -747,10 +747,10 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_pressure()
                 }
             }
         }
-        sets[_ppni_count+ispgp] = fz::SafePtr<size_t>(unique_nodes.size());
+        sets[_ppi_count+ispgp] = fz::SafePtr<size_t>(unique_nodes.size());
         size_t i = 0UL;
         for (const auto& ni : unique_nodes) {
-            sets[_ppni_count+ispgp][i] = ni;
+            sets[_ppi_count+ispgp][i] = ni;
             ++i;
         }
     }
@@ -762,52 +762,52 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_pressure()
     sets.free();
 
     // calculate the average pressure between intersected elements in the sets
-    _pvi_count = intersections.size();
-    _pvi_to_pressure = fz::SafePtr<FuncFloatToCmplx>(_pvi_count);
-    size_t pvi = 0UL;
+    _apvi_count = intersections.size();
+    _apvi_to_pressure = fz::SafePtr<FuncFloatToCmplx>(_apvi_count);
+    size_t apvi = 0UL;
     for (auto& [set_indexes, ni_vector] : intersections) {
         auto average = [this, set_indexes = set_indexes](const Float& freq) {
             Cmplx sum = Cmplx(0_F, 0_F);
             for (const auto& set_index : set_indexes) {
-                if (set_index < _ppni_count) {
-                    const size_t& ppni = set_index;
+                if (set_index < _ppi_count) {
+                    const size_t& ppi = set_index;
                     sum += std::get<FuncFloatToCmplx>(
-                        _point_pressure[ppni]
+                        _point_pressure[ppi]
                     )(freq);
                 }
                 else {
-                    const size_t ispgp = set_index - _ppni_count;
+                    const size_t ispgp = set_index - _ppi_count;
                     sum += (_ispgp_to_pressure[ispgp])(freq);
                 }
             }
             return sum / static_cast<Float>(set_indexes.size());
         };
-        _pvi_to_pressure[pvi] = average;
-        ++pvi;
+        _apvi_to_pressure[apvi] = average;
+        ++apvi;
     }
 
-    // define _pvi_to_ptr_in_a and _pvi_to_ptr_in_b
-    _pvi_to_ptr_in_a = fz::SafePtr<fz::SafePtr<Cmplx*>>(_pvi_count);
-    _pvi_to_ptr_in_b = fz::SafePtr<fz::SafePtr<Cmplx*>>(_pvi_count);
-    pvi = 0UL;
+    // define _apvi_to_ptr_in_a and _apvi_to_ptr_in_b
+    _apvi_to_ptr_in_a = fz::SafePtr<fz::SafePtr<Cmplx*>>(_apvi_count);
+    _apvi_to_ptr_in_b = fz::SafePtr<fz::SafePtr<Cmplx*>>(_apvi_count);
+    apvi = 0UL;
     for (auto& [set_indexes, ni_vector] : intersections) {
-        _pvi_to_ptr_in_a[pvi] = fz::SafePtr<Cmplx*>(ni_vector.size());
-        _pvi_to_ptr_in_b[pvi] = fz::SafePtr<Cmplx*>(ni_vector.size());
+        _apvi_to_ptr_in_a[apvi] = fz::SafePtr<Cmplx*>(ni_vector.size());
+        _apvi_to_ptr_in_b[apvi] = fz::SafePtr<Cmplx*>(ni_vector.size());
         size_t fipi = 0UL;
         for (const auto& ni : ni_vector) {
             #if NUMAV_SYSTEM_SOLVER == NUMAV_INTERNAL
-                // _pvi_to_ptr_in_a
-                _pvi_to_ptr_in_a[pvi][fipi] = _a_diag.data() + ni;
+                // _apvi_to_ptr_in_a
+                _apvi_to_ptr_in_a[apvi][fipi] = _a_diag.data() + ni;
                 const size_t* const ni_ptr = std::lower_bound(
                     _b_row_idx.begin(), _b_row_idx.end(), ni
                 );
-                // _pvi_to_ptr_in_b
+                // _apvi_to_ptr_in_b
                 const size_t ptrdiff_b = ni_ptr - _b_row_idx.begin();
-                _pvi_to_ptr_in_b[pvi][fipi] = _b_vals.begin() + ptrdiff_b;
+                _apvi_to_ptr_in_b[apvi][fipi] = _b_vals.begin() + ptrdiff_b;
                 ++fipi;
                 continue;
             #else
-                // _pvi_to_ptr_in_a
+                // _apvi_to_ptr_in_a
                 const std::pair<size_t,size_t> pair = std::make_pair(ni, ni);
                 const std::pair<size_t,size_t>* const pair_ptr =
                     std::lower_bound(
@@ -818,19 +818,19 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_pressure()
                     );
                 const size_t ptrdiff_a = 
                     pair_ptr - _ni_connections.begin();
-                _pvi_to_ptr_in_a[pvi][fipi] = _a_vals.begin() + ptrdiff_a;
+                _apvi_to_ptr_in_a[apvi][fipi] = _a_vals.begin() + ptrdiff_a;
                 
-                // _pvi_to_ptr_in_b
+                // _apvi_to_ptr_in_b
                 const size_t* const ni_ptr = std::lower_bound(
                     _b_row_idx.begin(), _b_row_idx.end(), ni
                 );
                 const size_t ptrdiff_b = ni_ptr - _b_row_idx.begin();
-                _pvi_to_ptr_in_b[pvi][fipi] = _b_vals.begin() + ptrdiff_b;
+                _apvi_to_ptr_in_b[apvi][fipi] = _b_vals.begin() + ptrdiff_b;
                 
                 ++fipi;
             #endif
         }
-        ++pvi;
+        ++apvi;
     }
 }
 

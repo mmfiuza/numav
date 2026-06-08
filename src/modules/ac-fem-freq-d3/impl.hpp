@@ -139,13 +139,13 @@ private:
     fz::SafePtr<fz::SafePtr<Cmplx*>> _ivpg_to_ptr_in_a;
     fz::SafePtr<fz::SafePtr<Float>> _ispgi_to_damp_fi_part;
     fz::SafePtr<fz::SafePtr<Cmplx*>> _ispgi_to_ptr_in_a;
-    fz::SafePtr<FuncFloatToCmplx> _pvni_to_forc_fi_part;
-    fz::SafePtr<Cmplx*> _pvni_to_ptr_in_b;
+    fz::SafePtr<FuncFloatToCmplx> _vpi_to_forc_fi_part;
+    fz::SafePtr<Cmplx*> _vpi_to_ptr_in_b;
     fz::SafePtr<fz::SafePtr<Float>> _ispgv_to_forc_fi_part;
     fz::SafePtr<fz::SafePtr<Cmplx*>> _ispgv_to_ptr_in_b;
-    fz::SafePtr<FuncFloatToCmplx> _pvi_to_pressure;
-    fz::SafePtr<fz::SafePtr<Cmplx*>> _pvi_to_ptr_in_a;
-    fz::SafePtr<fz::SafePtr<Cmplx*>> _pvi_to_ptr_in_b;
+    fz::SafePtr<FuncFloatToCmplx> _apvi_to_pressure;
+    fz::SafePtr<fz::SafePtr<Cmplx*>> _apvi_to_ptr_in_a;
+    fz::SafePtr<fz::SafePtr<Cmplx*>> _apvi_to_ptr_in_b;
     fz::SafePtr<Cmplx> _a_vals;
     fz::SafePtr<size_t> _b_row_idx;
     fz::SafePtr<Cmplx> _b_vals;
@@ -160,11 +160,11 @@ private:
     size_t _psei_count;
     size_t _ivpg_count;
     size_t _ispgi_count;
-    size_t _pvni_count;
-    size_t _ispgv_count;
-    size_t _ppni_count;
     size_t _ispgp_count;
-    size_t _pvi_count;
+    size_t _ispgv_count;
+    size_t _vpi_count;
+    size_t _ppi_count;
+    size_t _apvi_count;
     size_t _ri_count;
 
     Float _freq_min;
