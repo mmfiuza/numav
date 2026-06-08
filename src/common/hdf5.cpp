@@ -43,6 +43,21 @@ H5::DataSet write_dataset_float64_1d(
     return data_set;
 }
 
+H5::DataSet write_dataset_uint64_1d(
+    H5::Group& group,
+    const std::string& name,
+    const size_t* const data,
+    const hsize_t size
+) {
+    const hsize_t size_array[1UL] = { size };
+    const H5::DataSpace data_space(1UL, size_array);
+    H5::DataSet data_set = group.createDataSet(
+        name, H5::PredType::STD_U64LE, data_space
+    );
+    data_set.write(data, H5::PredType::NATIVE_UINT64);
+    return data_set;
+}
+
 H5::DataSet write_dataset_float64_2d(
     H5::Group& group,
     const std::string& name,
@@ -80,6 +95,21 @@ H5::CompType get_hdf5_cmplx_type() {
     data_type.insertMember("r", 0UL, H5::PredType::NATIVE_DOUBLE);
     data_type.insertMember("i", sizeof(double), H5::PredType::NATIVE_DOUBLE);
     return data_type;
+}
+
+H5::DataSet write_dataset_cmplx128_2d(
+    H5::Group& group,
+    const std::string& name,
+    const Cmplx* const data,
+    const hsize_t row_count,
+    const hsize_t col_count
+) {
+    H5::CompType cmplx_type = get_hdf5_cmplx_type();
+    const hsize_t size[2UL] = { row_count, col_count };
+    const H5::DataSpace data_space(2UL, size);
+    H5::DataSet data_set = group.createDataSet(name, cmplx_type, data_space);
+    data_set.write(data, cmplx_type);
+    return data_set;
 }
 
 H5::DataSet create_cmplx128_dataset(

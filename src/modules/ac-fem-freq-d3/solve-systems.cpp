@@ -14,12 +14,11 @@ void SimulationAcFemFreqD3<O>::Impl::_clear_data_not_used_in_freq_iterations()
 {
     _existing_evpg.clear();
     _existing_espg.clear();
-    _evpg_to_volprop.clear();
     _espg_to_impedance.clear();
     _espg_to_velocity.clear();
     _espg_to_pressure.clear();
     _espg_to_ispg.clear();
-    _evpg_to_ivpg.clear();
+    _evpg_ivpg_bimap.clear();
     _point_volvel.clear();
     _receiver_points.clear();
     _ni_to_coords.free();

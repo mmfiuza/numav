@@ -22,13 +22,13 @@ FuncFloatToCmplx const2func(
 }
 
 FuncFloatToCmplx table2func(
-    const char* const impedance_text_file
+    const char* const pqv_text_file
 ) {
     // open file
-    std::ifstream file(impedance_text_file);
+    std::ifstream file(pqv_text_file);
     std::string line;
     if (!file.is_open()) {
-        error("Could not open file: {}", impedance_text_file);
+        error("Could not open file: {}", pqv_text_file);
     }
 
     // first pass: count lines

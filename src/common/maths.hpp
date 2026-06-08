@@ -133,16 +133,18 @@ auto interpolate(
     auto x_size = std::size(x_array);
     auto y_size = std::size(y_array);
     auto x_begin = std::begin(x_array);
-    auto x_end   = std::end(x_array);
+    auto x_end = std::end(x_array);
     auto y_begin = std::begin(y_array);
 
     // Input validation
-    if (x_size == 0UL || y_size == 0UL)
+    if (x_size == 0UL || y_size == 0UL) {
         throw std::invalid_argument("Vectors must not be empty.");
-    if (x_size != y_size)
+    }
+    if (x_size != y_size) {
         throw std::invalid_argument(
             "x_array and y_array must have the same size."
         );
+    }
 
     // Check strict monotonicity of x_array
     if (x_size >= 2UL) {
@@ -195,7 +197,7 @@ auto interpolate(
 
     // Linear interpolation formula
     return *y_prev + (*y_curr - *y_prev) *
-           (x_value - *prev_it) / (*it - *prev_it);
+        (x_value - *prev_it) / (*it - *prev_it);
 }
 
 } // namespace numav

@@ -68,7 +68,6 @@ SimulationAcFemFreqD3<O>::Impl::~Impl() {
         _a_vals.free();
         _b_row_idx.free();
         _b_vals.free();
-        _ivpg_to_volprop.free();
         _ispgi_to_impedance.free();
         _ispgv_to_velocity.free();
         for (size_t ivpg = 0UL; ivpg != _ivpg_count; ++ivpg) {

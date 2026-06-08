@@ -64,10 +64,12 @@ H5::DataSet SimulationAcFemFreqD3<O>::Impl::_begin_hdf5_file(
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::_write_simulation_inputs_to_hdf5_file(
 ) {
-    // write simulated frequncies
+    H5::Group inputs_grp = _hdf5_file.createGroup("/inputs");
+
+    // simulated frequncies
     {
         H5::DataSet data_set = write_dataset_float64_1d(
-            _hdf5_file,
+            inputs_grp,
             "simulated_frequencies",
             static_cast_contiguous_data<double>(
                 _freq_steps.data(), _freq_count
@@ -75,11 +77,12 @@ void SimulationAcFemFreqD3<O>::Impl::_write_simulation_inputs_to_hdf5_file(
             _freq_count
         );
         write_string_attr(data_set, "units", "Hz");
+        H5DSset_label(data_set.getId(), 0, "frequency_index");
     }
 
-    // write mesh
-    H5::Group mesh_grp = _hdf5_file.createGroup("/mesh");
-    { // nodes
+    // mesh
+    H5::Group mesh_grp = _hdf5_file.createGroup("/inputs/mesh");
+    {   // nodes
         H5::DataSet data_set = write_dataset_float64_2d(
             mesh_grp,
             "nodes",
@@ -91,34 +94,121 @@ void SimulationAcFemFreqD3<O>::Impl::_write_simulation_inputs_to_hdf5_file(
             3UL
         );
         write_string_attr(data_set, "units", "m");
+        H5DSset_label(data_set.getId(), 0, "node_index");
+        H5DSset_label(data_set.getId(), 1, "coordinates");
     }
-    { // surface_elements
+    {   // surface_elements
         H5::DataSet data_set = write_dataset_uint64_2d(
             mesh_grp,
             "surface_elements",
             to_one_based_index(
                 _sei_to_ni.data()->data(),
-                _sei_count * NODES_IN_SFC_ELEM<O>
+                _sei_count * ENI_COUNT_SFC<O>
             ).get(),
             _sei_count,
-            NODES_IN_SFC_ELEM<O>
+            ENI_COUNT_SFC<O>
         );
         write_string_attr(data_set, "units", "dimensionless");
         write_int_attr(data_set, "node_index_base", 1UL);
+        H5DSset_label(data_set.getId(), 0, "surface_element_index");
+        H5DSset_label(data_set.getId(), 1, "elementary_node_index");
     }
-    { // volume_elements
+    {   // volume_elements
         H5::DataSet data_set = write_dataset_uint64_2d(
             mesh_grp,
             "volume_elements",
             to_one_based_index(
                 _vei_to_ni.data()->data(),
-                _vei_count * NODES_IN_VOL_ELEM<O>
+                _vei_count * ENI_COUNT_VOL<O>
             ).get(),
             _vei_count,
-            NODES_IN_VOL_ELEM<O>
+            ENI_COUNT_VOL<O>
         );
         write_string_attr(data_set, "units", "dimensionless");
         write_int_attr(data_set, "node_index_base", 1UL);
+        H5DSset_label(data_set.getId(), 0, "volume_element_index");
+        H5DSset_label(data_set.getId(), 1, "elementary_node_index");
+    }
+    {   // surface_elements_material
+        H5::DataSet data_set = write_dataset_uint64_1d(
+            mesh_grp,
+            "surface_elements_materials",
+            _sei_to_espg.data(),
+            _sei_count
+        );
+        write_string_attr(data_set, "units", "dimensionless");
+        H5DSset_label(data_set.getId(), 0, "surface_element_index");
+    }
+    {   // volume_elements_material
+        H5::DataSet data_set = write_dataset_uint64_1d(
+            mesh_grp,
+            "volume_elements_materials",
+            _vei_to_evpg.data(),
+            _vei_count
+        );
+        write_string_attr(data_set, "units", "dimensionless");
+        H5DSset_label(data_set.getId(), 0, "volume_element_index");
+    }
+
+    // volume_materials
+    H5::Group vol_mat_grp = _hdf5_file.createGroup("/inputs/volume_materials");
+    {   // physical_groups
+        fz::SafePtr<uint64_t> _ivpg_to_evpg(_ivpg_count);
+        for (size_t ivpg = 0UL; ivpg != _ivpg_count; ++ivpg) {
+            const size_t evpg = _evpg_ivpg_bimap.right.at(ivpg);
+            _ivpg_to_evpg[ivpg] = evpg;
+        }
+        H5::DataSet data_set = write_dataset_uint64_1d(
+            vol_mat_grp,
+            "physical_groups",
+            _ivpg_to_evpg.data(),
+            _ivpg_count
+        );
+        _ivpg_to_evpg.free();
+        write_string_attr(data_set, "units", "dimensionless");
+        H5DSset_label(data_set.getId(), 0, "volume_material_index");
+    }
+    {   // density
+        fz::SafePtr<Cmplx> density(_ivpg_count * _freq_count);
+        for (size_t ivpg = 0UL; ivpg != _ivpg_count; ++ivpg) {
+            for (size_t fi = 0UL; fi != _freq_count; ++fi) {
+                const Float freq = _freq_steps[fi];
+                density[ivpg*_freq_count + fi] = 
+                    (_ivpg_to_volprop[ivpg].density)(freq);
+            }
+        }
+        H5::DataSet data_set = write_dataset_cmplx128_2d(
+            vol_mat_grp,
+            "density",
+            density.data(),
+            _ivpg_count,
+            _freq_count
+        );
+        density.free();
+        write_string_attr(data_set, "units", "kg/m^3");
+        H5DSset_label(data_set.getId(), 0, "volume_material_index");
+        H5DSset_label(data_set.getId(), 1, "frequency_index");
+    }
+    {   // sound_speed
+        fz::SafePtr<Cmplx> soundspeed(_ivpg_count * _freq_count);
+        for (size_t ivpg = 0UL; ivpg != _ivpg_count; ++ivpg) {
+            for (size_t fi = 0UL; fi != _freq_count; ++fi) {
+                const Float freq = _freq_steps[fi];
+                soundspeed[ivpg*_freq_count + fi] = 
+                    (_ivpg_to_volprop[ivpg].soundspeed)(freq);
+            }
+        }
+        H5::DataSet data_set = write_dataset_cmplx128_2d(
+            vol_mat_grp,
+            "sound_speed",
+            soundspeed.data(),
+            _ivpg_count,
+            _freq_count
+        );
+        soundspeed.free();
+        write_string_attr(data_set, "units", "kg/m^3");
+        H5DSset_label(data_set.getId(), 0, "volume_material_index");
+        H5DSset_label(data_set.getId(), 1, "frequency_index");
     }
 }
 

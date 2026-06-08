@@ -162,13 +162,13 @@ void SimulationAcFemFreqD3<O>::Impl::add_volume_material(
     if (!(_existing_evpg.count(evpg) > 0)) {
         error("Physical group {} not found in mesh file.", evpg);
     }
-    if (_evpg_to_volprop.count(evpg) > 0) {
+    if (_evpg_ivpg_bimap.left.count(evpg) > 0) {
         error("Physical group {} already assigned.", evpg);
     }
-    _evpg_to_volprop.insert({evpg, {density, soundspeed}});
-    const size_t ivpg = _evpg_to_ivpg.size();
-    _evpg_to_ivpg.insert({evpg, ivpg});
+    const size_t ivpg = _ivpg_count;
     ++_ivpg_count;
+    _evpg_ivpg_bimap.insert({evpg, ivpg});
+    _ivpg_to_volprop.emplace_back(density, soundspeed);
 }
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::add_volume_material(
@@ -412,7 +412,7 @@ void SimulationAcFemFreqD3<O>::Impl::_check_if_it_can_run() {
             " Call set_maximum_frequency to do so.");
     }
     for (auto& evpg : _existing_evpg) {
-        if (!(_evpg_to_volprop.count(evpg) > 0)) {
+        if (!(_evpg_ivpg_bimap.left.count(evpg) > 0)) {
             error("Volume physical group {} was not assigned."
             " Call add_volume_material to do so.", evpg);
         }

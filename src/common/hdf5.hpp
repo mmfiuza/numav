@@ -62,6 +62,13 @@ H5::DataSet write_dataset_float64_1d(
     const hsize_t size
 );
 
+H5::DataSet write_dataset_uint64_1d(
+    H5::Group& group,
+    const std::string& name,
+    const size_t* const data,
+    const hsize_t size
+);
+
 H5::DataSet write_dataset_float64_2d(
     H5::Group& group,
     const std::string& name,
@@ -79,6 +86,14 @@ H5::DataSet write_dataset_uint64_2d(
 );
 
 H5::CompType get_hdf5_cmplx_type();
+
+H5::DataSet write_dataset_cmplx128_2d(
+    H5::Group& group,
+    const std::string& name,
+    const Cmplx* const data,
+    const hsize_t row_count,
+    const hsize_t col_count
+);
 
 H5::DataSet create_cmplx128_dataset(
     H5::Group& group,

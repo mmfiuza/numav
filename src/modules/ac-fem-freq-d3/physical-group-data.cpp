@@ -7,14 +7,9 @@ namespace numav {
 template <ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::_organize_volume_physical_group_data()
 {
-    _ivpg_to_volprop = fz::SafePtr<_VolProp>(_ivpg_count);
-    for (const auto& [evpg, volprop] : _evpg_to_volprop) {
-        const size_t ivpg = _evpg_to_ivpg.at(evpg);
-        _ivpg_to_volprop[ivpg] = volprop;
-    }
     _vei_to_ivpg = fz::SafePtr<size_t>(_vei_count);
     for (size_t vei = 0; vei != _vei_count; ++vei) {
-        _vei_to_ivpg[vei] = _evpg_to_ivpg.at(_vei_to_evpg[vei]);
+        _vei_to_ivpg[vei] = _evpg_ivpg_bimap.left.at(_vei_to_evpg[vei]);
     }
 }
 
