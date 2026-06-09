@@ -82,7 +82,6 @@ SimulationAcFemFreqD3<O>::Impl::~Impl() {
         }
         _ispgi_to_damp_fi_part.free();
         _ispgi_to_ptr_in_a.free();
-        _vpi_to_forc_fi_part.free();
         _vpi_to_ptr_in_b.free();
         for (size_t ispgv = 0UL; ispgv != _ispgv_count; ++ispgv) {
             _ispgv_to_forc_fi_part[ispgv].free();

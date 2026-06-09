@@ -111,8 +111,11 @@ private:
 
     std::string _hdf5_file_path;
 
-    std::vector<std::tuple<size_t, FuncFloatToCmplx>> _point_volvel;
-    std::vector<std::tuple<size_t, FuncFloatToCmplx>> _point_pressure;
+    std::vector<size_t> _vpi_to_ni;
+    std::vector<FuncFloatToCmplx> _vpi_to_volvel;
+    std::vector<size_t> _ppi_to_ni;
+    std::vector<FuncFloatToCmplx> _ppi_to_pressure;
+
     std::vector<std::array<Float, DIM>> _receiver_points;
 
     // members allocated during mesh load
@@ -139,7 +142,6 @@ private:
     fz::SafePtr<fz::SafePtr<Cmplx*>> _ivpg_to_ptr_in_a;
     fz::SafePtr<fz::SafePtr<Float>> _ispgi_to_damp_fi_part;
     fz::SafePtr<fz::SafePtr<Cmplx*>> _ispgi_to_ptr_in_a;
-    fz::SafePtr<FuncFloatToCmplx> _vpi_to_forc_fi_part;
     fz::SafePtr<Cmplx*> _vpi_to_ptr_in_b;
     fz::SafePtr<fz::SafePtr<Float>> _ispgv_to_forc_fi_part;
     fz::SafePtr<fz::SafePtr<Cmplx*>> _ispgv_to_ptr_in_b;

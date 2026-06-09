@@ -22,7 +22,6 @@ void SimulationAcFemFreqD3<O>::Impl::_clear_data_not_used_in_freq_iterations()
     _espg_ispgv_bimap.clear();
     _espg_ispgp_bimap.clear();
     
-    _point_volvel.clear();
     _receiver_points.clear();
     _ni_to_coords.free();
     _sei_to_ni.free();
@@ -75,9 +74,8 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
         _b_vals.fill(Cmplx(0_F, 0_F));
 
         // add point volume velocity to b vector
-        for (size_t vpi = 0UL; vpi != _vpi_count; ++vpi)
-        {
-            const Cmplx volvel = (_vpi_to_forc_fi_part[vpi])(freq);
+        for (size_t vpi = 0UL; vpi != _vpi_count; ++vpi) {
+            const Cmplx volvel = (_vpi_to_volvel[vpi])(freq);
             *_vpi_to_ptr_in_b[vpi] += Cmplx(0_F, -omega) * volvel;
         }
 
@@ -86,9 +84,9 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
         {
             const Cmplx velocity = (_ispgv_to_velocity[ispgv])(freq);
             const Cmplx fd_part = Cmplx(0_F, -omega) * velocity;
-            for (size_t fipi = 0UL;
-                fipi != _ispgv_to_ptr_in_b[ispgv].size(); ++fipi)
-            {
+
+            const size_t fipi_count = _ispgv_to_ptr_in_b[ispgv].size();
+            for (size_t fipi = 0UL; fipi != fipi_count; ++fipi) {
                 *_ispgv_to_ptr_in_b[ispgv][fipi] +=
                     _ispgv_to_forc_fi_part[ispgv][fipi] * fd_part;
             }
@@ -97,11 +95,11 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
         // add damping matrix to a
         for (size_t ispgi = 0UL; ispgi != _ispgi_count; ++ispgi)
         {
-            const Cmplx impedance_value = _ispgi_to_impedance[ispgi](freq);
-            const Cmplx damp_fd_part = Cmplx(0_F, omega) / impedance_value;
-            for (size_t fipi = 0UL;
-                fipi != _ispgi_to_ptr_in_a[ispgi].size(); ++fipi
-            ) {
+            const Cmplx impedance = _ispgi_to_impedance[ispgi](freq);
+            const Cmplx damp_fd_part = Cmplx(0_F, omega) / impedance;
+
+            const size_t fipi_count = _ispgi_to_ptr_in_a[ispgi].size();
+            for (size_t fipi = 0UL; fipi != fipi_count; ++fipi) {
                 *_ispgi_to_ptr_in_a[ispgi][fipi] +=
                     _ispgi_to_damp_fi_part[ispgi][fipi] * damp_fd_part;
             }
@@ -110,18 +108,14 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
         // add stiffness and mass matrix to a
         for (size_t ivpg = 0UL; ivpg != _ivpg_count; ++ivpg)
         {
-            const Cmplx density_value =
-                (_ivpg_to_volprop[ivpg].density)(freq);
-            const Cmplx soundspeed_value =
-                (_ivpg_to_volprop[ivpg].soundspeed)(freq);
-
-            const Cmplx stif_fd_part = Cmplx(1_F, 0_F) / density_value;
-            const Cmplx mass_fd_part = - omega_squared / 
-                (density_value * soundspeed_value * soundspeed_value);
+            const Cmplx density = (_ivpg_to_volprop[ivpg].density)(freq);
+            const Cmplx soundspeed = (_ivpg_to_volprop[ivpg].soundspeed)(freq);
+            const Cmplx stif_fd_part = Cmplx(1_F, 0_F) / density;
+            const Cmplx mass_fd_part =
+                - omega_squared / (density * soundspeed * soundspeed);
             
-            for (size_t fipi = 0UL;
-                fipi != _ivpg_to_ptr_in_a[ivpg].size(); ++fipi
-            ) {
+            const size_t fipi_count = _ivpg_to_ptr_in_a[ivpg].size();
+            for (size_t fipi = 0UL; fipi != fipi_count; ++fipi) {
                 *_ivpg_to_ptr_in_a[ivpg][fipi] +=
                     _ivpg_to_stif_fi_part[ivpg][fipi] * stif_fd_part +
                     _ivpg_to_mass_fi_part[ivpg][fipi] * mass_fd_part;
@@ -132,9 +126,9 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
         for (size_t apvi = 0UL; apvi != _apvi_count; ++apvi)
         {
             const Cmplx pressure = (_apvi_to_pressure[apvi])(freq);
-            for (size_t fipi = 0UL;
-                fipi != _apvi_to_ptr_in_a[apvi].size(); ++fipi
-            ) {
+
+            const size_t fipi_count = _apvi_to_ptr_in_a[apvi].size();
+            for (size_t fipi = 0UL; fipi != fipi_count; ++fipi) {
                 *_apvi_to_ptr_in_a[apvi][fipi] += PENALTY_METHOD_CONSTANT;
                 *_apvi_to_ptr_in_b[apvi][fipi] +=
                     PENALTY_METHOD_CONSTANT * pressure;

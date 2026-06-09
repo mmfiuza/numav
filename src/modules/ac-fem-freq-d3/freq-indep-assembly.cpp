@@ -115,7 +115,7 @@ void SimulationAcFemFreqD3<O>::Impl::_allocate_b()
         }
     }
     for (size_t vpi = 0UL; vpi != _vpi_count; ++vpi) {
-        existing_source_nodes.insert(std::get<size_t>(_point_volvel[vpi]));
+        existing_source_nodes.insert(_vpi_to_ni[vpi]);
     }
     for (size_t psei = 0UL; psei != _psei_count; ++psei) {
         const size_t sei = _psei_to_sei[psei];
@@ -125,7 +125,7 @@ void SimulationAcFemFreqD3<O>::Impl::_allocate_b()
         }
     }
     for (size_t ppi = 0UL; ppi != _ppi_count; ++ppi) {
-        existing_source_nodes.insert(std::get<size_t>(_point_pressure[ppi]));
+        existing_source_nodes.insert(_ppi_to_ni[ppi]);
     }
     _b_row_idx = fz::SafePtr<size_t>(existing_source_nodes.size());
     std::copy(
@@ -690,14 +690,10 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_velocity()
 template<ElementOrder O>
 void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_point_velocity()
 {
-    _vpi_to_forc_fi_part = fz::SafePtr<FuncFloatToCmplx>(_vpi_count);
     _vpi_to_ptr_in_b = fz::SafePtr<Cmplx*>(_vpi_count);
     for (size_t vpi = 0UL; vpi != _vpi_count; ++vpi)
     {
-        _vpi_to_forc_fi_part[vpi] = 
-            std::get<FuncFloatToCmplx>(_point_volvel[vpi]);
-
-        const size_t ni = std::get<size_t>(_point_volvel[vpi]);
+        const size_t ni = _vpi_to_ni[vpi];
         const size_t* const ni_ptr = std::lower_bound(
             _b_row_idx.begin(), _b_row_idx.end(), ni
         );
@@ -733,8 +729,8 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_pressure()
     // create the mathmatical sets of nodes for each pressure value assigned
     fz::SafePtr<fz::SafePtr<size_t>> sets(_ppi_count + _ispgp_count);
     for (size_t ppi = 0UL; ppi != _ppi_count; ++ppi) {
-        sets[ppi] = fz::SafePtr<size_t>(1UL);
-        sets[ppi][0UL] = std::get<size_t>(_point_pressure[ppi]);
+        sets[ppi] = fz::SafePtr<size_t>(1UL); // TODO: review this
+        sets[ppi][0UL] = _ppi_to_ni[ppi];
     }
     for (size_t ispgp = 0UL; ispgp != _ispgp_count; ++ispgp) {
         std::set<size_t> unique_nodes; // TODO: review the use of set
@@ -771,9 +767,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_pressure()
             for (const auto& set_index : set_indexes) {
                 if (set_index < _ppi_count) {
                     const size_t& ppi = set_index;
-                    sum += std::get<FuncFloatToCmplx>(
-                        _point_pressure[ppi]
-                    )(freq);
+                    sum += (_ppi_to_pressure[ppi])(freq);
                 }
                 else {
                     const size_t ispgp = set_index - _ppi_count;

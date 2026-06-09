@@ -286,11 +286,13 @@ void SimulationAcFemFreqD3<O>::Impl::add_sound_source(
     const size_t closest_ni = _get_closest_point(point_coords);
     
     if (pq == PhysicalQuantity::VOLUME_VELOCITY) {
-        _point_volvel.push_back(std::make_tuple(closest_ni, pqv));
+        _vpi_to_ni.emplace_back(closest_ni);
+        _vpi_to_volvel.emplace_back(pqv);
         ++_vpi_count;
     }
     else if (pq == PhysicalQuantity::PRESSURE) {
-        _point_pressure.push_back(std::make_tuple(closest_ni, pqv));
+        _ppi_to_ni.emplace_back(closest_ni);
+        _ppi_to_pressure.emplace_back(pqv);
         ++_ppi_count;
     }
     else {
