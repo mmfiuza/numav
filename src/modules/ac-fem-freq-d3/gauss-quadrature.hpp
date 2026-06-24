@@ -68,8 +68,8 @@ constexpr std::array<std::array<Float,DIM>,N> GAUSS_POINTS_VOL = [] {
         constexpr Float a =  1_F /  4_F;
         constexpr Float b =  1_F / 14_F;
         constexpr Float c = 11_F / 14_F;
-        constexpr Float d = 0.399403576166799_F; // TODO: discover the fraction
-        constexpr Float e = 0.100596423833201_F; // TODO: discover the fraction
+        constexpr Float d = (14_F + SQRT(70_F)) / 56_F;
+        constexpr Float e = (14_F - SQRT(70_F)) / 56_F;
         return std::array<std::array<Float,DIM>,N>{{
             {a,a,a},
             {b,b,b}, {c,b,b}, {b,c,b}, {b,b,c},
@@ -77,7 +77,7 @@ constexpr std::array<std::array<Float,DIM>,N> GAUSS_POINTS_VOL = [] {
         }};
     }
     if constexpr (N == 15UL) {
-        constexpr Float a =                     1_F /  4_F;
+        constexpr Float a = 1_F /  4_F;
         constexpr Float b = ( 7_F +     SQRT(15_F)) / 34_F;
         constexpr Float c = ( 7_F -     SQRT(15_F)) / 34_F;
         constexpr Float d = (13_F - 3_F*SQRT(15_F)) / 34_F;
