@@ -16,7 +16,7 @@ Eigen::Matrix<Float, ENI_COUNT_SFC<O>, 1UL> shape_func_sfc(
 );
 
 template<ElementOrder O>
-Eigen::Matrix<Float, 2UL, ENI_COUNT_SFC<O>> shape_func_sfc_gradient(
+Eigen::Matrix<Float, ENI_COUNT_SFC<O>, 2UL> shape_func_sfc_gradient(
     const Float xi0,
     const Float xi1
 );
@@ -29,7 +29,7 @@ Eigen::Matrix<Float, ENI_COUNT_VOL<O>, 1UL> shape_func_vol(
 );
 
 template<ElementOrder O>
-Eigen::Matrix<Float, DIM, ENI_COUNT_VOL<O>> shape_func_vol_gradient(
+Eigen::Matrix<Float, ENI_COUNT_VOL<O>, DIM> shape_func_vol_gradient(
     const Float xi0,
     const Float xi1,
     const Float xi2

@@ -15,24 +15,24 @@ namespace numav {
 // general get_stif_matrix_const_part declaration for all orders
 template<ElementOrder O>
 Eigen::Matrix<Float,ENI_COUNT_VOL<O>,ENI_COUNT_VOL<O>>
-get_stif_matrix_const_part(const Eigen::Matrix<Float,ENI_COUNT_VOL<O>,DIM>);
+get_stif_matrix_const_part(const Eigen::Matrix<Float,DIM,ENI_COUNT_VOL<O>>);
 
 template<>
 Eigen::Matrix<Float,
     ENI_COUNT_VOL<ElementOrder::O1>, ENI_COUNT_VOL<ElementOrder::O1>
 >
 get_stif_matrix_const_part<ElementOrder::O1>(
-    const Eigen::Matrix<Float,ENI_COUNT_VOL<ElementOrder::O1>,DIM> coords
+    const Eigen::Matrix<Float,DIM,ENI_COUNT_VOL<ElementOrder::O1>> coords
 ) {
-    const Float x03 = coords(0UL, 0UL) - coords(3UL, 0UL);
-    const Float x13 = coords(1UL, 0UL) - coords(3UL, 0UL);
-    const Float x23 = coords(2UL, 0UL) - coords(3UL, 0UL);
-    const Float y03 = coords(0UL, 1UL) - coords(3UL, 1UL);
-    const Float y13 = coords(1UL, 1UL) - coords(3UL, 1UL);
-    const Float y23 = coords(2UL, 1UL) - coords(3UL, 1UL);
-    const Float z03 = coords(0UL, 2UL) - coords(3UL, 2UL);
-    const Float z13 = coords(1UL, 2UL) - coords(3UL, 2UL);
-    const Float z23 = coords(2UL, 2UL) - coords(3UL, 2UL);
+    const Float x03 = coords(0UL, 0UL) - coords(0UL, 3UL);
+    const Float x13 = coords(0UL, 1UL) - coords(0UL, 3UL);
+    const Float x23 = coords(0UL, 2UL) - coords(0UL, 3UL);
+    const Float y03 = coords(1UL, 0UL) - coords(1UL, 3UL);
+    const Float y13 = coords(1UL, 1UL) - coords(1UL, 3UL);
+    const Float y23 = coords(1UL, 2UL) - coords(1UL, 3UL);
+    const Float z03 = coords(2UL, 0UL) - coords(2UL, 3UL);
+    const Float z13 = coords(2UL, 1UL) - coords(2UL, 3UL);
+    const Float z23 = coords(2UL, 2UL) - coords(2UL, 3UL);
 
     const Float a = x23*z13 - x13*z23;
     const Float b = y13*z23 - y23*z13;
@@ -88,7 +88,7 @@ Eigen::Matrix<Float,
     ENI_COUNT_VOL<ElementOrder::O2>, ENI_COUNT_VOL<ElementOrder::O2>
 >
 get_stif_matrix_const_part<ElementOrder::O2>(
-    const Eigen::Matrix<Float,ENI_COUNT_VOL<ElementOrder::O2>,DIM> coords
+    const Eigen::Matrix<Float,DIM,ENI_COUNT_VOL<ElementOrder::O2>> coords
 ) {
     Eigen::Matrix<Float,
         ENI_COUNT_VOL<ElementOrder::O2>, ENI_COUNT_VOL<ElementOrder::O2>
@@ -102,17 +102,17 @@ get_stif_matrix_const_part<ElementOrder::O2>(
     }};
     for (size_t gpi = 0UL; gpi != 4UL; ++gpi)
     {
-        const Eigen::Matrix<Float, DIM, ENI_COUNT_VOL<ElementOrder::O2>> 
-        nabla_n = shape_func_vol_gradient<ElementOrder::O2>(
-            points[gpi][0UL], points[gpi][1UL], points[gpi][2UL]
-        );
-
-        const Eigen::Matrix<Float, DIM, ENI_COUNT_VOL<ElementOrder::O2>> b =
-            adjugate(nabla_n * coords) * nabla_n;
-
-        matrix += b.transpose() * b;
+        const Eigen::Matrix<Float, ENI_COUNT_VOL<ElementOrder::O2>, DIM> 
+            nabla_n = shape_func_vol_gradient<ElementOrder::O2>(
+                points[gpi][0UL], points[gpi][1UL], points[gpi][2UL]
+            );
+        
+        const Eigen::Matrix<Float, ENI_COUNT_VOL<ElementOrder::O2>, DIM> b =
+            nabla_n * adjugate(coords * nabla_n);
+        
+        matrix += b * b.transpose();
     }
-    matrix /= 144_F;
+    matrix *= (1_F / 144_F);
     return matrix;
 }
 
