@@ -104,7 +104,7 @@ private:
     boost::bimap<size_t, size_t> _espg_ispgv_bimap;
     boost::bimap<size_t, size_t> _espg_ispgp_bimap;
 
-    std::vector<_VolProp>         _ivpg_to_volprop;
+    std::vector<_VolProp> _ivpg_to_volprop;
     std::vector<FuncFloatToCmplx> _ispgi_to_impedance;
     std::vector<FuncFloatToCmplx> _ispgv_to_velocity;
     std::vector<FuncFloatToCmplx> _ispgp_to_pressure;

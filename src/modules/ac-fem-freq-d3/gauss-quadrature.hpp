@@ -43,15 +43,15 @@ constexpr std::array<std::array<Float,2UL>,N> GAUSS_POINTS_SFC = [] {
 }();
 
 template<size_t N>
-constexpr std::array<std::array<Float,DIM>,N> GAUSS_POINTS_VOL = [] {
+constexpr std::array<std::array<Float,3UL>,N> GAUSS_POINTS_VOL = [] {
     if constexpr (N == 1UL) {
         constexpr Float a = 1_F / 4_F;
-        return std::array<std::array<Float,DIM>,N>{{ {a, a, a} }};
+        return std::array<std::array<Float,3UL>,N>{{ {a, a, a} }};
     }
     if constexpr (N == 4UL) {
         constexpr Float a = (5_F -     SQRT(5_F)) / 20_F;
         constexpr Float b = (5_F + 3_F*SQRT(5_F)) / 20_F;
-        return std::array<std::array<Float,DIM>,N>{{
+        return std::array<std::array<Float,3UL>,N>{{
             {a,a,a}, {b,a,a}, {a,b,a}, {a,a,b}
         }};
     }
@@ -59,7 +59,7 @@ constexpr std::array<std::array<Float,DIM>,N> GAUSS_POINTS_VOL = [] {
         constexpr Float a = 1_F / 4_F;
         constexpr Float b = 1_F / 6_F;
         constexpr Float c = 1_F / 2_F;
-        return std::array<std::array<Float,DIM>,N>{{
+        return std::array<std::array<Float,3UL>,N>{{
             {a,a,a},
             {b,b,b}, {c,b,b}, {b,c,b}, {b,b,c}
         }};
@@ -70,7 +70,7 @@ constexpr std::array<std::array<Float,DIM>,N> GAUSS_POINTS_VOL = [] {
         constexpr Float c = 11_F / 14_F;
         constexpr Float d = (14_F + SQRT(70_F)) / 56_F;
         constexpr Float e = (14_F - SQRT(70_F)) / 56_F;
-        return std::array<std::array<Float,DIM>,N>{{
+        return std::array<std::array<Float,3UL>,N>{{
             {a,a,a},
             {b,b,b}, {c,b,b}, {b,c,b}, {b,b,c},
             {d,d,e}, {d,e,d}, {e,d,d}, {d,e,e}, {e,d,e}, {e,e,d}
@@ -84,7 +84,7 @@ constexpr std::array<std::array<Float,DIM>,N> GAUSS_POINTS_VOL = [] {
         constexpr Float e = (13_F + 3_F*SQRT(15_F)) / 34_F;
         constexpr Float f = ( 5_F -     SQRT(15_F)) / 20_F;
         constexpr Float g = ( 5_F +     SQRT(15_F)) / 20_F;
-        return std::array<std::array<Float,DIM>,N>{{
+        return std::array<std::array<Float,3UL>,N>{{
             {a,a,a},
             {b,b,b}, {b,b,d}, {b,d,b}, {d,b,b}, 
             {c,c,c}, {c,c,e}, {c,e,c}, {e,c,c},

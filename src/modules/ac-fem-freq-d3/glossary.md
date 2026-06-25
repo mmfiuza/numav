@@ -39,7 +39,7 @@
 
 - NCI (Node Combination Index)
 
-- ENI (Elementary Node Index)
+- ENI (Elemental Node Index)
 
 - VPI (Velocity Point Index)
 
