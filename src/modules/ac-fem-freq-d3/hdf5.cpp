@@ -81,7 +81,7 @@ void SimulationAcFemFreqD3<O>::Impl::_write_simulation_inputs_to_hdf5_file(
     }
 
     // mesh
-    H5::Group mesh_grp = _hdf5_file.createGroup("/inputs/mesh");
+    H5::Group mesh_grp = inputs_grp.createGroup("mesh");
     {   // nodes
         H5::DataSet data_set = write_dataset_float64_2d(
             mesh_grp,
@@ -109,9 +109,9 @@ void SimulationAcFemFreqD3<O>::Impl::_write_simulation_inputs_to_hdf5_file(
             ENI_COUNT_SFC<O>
         );
         write_string_attr(data_set, "units", "dimensionless");
-        write_int_attr(data_set, "node_index_base", 1UL);
         H5DSset_label(data_set.getId(), 0, "surface_element_index");
-        H5DSset_label(data_set.getId(), 1, "elementary_node_index");
+        H5DSset_label(data_set.getId(), 1, "elemental_node_index");
+        write_int_attr(data_set, "node_index_base", 1UL);
     }
     {   // volume_elements
         H5::DataSet data_set = write_dataset_uint64_2d(
@@ -125,9 +125,9 @@ void SimulationAcFemFreqD3<O>::Impl::_write_simulation_inputs_to_hdf5_file(
             ENI_COUNT_VOL<O>
         );
         write_string_attr(data_set, "units", "dimensionless");
-        write_int_attr(data_set, "node_index_base", 1UL);
         H5DSset_label(data_set.getId(), 0, "volume_element_index");
-        H5DSset_label(data_set.getId(), 1, "elementary_node_index");
+        H5DSset_label(data_set.getId(), 1, "elemental_node_index");
+        write_int_attr(data_set, "node_index_base", 1UL);
     }
     {   // surface_elements_material
         H5::DataSet data_set = write_dataset_uint64_1d(
@@ -151,7 +151,7 @@ void SimulationAcFemFreqD3<O>::Impl::_write_simulation_inputs_to_hdf5_file(
     }
 
     // volume_materials
-    H5::Group vol_mat_grp = _hdf5_file.createGroup("/inputs/volume_materials");
+    H5::Group vol_mat_grp = inputs_grp.createGroup("volume_materials");
     {   // physical_groups
         fz::SafePtr<uint64_t> _ivpg_to_evpg(_ivpg_count);
         for (size_t ivpg = 0UL; ivpg != _ivpg_count; ++ivpg) {
@@ -185,7 +185,7 @@ void SimulationAcFemFreqD3<O>::Impl::_write_simulation_inputs_to_hdf5_file(
             _fi_count
         );
         density.free();
-        write_string_attr(data_set, "units", "kg/m^3");
+        write_string_attr(data_set, "units", "kg/m3");
         H5DSset_label(data_set.getId(), 0, "volume_material_index");
         H5DSset_label(data_set.getId(), 1, "frequency_index");
     }
@@ -206,8 +206,190 @@ void SimulationAcFemFreqD3<O>::Impl::_write_simulation_inputs_to_hdf5_file(
             _fi_count
         );
         soundspeed.free();
-        write_string_attr(data_set, "units", "kg/m^3");
+        write_string_attr(data_set, "units", "m/s");
         H5DSset_label(data_set.getId(), 0, "volume_material_index");
+        H5DSset_label(data_set.getId(), 1, "frequency_index");
+    }
+
+    // surface_materials
+    H5::Group sfc_mat_grp = inputs_grp.createGroup("surface_materials");
+    {   // physical_groups
+        fz::SafePtr<uint64_t> _ispgi_to_espg(_ispgi_count);
+        for (size_t ispgi = 0UL; ispgi != _ispgi_count; ++ispgi) {
+            const size_t espg = _espg_ispgi_bimap.right.at(ispgi);
+            _ispgi_to_espg[ispgi] = espg;
+        }
+        H5::DataSet data_set = write_dataset_uint64_1d(
+            sfc_mat_grp,
+            "physical_groups",
+            _ispgi_to_espg.data(),
+            _ispgi_count
+        );
+        _ispgi_to_espg.free();
+        write_string_attr(data_set, "units", "dimensionless");
+        H5DSset_label(data_set.getId(), 0, "surface_material_index");
+    }
+    {   // impedance
+        fz::SafePtr<Cmplx> impedance(_ispgi_count * _fi_count);
+        for (size_t ispgi = 0UL; ispgi != _ispgi_count; ++ispgi) {
+            for (size_t fi = 0UL; fi != _fi_count; ++fi) {
+                const Float freq = _fi_to_freq[fi];
+                impedance[ispgi*_fi_count + fi] = 
+                    (_ispgi_to_impedance[ispgi])(freq);
+            }
+        }
+        H5::DataSet data_set = write_dataset_cmplx128_2d(
+            sfc_mat_grp,
+            "impedance",
+            impedance.data(),
+            _ispgi_count,
+            _fi_count
+        );
+        impedance.free();
+        write_string_attr(data_set, "units", "Pa.s/m");
+        H5DSset_label(data_set.getId(), 0, "surface_material_index");
+        H5DSset_label(data_set.getId(), 1, "frequency_index");
+    }
+
+    // sound_sources
+    H5::Group src_grp = inputs_grp.createGroup("sound_sources");
+    H5::Group pnt_src_grp = src_grp.createGroup("point");
+    H5::Group pnt_volvel_grp = pnt_src_grp.createGroup("volume_velocity");
+    {   // point node_index
+        H5::DataSet data_set = write_dataset_uint64_1d(
+            pnt_volvel_grp,
+            "node_index",
+            to_one_based_index(_vpi_to_ni.data(), _vpi_count).get(),
+            _vpi_count
+        );
+        write_string_attr(data_set, "units", "m");
+        H5DSset_label(data_set.getId(), 0, "volume_velocity_point_index");
+        write_int_attr(data_set, "node_index_base", 1UL);
+    }
+    {   // point volume_velocity 
+        fz::SafePtr<Cmplx> volvel(_vpi_count * _fi_count);
+        for (size_t vpi = 0UL; vpi != _vpi_count; ++vpi) {
+            for (size_t fi = 0UL; fi != _fi_count; ++fi) {
+                const Float freq = _fi_to_freq[fi];
+                volvel[vpi*_fi_count + fi] = (_vpi_to_volvel[vpi])(freq);
+            }
+        }
+        H5::DataSet data_set = write_dataset_cmplx128_2d(
+            pnt_volvel_grp,
+            "volume_velocity",
+            volvel.data(),
+            _vpi_count,
+            _fi_count
+        );
+        volvel.free();
+        write_string_attr(data_set, "units", "m3/s");
+        H5DSset_label(data_set.getId(), 0, "volume_velocity_point_index");
+        H5DSset_label(data_set.getId(), 1, "frequency_index");
+    }
+    H5::Group pnt_pressure_grp = pnt_src_grp.createGroup("pressure");
+    {   // point node_index
+        H5::DataSet data_set = write_dataset_uint64_1d(
+            pnt_pressure_grp,
+            "node_index",
+            to_one_based_index(_ppi_to_ni.data(), _ppi_count).get(),
+            _ppi_count
+        );
+        write_string_attr(data_set, "units", "m");
+        H5DSset_label(data_set.getId(), 0, "pressure_point_index");
+        write_int_attr(data_set, "node_index_base", 1UL);
+    }
+    {   // point pressure
+        fz::SafePtr<Cmplx> pressure(_ppi_count * _fi_count);
+        for (size_t ppi = 0UL; ppi != _ppi_count; ++ppi) {
+            for (size_t fi = 0UL; fi != _fi_count; ++fi) {
+                const Float freq = _fi_to_freq[fi];
+                pressure[ppi*_fi_count + fi] = (_ppi_to_pressure[ppi])(freq);
+            }
+        }
+        H5::DataSet data_set = write_dataset_cmplx128_2d(
+            pnt_pressure_grp,
+            "pressure",
+            pressure.data(),
+            _ppi_count,
+            _fi_count
+        );
+        pressure.free();
+        write_string_attr(data_set, "units", "Pa");
+        H5DSset_label(data_set.getId(), 0, "pressure_point_index");
+        H5DSset_label(data_set.getId(), 1, "frequency_index");
+    }
+
+    H5::Group sfc_src_grp = src_grp.createGroup("surface");
+    H5::Group sfc_velocity_grp = sfc_src_grp.createGroup("particle_velocity");
+    {   // surface physical_groups
+        fz::SafePtr<uint64_t> ispgv_to_espg(_ispgv_count);
+        for (size_t ispgv = 0UL; ispgv != _ispgv_count; ++ispgv) {
+            ispgv_to_espg[ispgv] = _espg_ispgv_bimap.right.at(ispgv);
+        }
+        H5::DataSet data_set = write_dataset_uint64_1d(
+            sfc_velocity_grp,
+            "physical_groups",
+            ispgv_to_espg.data(),
+            _ispgv_count
+        );
+        ispgv_to_espg.free();
+        write_string_attr(data_set, "units", "dimensionless");
+        H5DSset_label(data_set.getId(), 0, "particle_velocity_surface_index");
+    }
+    {   // surface particle_velocity 
+        fz::SafePtr<Cmplx> vel(_ispgv_count * _fi_count);
+        for (size_t ispgv = 0UL; ispgv != _ispgv_count; ++ispgv) {
+            for (size_t fi = 0UL; fi != _fi_count; ++fi) {
+                const Float freq = _fi_to_freq[fi];
+                vel[ispgv*_fi_count + fi] = (_ispgv_to_velocity[ispgv])(freq);
+            }
+        }
+        H5::DataSet data_set = write_dataset_cmplx128_2d(
+            sfc_velocity_grp,
+            "particle_velocity",
+            vel.data(),
+            _ispgv_count,
+            _fi_count
+        );
+        vel.free();
+        write_string_attr(data_set, "units", "m/s");
+        H5DSset_label(data_set.getId(), 0, "particle_velocity_surface_index");
+        H5DSset_label(data_set.getId(), 1, "frequency_index");
+    }
+    H5::Group sfc_pressure_grp = sfc_src_grp.createGroup("pressure");
+    {   // surface physical_groups
+        fz::SafePtr<uint64_t> ispgp_to_espg(_ispgp_count);
+        for (size_t ispgp = 0UL; ispgp != _ispgp_count; ++ispgp) {
+            ispgp_to_espg[ispgp] = _espg_ispgp_bimap.right.at(ispgp);
+        }
+        H5::DataSet data_set = write_dataset_uint64_1d(
+            sfc_pressure_grp,
+            "physical_groups",
+            ispgp_to_espg.data(),
+            _ispgp_count
+        );
+        ispgp_to_espg.free();
+        write_string_attr(data_set, "units", "dimensionless");
+        H5DSset_label(data_set.getId(), 0, "pressure_surface_index");
+    }
+    {   // surface pressure 
+        fz::SafePtr<Cmplx> pres(_ispgp_count * _fi_count);
+        for (size_t ispgp = 0UL; ispgp != _ispgp_count; ++ispgp) {
+            for (size_t fi = 0UL; fi != _fi_count; ++fi) {
+                const Float freq = _fi_to_freq[fi];
+                pres[ispgp*_fi_count + fi] = (_ispgp_to_pressure[ispgp])(freq);
+            }
+        }
+        H5::DataSet data_set = write_dataset_cmplx128_2d(
+            sfc_pressure_grp,
+            "pressure",
+            pres.data(),
+            _ispgp_count,
+            _fi_count
+        );
+        pres.free();
+        write_string_attr(data_set, "units", "m/s");
+        H5DSset_label(data_set.getId(), 0, "pressure_surface_index");
         H5DSset_label(data_set.getId(), 1, "frequency_index");
     }
 }
