@@ -341,12 +341,17 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_vol_elements()
 }
 
 template<ElementOrder O>
-std::array<Eigen::Vector2d, ENI_COUNT_SFC<O>> project_triangle_to_2d(
-    const std::array<Eigen::Vector3d, ENI_COUNT_SFC<O>> vertices_3d
+std::array<std::array<Float,2UL>,ENI_COUNT_SFC<O>> project_triangle_to_2d(
+
+    const std::array<std::array<Float,DIM>,ENI_COUNT_SFC<O>> vertices_3d
 ) {
     std::array<Eigen::Vector3d, ENI_COUNT_SFC<O>> point_minus_origin;
     for (size_t eni = 0UL; eni != ENI_COUNT_SFC<O>; ++eni) {
-        point_minus_origin[eni] = vertices_3d[eni] - vertices_3d[0UL];
+        point_minus_origin[eni] = Eigen::Vector3d(
+            vertices_3d[eni][0UL] - vertices_3d[0UL][0UL],
+            vertices_3d[eni][1UL] - vertices_3d[0UL][1UL],
+            vertices_3d[eni][2UL] - vertices_3d[0UL][2UL]
+        );
     }
     const Eigen::Vector3d& u = point_minus_origin[1UL];
     const Eigen::Vector3d& v = point_minus_origin[2UL];
@@ -355,11 +360,11 @@ std::array<Eigen::Vector2d, ENI_COUNT_SFC<O>> project_triangle_to_2d(
     Eigen::Vector3d y = n.cross(u);
     y /= y.norm();
 
-    std::array<Eigen::Vector2d, ENI_COUNT_SFC<O>> vertices_2d;
+    std::array<std::array<Float,2UL>,ENI_COUNT_SFC<O>> vertices_2d;
     for (size_t eni = 0UL; eni != ENI_COUNT_SFC<O>; ++eni) {
-        vertices_2d[eni] = Eigen::Vector2d(
+        vertices_2d[eni] = std::array<Float,2UL>({
             point_minus_origin[eni].dot(x), point_minus_origin[eni].dot(y)
-        );
+        });
     }
     return vertices_2d;
 }
@@ -445,40 +450,22 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_impedance()
                 _a_vals.begin() + ptrdiff;
         }
 
-        #if NUMAV_DAMP_INTEGRATION_METHOD == NUMAV_GAUSS_QUADRATURE
-            // coordinates matrix
-            std::array<Eigen::Vector3d, ENI_COUNT_SFC<O>> triangle_3d;
-            for (size_t eni = 0UL; eni != ENI_COUNT_SFC<O>; ++eni) {
-                const size_t ni = _sei_to_ni[sei][eni];
-                triangle_3d[eni] = Eigen::Vector3d(
-                    _ni_to_coords[ni][0UL],
-                    _ni_to_coords[ni][1UL],
-                    _ni_to_coords[ni][2UL]
-                );
-            }
-            std::array<Eigen::Vector2d, ENI_COUNT_SFC<O>> triangle_2d =
-                project_triangle_to_2d<O>(triangle_3d);
-            Eigen::Matrix<Float, 2UL, ENI_COUNT_SFC<O>> coords_matrix;
-            for (size_t eni = 0UL; eni != ENI_COUNT_SFC<O>; ++eni) {
-                coords_matrix(0UL,eni) = triangle_2d[eni](0UL);
-                coords_matrix(1UL,eni) = triangle_2d[eni](1UL);
-            }
-        #elif NUMAV_DAMP_INTEGRATION_METHOD == NUMAV_ANALYTIC
-            // calculate triangle area
-            std::array<std::array<Float,DIM>,3UL> triangle_coords;
-            for (size_t eni = 0UL; eni != 3UL; ++eni) {
-                const size_t ni = _sei_to_ni[sei][eni];
-                triangle_coords[eni] = std::array<Float,DIM>({
-                    _ni_to_coords[ni][0UL],
-                    _ni_to_coords[ni][1UL],
-                    _ni_to_coords[ni][2UL]
-                });
-            }
-            const Float triangle_area = get_triangle_area(triangle_coords);
-        #endif
-
         // damping matrix
         #if NUMAV_DAMP_INTEGRATION_METHOD == NUMAV_GAUSS_QUADRATURE
+            std::array<std::array<Float,DIM>, ENI_COUNT_SFC<O>> triangle_3d;
+            for (size_t eni = 0UL; eni != ENI_COUNT_SFC<O>; ++eni) {
+                const size_t ni = _sei_to_ni[sei][eni];
+                triangle_3d[eni] = _ni_to_coords[ni];
+            }
+            std::array<std::array<Float,2UL>,ENI_COUNT_SFC<O>> triangle_2d =
+                project_triangle_to_2d<O>(triangle_3d);
+
+            Eigen::Matrix<Float, 2UL, ENI_COUNT_SFC<O>> coords_matrix;
+            for (size_t eni = 0UL; eni != ENI_COUNT_SFC<O>; ++eni) {
+                coords_matrix(0UL,eni) = triangle_2d[eni][0UL];
+                coords_matrix(1UL,eni) = triangle_2d[eni][1UL];
+            }
+
             constexpr std::array<std::array<Float,2UL>,NGP_DAMP<O>>
                 GAUSS_POINTS_DAMP = GAUSS_POINTS_SFC<NGP_DAMP<O>>;
             for (size_t gpi = 0UL; gpi != NGP_DAMP<O>; ++gpi)
@@ -510,6 +497,13 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_impedance()
                 }
             }
         #elif NUMAV_DAMP_INTEGRATION_METHOD == NUMAV_ANALYTIC
+            std::array<std::array<Float,DIM>,3UL> vertex_coords;
+            for (size_t eni = 0UL; eni != 3UL; ++eni) {
+                const size_t ni = _sei_to_ni[sei][eni];
+                vertex_coords[eni] = _ni_to_coords[ni];
+            }
+            const Float triangle_area = get_triangle_area(vertex_coords);
+
             Eigen::Matrix<Float,ENI_COUNT_SFC<O>,ENI_COUNT_SFC<O>>
                 damp_fi_part = DAMP_MATRIX_CONST_PART<O>;
             
@@ -577,45 +571,27 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_velocity()
                 _b_vals.begin() + ptrdiff;
         }
 
-        #if NUMAV_FORC_INTEGRATION_METHOD == NUMAV_GAUSS_QUADRATURE
-            // coordinates matrix
-            std::array<Eigen::Vector3d, ENI_COUNT_SFC<O>> triangle_3d;
-            for (size_t eni = 0UL; eni != ENI_COUNT_SFC<O>; ++eni) {
-                const size_t node_idx = _sei_to_ni[sei][eni];
-                triangle_3d[eni] = Eigen::Vector3d(
-                    _ni_to_coords[node_idx][0UL],
-                    _ni_to_coords[node_idx][1UL],
-                    _ni_to_coords[node_idx][2UL]
-                );
-            }
-            std::array<Eigen::Vector2d, ENI_COUNT_SFC<O>> triangle_2d =
-                project_triangle_to_2d<O>(triangle_3d);
-            Eigen::Matrix<Float,2UL,ENI_COUNT_SFC<O>> coords_matrix;
-            for (size_t eni = 0UL; eni != ENI_COUNT_SFC<O>; ++eni) {
-                coords_matrix(0UL,eni) = triangle_2d[eni](0UL);
-                coords_matrix(1UL,eni) = triangle_2d[eni](1UL);
-            }
-        #elif NUMAV_FORC_INTEGRATION_METHOD == NUMAV_ANALYTIC
-            // calculate triangle area
-            std::array<std::array<Float,DIM>,3UL> triangle_coords;
-            for (size_t eni = 0UL; eni != 3UL; ++eni) {
-                const size_t ni = _sei_to_ni[sei][eni];
-                triangle_coords[eni] = std::array<Float,DIM>({
-                    _ni_to_coords[ni][0UL],
-                    _ni_to_coords[ni][1UL],
-                    _ni_to_coords[ni][2UL]
-                });
-            }
-            const Float triangle_area = get_triangle_area(triangle_coords);
-        #endif
-
         // elemental force vector
         #if NUMAV_FORC_INTEGRATION_METHOD == NUMAV_GAUSS_QUADRATURE
+            std::array<std::array<Float,DIM>, ENI_COUNT_SFC<O>> triangle_3d;
+            for (size_t eni = 0UL; eni != ENI_COUNT_SFC<O>; ++eni) {
+                const size_t ni = _sei_to_ni[sei][eni];
+                triangle_3d[eni] = _ni_to_coords[ni];
+            }
+            std::array<std::array<Float,2UL>,ENI_COUNT_SFC<O>> triangle_2d =
+                project_triangle_to_2d<O>(triangle_3d);
+
+            Eigen::Matrix<Float, 2UL, ENI_COUNT_SFC<O>> coords_matrix;
+            for (size_t eni = 0UL; eni != ENI_COUNT_SFC<O>; ++eni) {
+                coords_matrix(0UL,eni) = triangle_2d[eni][0UL];
+                coords_matrix(1UL,eni) = triangle_2d[eni][1UL];
+            }
+
             constexpr std::array<std::array<Float,2UL>,NGP_FORC<O>>
                 GAUSS_POINTS_FORC = GAUSS_POINTS_SFC<NGP_FORC<O>>;
             for (size_t gpi = 0UL; gpi != NGP_FORC<O>; ++gpi)
             {
-                const Eigen::Matrix<Float, ENI_COUNT_SFC<O>, 2UL> nabla_n =
+                const Eigen::Matrix<Float,ENI_COUNT_SFC<O>, 2UL> nabla_n =
                     shape_func_sfc_gradient<O>(
                         GAUSS_POINTS_FORC[gpi][0UL], GAUSS_POINTS_FORC[gpi][1UL]
                     );
@@ -640,6 +616,13 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_velocity()
                 }
             }
         #elif NUMAV_FORC_INTEGRATION_METHOD == NUMAV_ANALYTIC
+            std::array<std::array<Float,DIM>,3UL> vertex_coords;
+            for (size_t eni = 0UL; eni != 3UL; ++eni) {
+                const size_t ni = _sei_to_ni[sei][eni];
+                vertex_coords[eni] = _ni_to_coords[ni];
+            }
+            const Float triangle_area = get_triangle_area(vertex_coords);
+
             Eigen::Matrix<Float,ENI_COUNT_SFC<O>,1UL>
                 forc_fi_part = FORC_VECTOR_CONST_PART<O>;
             
