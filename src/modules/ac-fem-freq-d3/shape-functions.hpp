@@ -10,26 +10,26 @@
 namespace numav {
 
 template<ElementOrder O>
-Eigen::Matrix<Float, ENI_COUNT_SFC<O>, 1UL> shape_func_sfc(
+Eigen::Matrix<Float, ENIS_COUNT<O>, 1UL> shape_func_sfc(
     const Float xi0,
     const Float xi1
 );
 
 template<ElementOrder O>
-Eigen::Matrix<Float, ENI_COUNT_SFC<O>, 2UL> shape_func_sfc_gradient(
+Eigen::Matrix<Float, ENIS_COUNT<O>, 2UL> shape_func_sfc_gradient(
     const Float xi0,
     const Float xi1
 );
 
 template<ElementOrder O>
-Eigen::Matrix<Float, ENI_COUNT_VOL<O>, 1UL> shape_func_vol(
+Eigen::Matrix<Float, ENIV_COUNT<O>, 1UL> shape_func_vol(
     const Float xi0,
     const Float xi1,
     const Float xi2
 );
 
 template<ElementOrder O>
-Eigen::Matrix<Float, ENI_COUNT_VOL<O>, DIM> shape_func_vol_gradient(
+Eigen::Matrix<Float, ENIV_COUNT<O>, DIM> shape_func_vol_gradient(
     const Float xi0,
     const Float xi1,
     const Float xi2

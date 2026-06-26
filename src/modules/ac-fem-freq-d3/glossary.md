@@ -40,6 +40,8 @@
 - NCI (Node Combination Index)
 
 - ENI (Elemental Node Index)
+    - ENIS (Elemental Node Index of Surface)
+    - ENIV (Elemental Node Index of Volume)
 
 - VPI (Velocity Point Index)
 

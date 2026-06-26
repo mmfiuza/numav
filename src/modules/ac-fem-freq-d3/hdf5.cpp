@@ -103,10 +103,10 @@ void SimulationAcFemFreqD3<O>::Impl::_write_simulation_inputs_to_hdf5_file(
             "surface_elements",
             to_one_based_index(
                 _sei_to_ni.data()->data(),
-                _sei_count * ENI_COUNT_SFC<O>
+                _sei_count * ENIS_COUNT<O>
             ).get(),
             _sei_count,
-            ENI_COUNT_SFC<O>
+            ENIS_COUNT<O>
         );
         write_string_attr(data_set, "units", "dimensionless");
         H5DSset_label(data_set.getId(), 0, "surface_element_index");
@@ -119,10 +119,10 @@ void SimulationAcFemFreqD3<O>::Impl::_write_simulation_inputs_to_hdf5_file(
             "volume_elements",
             to_one_based_index(
                 _vei_to_ni.data()->data(),
-                _vei_count * ENI_COUNT_VOL<O>
+                _vei_count * ENIV_COUNT<O>
             ).get(),
             _vei_count,
-            ENI_COUNT_VOL<O>
+            ENIV_COUNT<O>
         );
         write_string_attr(data_set, "units", "dimensionless");
         H5DSset_label(data_set.getId(), 0, "volume_element_index");

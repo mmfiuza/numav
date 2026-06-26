@@ -120,8 +120,8 @@ private:
 
     // members allocated during mesh load
     fz::SafePtr<std::array<Float, DIM>> _ni_to_coords;
-    fz::SafePtr<std::array<size_t, ENI_COUNT_SFC<O>>> _sei_to_ni;
-    fz::SafePtr<std::array<size_t, ENI_COUNT_VOL<O>>> _vei_to_ni;
+    fz::SafePtr<std::array<size_t, ENIS_COUNT<O>>> _sei_to_ni;
+    fz::SafePtr<std::array<size_t, ENIV_COUNT<O>>> _vei_to_ni;
     fz::SafePtr<size_t> _sei_to_espg;
     fz::SafePtr<size_t> _vei_to_evpg;
 
