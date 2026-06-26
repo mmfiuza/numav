@@ -599,7 +599,7 @@ void SimulationAcFemFreqD3<O>::Impl::_assemble_fi_part_for_sfc_velocity()
                 const Eigen::Matrix<Float,2UL,2UL> jac_matrix =
                     coords_matrix * nabla_n;
                 
-                const Float detj = jac_matrix.determinant();
+                const Float detj = std::abs(jac_matrix.determinant());
 
                 Eigen::Matrix<Float,ENI_COUNT_SFC<O>,1UL> n =
                     shape_func_sfc<O>(
