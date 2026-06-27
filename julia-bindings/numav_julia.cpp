@@ -23,14 +23,11 @@ JLCXX_MODULE define_module_NumericalMethod(jlcxx::Module& mod) {
 JLCXX_MODULE define_module_Domain(jlcxx::Module& mod) {
     mod.add_bits<Domain>("type", jlcxx::julia_type("CppEnum"));
     mod.set_const("frequency", Domain::FREQUENCY);
-    mod.set_const("time", Domain::TIME);
 }
 
 // Dimension enum class
 JLCXX_MODULE define_module_Dimension(jlcxx::Module& mod) {
     mod.add_bits<Dimension>("type", jlcxx::julia_type("CppEnum"));
-    mod.set_const("d1", Dimension::D1);
-    mod.set_const("d2", Dimension::D2);
     mod.set_const("d3", Dimension::D3);
 }
 
@@ -48,6 +45,12 @@ JLCXX_MODULE define_module_PhysicalQuantity(jlcxx::Module& mod) {
     mod.set_const("particle_velocity", PhysicalQuantity::PARTICLE_VELOCITY);
     mod.set_const("pressure", PhysicalQuantity::PRESSURE);
     mod.set_const("impedance", PhysicalQuantity::IMPEDANCE);
+}
+
+// ElementShape enum class
+JLCXX_MODULE define_module_ElementShape(jlcxx::Module& mod) {
+    mod.add_bits<ElementShape>("type", jlcxx::julia_type("CppEnum"));
+    mod.set_const("tetrahedron", ElementShape::TETRAHEDRON);
 }
 
 // ElementOrder enum class
@@ -71,14 +74,16 @@ namespace jlcxx
         NumericalMethod NUM,
         Domain DOM,
         Dimension DIM,
+        ElementShape SHA,
         ElementOrder ORD
     >
-    struct BuildParameterList<Simulation<PHE, NUM, DOM, DIM, ORD>> {
+    struct BuildParameterList<Simulation<PHE, NUM, DOM, DIM, SHA, ORD>> {
         typedef ParameterList<
             std::integral_constant<Phenomenon, PHE>,
             std::integral_constant<NumericalMethod, NUM>,
             std::integral_constant<Domain, DOM>,
             std::integral_constant<Dimension, DIM>,
+            std::integral_constant<ElementShape, SHA>,
             std::integral_constant<ElementOrder, ORD>
         > type;
     };
@@ -107,7 +112,8 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
             jlcxx::TypeVar<2>,
             jlcxx::TypeVar<3>,
             jlcxx::TypeVar<4>,
-            jlcxx::TypeVar<5>
+            jlcxx::TypeVar<5>,
+            jlcxx::TypeVar<6>
         >
     >("Simulation").apply<
         Simulation<
@@ -115,6 +121,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
             NumericalMethod::FEM,
             Domain::FREQUENCY,
             Dimension::D3,
+            ElementShape::TETRAHEDRON,
             ElementOrder::O1
         >,
         Simulation<
@@ -122,6 +129,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
             NumericalMethod::FEM,
             Domain::FREQUENCY,
             Dimension::D3,
+            ElementShape::TETRAHEDRON,
             ElementOrder::O2
         >
     >([](auto&& wrapped) {
