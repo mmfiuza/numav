@@ -7,7 +7,7 @@
 namespace numav {
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::Impl::_define_freq_vector() {
+void SimulationAcFemFreqD3Tet<O>::Impl::_define_freq_vector() {
     if(_freq_type_defined_by_user == _FreqTypeDefinedByUser::MAXIMUM) {
         _freq_min = 0_F;
     }

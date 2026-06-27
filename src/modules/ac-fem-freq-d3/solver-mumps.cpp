@@ -21,7 +21,7 @@ void print_mumps_error(const MUMPS_INT error_id) {
 
 template <ElementOrder O>
 void
-SimulationAcFemFreqD3<O>::Impl::_define_sparsity_pattern_using_mumps_solver()
+SimulationAcFemFreqD3Tet<O>::Impl::_define_sparsity_pattern_using_mumps_solver()
 {
     // generate _a_row_idx and _a_col_idx
     const size_t nzi_count = _ni_connections.size();
@@ -72,7 +72,7 @@ SimulationAcFemFreqD3<O>::Impl::_define_sparsity_pattern_using_mumps_solver()
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::Impl::_solve_using_mumps_solver()
+void SimulationAcFemFreqD3Tet<O>::Impl::_solve_using_mumps_solver()
 {
     // factorize
     _solver.job = JOB_FACTORIZE;
@@ -101,7 +101,7 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_using_mumps_solver()
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::Impl::_terminate_mumps_solver()
+void SimulationAcFemFreqD3Tet<O>::Impl::_terminate_mumps_solver()
 {
     _solver.job = JOB_END;
     zmumps_c(&_solver);

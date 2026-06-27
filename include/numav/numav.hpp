@@ -19,13 +19,10 @@ namespace numav {
     };
 
     enum class Domain : size_t {
-        FREQUENCY,
-        TIME
+        FREQUENCY
     };
 
     enum class Dimension : size_t {
-        D1,
-        D2,
         D3
     };
 

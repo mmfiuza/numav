@@ -4,6 +4,10 @@
 
 namespace numav {
 
+enum class ElementShape : size_t {
+    TETRAHEDRON
+};
+
 enum class ElementOrder : size_t {
     O1,
     O2
@@ -110,6 +114,7 @@ class Simulation<
     NumericalMethod::FEM,
     Domain::FREQUENCY,
     Dimension::D3,
+    ElementShape::TETRAHEDRON,
     O
 > {
 public:
@@ -129,11 +134,12 @@ private:
 
 // alias for simulation type
 template<ElementOrder O>
-using SimulationAcFemFreqD3 = Simulation<
+using SimulationAcFemFreqD3Tet = Simulation<
     Phenomenon::ACOUSTIC,
     NumericalMethod::FEM,
     Domain::FREQUENCY,
     Dimension::D3,
+    ElementShape::TETRAHEDRON,
     O
 >;
 

@@ -28,7 +28,7 @@
 #undef NUMAV_PUBLIC_METHOD
 #define NUMAV_PUBLIC_METHOD(method_name, ...)\
     template <ElementOrder O>\
-    void SimulationAcFemFreqD3<O>::method_name(NUMAV_PARAMS(__VA_ARGS__)) {\
+    void SimulationAcFemFreqD3Tet<O>::method_name(NUMAV_PARAMS(__VA_ARGS__)) {\
         _pimpl->method_name(NUMAV_ARGS(__VA_ARGS__));\
     }
 

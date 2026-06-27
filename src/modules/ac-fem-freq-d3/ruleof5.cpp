@@ -7,25 +7,25 @@
 namespace numav {
 
 template <ElementOrder O>
-SimulationAcFemFreqD3<O>::Simulation() {
+SimulationAcFemFreqD3Tet<O>::Simulation() {
     _pimpl = std::make_unique<Impl>();
 }
 
 template <ElementOrder O>
-SimulationAcFemFreqD3<O>::~Simulation() = default;
+SimulationAcFemFreqD3Tet<O>::~Simulation() = default;
 
 template<ElementOrder O>
-SimulationAcFemFreqD3<O>::Simulation(
+SimulationAcFemFreqD3Tet<O>::Simulation(
     Simulation&& other
 ) noexcept = default;
 
 template<ElementOrder O>
-SimulationAcFemFreqD3<O>& SimulationAcFemFreqD3<O>::operator=(
+SimulationAcFemFreqD3Tet<O>& SimulationAcFemFreqD3Tet<O>::operator=(
     Simulation&& other
 ) noexcept = default;
 
 template<ElementOrder O>
-SimulationAcFemFreqD3<O>::Impl::Impl() {
+SimulationAcFemFreqD3Tet<O>::Impl::Impl() {
     log::set_level();
     log::set_pattern();
     _is_mesh_defined = false;
@@ -50,7 +50,7 @@ SimulationAcFemFreqD3<O>::Impl::Impl() {
 }
 
 template<ElementOrder O>
-SimulationAcFemFreqD3<O>::Impl::~Impl() {
+SimulationAcFemFreqD3Tet<O>::Impl::~Impl() {
     if (!_did_run && _is_mesh_defined) {
         _ni_to_coords.free();
         _sei_to_ni.free();
@@ -113,13 +113,13 @@ SimulationAcFemFreqD3<O>::Impl::~Impl() {
 }
 
 template<ElementOrder O>
-SimulationAcFemFreqD3<O>::Impl::Impl(
+SimulationAcFemFreqD3Tet<O>::Impl::Impl(
     Impl&& other
 ) noexcept = default;
 
 template<ElementOrder O>
-typename SimulationAcFemFreqD3<O>::Impl&
-SimulationAcFemFreqD3<O>::Impl::operator=(
+typename SimulationAcFemFreqD3Tet<O>::Impl&
+SimulationAcFemFreqD3Tet<O>::Impl::operator=(
     Impl&& other
 ) noexcept = default;
 

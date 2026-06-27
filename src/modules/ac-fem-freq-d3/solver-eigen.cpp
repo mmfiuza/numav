@@ -9,7 +9,7 @@ namespace numav {
 
 template <ElementOrder O>
 void
-SimulationAcFemFreqD3<O>::Impl::_define_sparsity_pattern_using_eigen_solver()
+SimulationAcFemFreqD3Tet<O>::Impl::_define_sparsity_pattern_using_eigen_solver()
 {
     // rewrite A matrix in CSC form
     const size_t nz_count = _ni_connections.size();
@@ -72,7 +72,7 @@ SimulationAcFemFreqD3<O>::Impl::_define_sparsity_pattern_using_eigen_solver()
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::Impl::_solve_using_eigen_solver()
+void SimulationAcFemFreqD3Tet<O>::Impl::_solve_using_eigen_solver()
 {
     _solver->factorize(*_a_eigen);
     if (_solver->info() != Eigen::Success) {

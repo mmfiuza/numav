@@ -5,7 +5,7 @@
 namespace numav {
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::Impl::_post_process()
+void SimulationAcFemFreqD3Tet<O>::Impl::_post_process()
 {
     // TODO   
 }

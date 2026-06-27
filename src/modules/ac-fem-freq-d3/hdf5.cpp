@@ -20,7 +20,7 @@ const H5std_string HDF5_ORDER = [] {
 }();
 
 template <ElementOrder O>
-H5::DataSet SimulationAcFemFreqD3<O>::Impl::_begin_hdf5_file(
+H5::DataSet SimulationAcFemFreqD3Tet<O>::Impl::_begin_hdf5_file(
 ) {
     // create the file
     _hdf5_file = H5::H5File(_hdf5_file_path, H5F_ACC_TRUNC);
@@ -62,7 +62,7 @@ H5::DataSet SimulationAcFemFreqD3<O>::Impl::_begin_hdf5_file(
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::Impl::_write_simulation_inputs_to_hdf5_file(
+void SimulationAcFemFreqD3Tet<O>::Impl::_write_simulation_inputs_to_hdf5_file(
 ) {
     H5::Group inputs_grp = _hdf5_file.createGroup("/inputs");
 
@@ -415,7 +415,7 @@ void SimulationAcFemFreqD3<O>::Impl::_write_simulation_inputs_to_hdf5_file(
 }
 
 template<ElementOrder O>
-void SimulationAcFemFreqD3<O>::Impl::_write_solution_for_one_freq(
+void SimulationAcFemFreqD3Tet<O>::Impl::_write_solution_for_one_freq(
     H5::DataSet& pressure_dataset,
     const size_t fi
 ) {

@@ -24,7 +24,7 @@
 namespace numav {
 
 template<ElementOrder O>
-class SimulationAcFemFreqD3<O>::Impl
+class SimulationAcFemFreqD3Tet<O>::Impl
 {
 public:
     Impl();

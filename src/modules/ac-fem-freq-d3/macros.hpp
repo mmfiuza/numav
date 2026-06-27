@@ -10,6 +10,7 @@
             NumericalMethod::FEM, \
             Domain::FREQUENCY, \
             Dimension::D3, \
+            ElementShape::TETRAHEDRON, \
             ElementOrder::O1 \
         >; \
         template class Simulation< \
@@ -17,6 +18,7 @@
             NumericalMethod::FEM, \
             Domain::FREQUENCY, \
             Dimension::D3, \
+            ElementShape::TETRAHEDRON, \
             ElementOrder::O2 \
         >; \
     }

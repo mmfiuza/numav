@@ -15,7 +15,7 @@
 namespace numav {
 
 template <ElementOrder O>
-size_t SimulationAcFemFreqD3<O>::Impl::_get_closest_point(
+size_t SimulationAcFemFreqD3Tet<O>::Impl::_get_closest_point(
     const std::array<Float,DIM> point_coords
 ) {
     Float minimum_distance_squared = std::numeric_limits<Float>::max();
@@ -35,7 +35,7 @@ size_t SimulationAcFemFreqD3<O>::Impl::_get_closest_point(
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3<O>::Impl::_load_bdf(const char* const path_to_mesh)
+void SimulationAcFemFreqD3Tet<O>::Impl::_load_bdf(const char* const path_to_mesh)
 {
     constexpr size_t MAX_BDF_CHARACTERS_PER_LINE = 80UL;
     std::ifstream file(path_to_mesh);
@@ -112,12 +112,12 @@ void SimulationAcFemFreqD3<O>::Impl::_load_bdf(const char* const path_to_mesh)
 }
 
 template<>
-void SimulationAcFemFreqD3<ElementOrder::O1>::Impl::_generate_extra_nodes() {
+void SimulationAcFemFreqD3Tet<ElementOrder::O1>::Impl::_generate_extra_nodes() {
     // nothing needs to be done in this case (in order 1)
 }
 
 template<>
-void SimulationAcFemFreqD3<ElementOrder::O2>::Impl::_generate_extra_nodes()
+void SimulationAcFemFreqD3Tet<ElementOrder::O2>::Impl::_generate_extra_nodes()
 {
     constexpr std::array<
         std::array<size_t,2UL>, EXTRA_ENIV_COUNT<ElementOrder::O2>

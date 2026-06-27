@@ -12,6 +12,7 @@ int main()
         NumericalMethod::FEM,
         Domain::FREQUENCY,
         Dimension::D3,
+        ElementShape::TETRAHEDRON,
         ElementOrder::O1
     >();
 

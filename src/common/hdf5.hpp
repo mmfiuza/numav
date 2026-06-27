@@ -26,18 +26,9 @@ const H5std_string HDF5_DOMAIN = [] {
     if constexpr (D == Domain::FREQUENCY) {
         return "frequency";
     }
-    if constexpr (D == Domain::TIME) {
-        return "time";
-    }
 }();
 template<Dimension D>
 const H5std_string HDF5_DIMENSION = [] {
-    if constexpr (D == Dimension::D1) {
-        return "1d";
-    }
-    if constexpr (D == Dimension::D2) {
-        return "2d";
-    }
     if constexpr (D == Dimension::D3) {
         return "3d";
     }
