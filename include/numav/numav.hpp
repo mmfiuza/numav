@@ -10,28 +10,28 @@
 
 namespace numav {
 
-    enum class Phenomenon : size_t {
+    enum class Phenomenon : uint64_t {
         ACOUSTIC
     };
 
-    enum class NumericalMethod : size_t {
+    enum class NumericalMethod : uint64_t {
         FEM
     };
 
-    enum class Domain : size_t {
+    enum class Domain : uint64_t {
         FREQUENCY
     };
 
-    enum class Dimension : size_t {
+    enum class Dimension : uint64_t {
         D3
     };
 
-    enum class SourceType : size_t {
+    enum class SourceType : uint64_t {
         POINT,
         SURFACE
     };
 
-    enum class PhysicalQuantity : size_t {
+    enum class PhysicalQuantity : uint64_t {
         VOLUME_VELOCITY,
         PARTICLE_VELOCITY,
         PRESSURE,

@@ -97,7 +97,7 @@ get_stif_matrix_const_part<ElementOrder::O2>(
     const std::array<std::array<Float,3UL>,4UL> points = {{
         {a,a,a}, {b,a,a}, {a,b,a}, {a,a,b}
     }};
-    for (size_t gpi = 0UL; gpi != 4UL; ++gpi)
+    for (uint64_t gpi = 0UL; gpi != 4UL; ++gpi)
     {
         const Eigen::Matrix<Float, ENIV_COUNT<ElementOrder::O2>, DIM> 
             nabla_n = shape_func_vol_gradient<ElementOrder::O2>(

@@ -7,27 +7,27 @@
 
 namespace numav {
 
-template<ElementOrder O> constexpr size_t NGP_FORC = [] {
+template<ElementOrder O> constexpr uint64_t NGP_FORC = [] {
     if constexpr (O == ElementOrder::O1) { return 1UL; }
     if constexpr (O == ElementOrder::O2) { return 3UL; }
 }();
 
-template<ElementOrder O> constexpr size_t NGP_DAMP = [] {
+template<ElementOrder O> constexpr uint64_t NGP_DAMP = [] {
     if constexpr (O == ElementOrder::O1) { return 1UL; }
     if constexpr (O == ElementOrder::O2) { return 3UL; }
 }();
 
-template<ElementOrder O> constexpr size_t NGP_STIF = [] {
+template<ElementOrder O> constexpr uint64_t NGP_STIF = [] {
     if constexpr (O == ElementOrder::O1) { return 1UL; }
     if constexpr (O == ElementOrder::O2) { return 4UL; }
 }();
 
-template<ElementOrder O> constexpr size_t NGP_MASS = [] {
+template<ElementOrder O> constexpr uint64_t NGP_MASS = [] {
     if constexpr (O == ElementOrder::O1) { return 4UL;  }
     if constexpr (O == ElementOrder::O2) { return 15UL; }
 }();
 
-template<size_t N>
+template<uint64_t N>
 constexpr std::array<std::array<Float,2UL>,N> GAUSS_POINTS_SFC = [] {
     if constexpr (N == 1UL) {
         constexpr Float a = 1_F / 3_F;
@@ -42,7 +42,7 @@ constexpr std::array<std::array<Float,2UL>,N> GAUSS_POINTS_SFC = [] {
     }
 }();
 
-template<size_t N>
+template<uint64_t N>
 constexpr std::array<std::array<Float,3UL>,N> GAUSS_POINTS_VOL = [] {
     if constexpr (N == 1UL) {
         constexpr Float a = 1_F / 4_F;
@@ -93,7 +93,7 @@ constexpr std::array<std::array<Float,3UL>,N> GAUSS_POINTS_VOL = [] {
     }
 }();
 
-template<size_t N>
+template<uint64_t N>
 constexpr std::array<Float,N> GAUSS_WEIGHTS_SFC = [] {
     if constexpr (N == 1UL) {
         constexpr Float a = 1_F / 2_F;
@@ -105,7 +105,7 @@ constexpr std::array<Float,N> GAUSS_WEIGHTS_SFC = [] {
     }
 }();
 
-template<size_t N>
+template<uint64_t N>
 constexpr std::array<Float,N> GAUSS_WEIGHTS_VOL = [] {
     if constexpr (N == 1UL) {
         constexpr Float a = 1_F / 6_F;

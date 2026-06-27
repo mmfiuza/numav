@@ -13,23 +13,23 @@ void
 SimulationAcFemFreqD3Tet<O>::Impl::_define_sparsity_pattern_using_internal_solver()
 {
     // problem dimensions
-    const size_t nzi_count = _ni_connections.size();
+    const uint64_t nzi_count = _ni_connections.size();
     
     // create a_col_idx and a_row_idx
-    fz::SafePtr<size_t> a_row_idx(_ni_count + 1UL);
-    fz::SafePtr<size_t> a_col_idx(nzi_count);
-    size_t* it_a_row_idx = a_row_idx.begin();
-    size_t* it_a_col_idx = a_col_idx.begin();
+    fz::SafePtr<uint64_t> a_row_idx(_ni_count + 1UL);
+    fz::SafePtr<uint64_t> a_col_idx(nzi_count);
+    uint64_t* it_a_row_idx = a_row_idx.begin();
+    uint64_t* it_a_col_idx = a_col_idx.begin();
     auto it_ni_connections = _ni_connections.begin();
-    size_t current_ri = std::numeric_limits<size_t>::max();
-    for (size_t nzi = 0UL; nzi != nzi_count; ++nzi) {
+    uint64_t current_ri = std::numeric_limits<uint64_t>::max();
+    for (uint64_t nzi = 0UL; nzi != nzi_count; ++nzi) {
         *it_a_col_idx = it_ni_connections->second;
         ++it_a_col_idx;
         if (it_ni_connections->first != current_ri) {
-            const size_t previous_ri = current_ri;
+            const uint64_t previous_ri = current_ri;
             current_ri = it_ni_connections->first;
-            const size_t ri_increment = current_ri - previous_ri;
-            for (size_t i = 0UL; i != ri_increment; ++i) {
+            const uint64_t ri_increment = current_ri - previous_ri;
+            for (uint64_t i = 0UL; i != ri_increment; ++i) {
                 *it_a_row_idx = nzi;
                 ++it_a_row_idx;
             }
@@ -60,7 +60,7 @@ template <ElementOrder O>
 void SimulationAcFemFreqD3Tet<O>::Impl::_solve_using_internal_solver()
 {
     // dense b vector
-    for (size_t i = 0UL; i != _b_vals.size(); ++i) {
+    for (uint64_t i = 0UL; i != _b_vals.size(); ++i) {
         _b_dense[_b_row_idx[i]] = _b_vals[i];
     }
     

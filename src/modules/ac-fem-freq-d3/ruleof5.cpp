@@ -68,7 +68,7 @@ SimulationAcFemFreqD3Tet<O>::Impl::~Impl() {
         _a_vals.free();
         _b_row_idx.free();
         _b_vals.free();
-        for (size_t ivpg = 0UL; ivpg != _ivpg_count; ++ivpg) {
+        for (uint64_t ivpg = 0UL; ivpg != _ivpg_count; ++ivpg) {
             _ivpg_to_stif_fi_part[ivpg].free();
             _ivpg_to_mass_fi_part[ivpg].free();
             _ivpg_to_ptr_in_a[ivpg].free();
@@ -76,21 +76,21 @@ SimulationAcFemFreqD3Tet<O>::Impl::~Impl() {
         _ivpg_to_stif_fi_part.free();
         _ivpg_to_mass_fi_part.free();
         _ivpg_to_ptr_in_a.free();
-        for (size_t ispgi = 0UL; ispgi != _ispgi_count; ++ispgi) {
+        for (uint64_t ispgi = 0UL; ispgi != _ispgi_count; ++ispgi) {
             _ispgi_to_damp_fi_part[ispgi].free();
             _ispgi_to_ptr_in_a[ispgi].free();
         }
         _ispgi_to_damp_fi_part.free();
         _ispgi_to_ptr_in_a.free();
         _vpi_to_ptr_in_b.free();
-        for (size_t ispgv = 0UL; ispgv != _ispgv_count; ++ispgv) {
+        for (uint64_t ispgv = 0UL; ispgv != _ispgv_count; ++ispgv) {
             _ispgv_to_forc_fi_part[ispgv].free();
             _ispgv_to_ptr_in_b[ispgv].free();
         }
         _ispgv_to_forc_fi_part.free();
         _ispgv_to_ptr_in_b.free();
         _apvi_to_pressure.free();
-        for (size_t apvi = 0UL; apvi != _apvi_count; ++apvi) {
+        for (uint64_t apvi = 0UL; apvi != _apvi_count; ++apvi) {
             _apvi_to_ptr_in_a[apvi].free();
             _apvi_to_ptr_in_b[apvi].free();
         }

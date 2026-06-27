@@ -29,13 +29,13 @@ namespace numav::log {
     void print_start_time();
     void print_finish_time();
 
-    size_t start_progress_bar(
+    uint64_t start_progress_bar(
         std::unique_ptr<indicators::ProgressBar>& bar,
-        const size_t progress_max
+        const uint64_t progress_max
     );
     void increment_progress_bar(
         std::unique_ptr<indicators::ProgressBar>& bar,
-        size_t& bar_progress
+        uint64_t& bar_progress
     );
     void finish_progress_bar();
 

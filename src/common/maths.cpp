@@ -10,7 +10,7 @@
 namespace numav {
 
 fz::SafePtr<Float> linspace(
-    const Float start, const Float finish, const size_t num_points
+    const Float start, const Float finish, const uint64_t num_points
 ) {
     assert(num_points != 0UL && num_points != 1UL);
     fz::SafePtr<Float> result(num_points);
@@ -24,14 +24,14 @@ fz::SafePtr<Float> linspace(
 }
 
 fz::SafePtr<Float> cubspace(
-    const Float start, const Float finish, const size_t num_points
+    const Float start, const Float finish, const uint64_t num_points
 ) {
     assert(num_points != 0UL && num_points != 1UL);
     fz::SafePtr<Float> x = linspace(0_F, 1_F, num_points);
     const Float& a3 = power<3UL>(start);
     const Float& b3 = power<3UL>(finish);
     fz::SafePtr<Float> result(num_points);
-    for (size_t i = 0UL; i != num_points; ++i) {
+    for (uint64_t i = 0UL; i != num_points; ++i) {
         result[i] = std::pow(a3 + (b3 - a3) * x[i], 1_F/3_F);
     }
     x.free();

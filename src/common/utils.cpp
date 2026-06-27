@@ -8,7 +8,7 @@ namespace numav {
 
 void trim_right_whitespace(std::string_view& sv) {
     constexpr std::string_view WHITE_SPACE = " \t\n\r\f\v";
-    const size_t end = sv.find_last_not_of(WHITE_SPACE);
+    const uint64_t end = sv.find_last_not_of(WHITE_SPACE);
     sv = (end == std::string_view::npos) ? "" : sv.substr(0UL, end + 1UL);
 }
 
@@ -32,7 +32,7 @@ FuncFloatToCmplx table2func(
     }
 
     // first pass: count lines
-    size_t line_count = 0UL;
+    uint64_t line_count = 0UL;
     while (std::getline(file, line)) {
         ++line_count;
     }
@@ -47,7 +47,7 @@ FuncFloatToCmplx table2func(
     while (std::getline(file, line))
     {
         // read frequency
-        size_t first_comma_pos = line.find(',');
+        uint64_t first_comma_pos = line.find(',');
         if (first_comma_pos == std::string::npos) {
             continue; // malformed line is skipped
         }
@@ -58,7 +58,7 @@ FuncFloatToCmplx table2func(
         real_vec.push_back(col1);
         
         // read real part of complex vector
-        size_t second_comma_pos = line.find(',', first_comma_pos + 1UL);
+        uint64_t second_comma_pos = line.find(',', first_comma_pos + 1UL);
         if (second_comma_pos == std::string::npos) {
             continue; // malformed line is skipped
         }

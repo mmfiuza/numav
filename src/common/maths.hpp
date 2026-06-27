@@ -13,11 +13,11 @@
 namespace numav {
 
 fz::SafePtr<Float> linspace(
-    const Float start, const Float finish, const size_t num_points
+    const Float start, const Float finish, const uint64_t num_points
 );
 
 fz::SafePtr<Float> cubspace(
-    const Float start, const Float finish, const size_t num_points
+    const Float start, const Float finish, const uint64_t num_points
 );
 
 Float get_triangle_area(
@@ -33,15 +33,15 @@ auto mean(const T... args) {
     return (args + ...) / (sizeof...(args));
 }
 
-template<size_t N> constexpr size_t FACTORIAL = [] {
-    size_t result = 1UL;
-    for (size_t i = 2UL; i <= N; ++i) {
+template<uint64_t N> constexpr uint64_t FACTORIAL = [] {
+    uint64_t result = 1UL;
+    for (uint64_t i = 2UL; i <= N; ++i) {
         result *= i;
     }
     return result;
 }();
 
-template<size_t K, typename T>
+template<uint64_t K, typename T>
 constexpr T power(T N) {
     if constexpr (K == 0) {
         return T(1);
@@ -57,7 +57,7 @@ constexpr T power(T N) {
 constexpr Float SQRT(const Float X) {
     Float low_bound = 0;
     Float high_bound = (X > 1) ? X : 1;
-    for (size_t i = 0UL; i != 100UL; ++i)
+    for (uint64_t i = 0UL; i != 100UL; ++i)
     {
         Float mid = (low_bound + high_bound) / 2_F;
         if (mid * mid > X) {
@@ -70,31 +70,31 @@ constexpr Float SQRT(const Float X) {
     return low_bound;
 };
 
-template<auto X, size_t N>
+template<auto X, uint64_t N>
 constexpr auto POWER = [] {
     using T = decltype(X);
     T result = T(1);
-    for (size_t i = 0UL; i != N; ++i) {
+    for (uint64_t i = 0UL; i != N; ++i) {
         result *= X;
     }
     return result;
 }();
 
-template<size_t N, size_t K>
-constexpr size_t PERMUTATION_REP_SIZE = [] {
+template<uint64_t N, uint64_t K>
+constexpr uint64_t PERMUTATION_REP_SIZE = [] {
     // combination with repetition
     return POWER<N,K>;
 }();
 
-template<size_t N>
-constexpr std::array<std::array<size_t,2UL>, PERMUTATION_REP_SIZE<N,2UL>> 
+template<uint64_t N>
+constexpr std::array<std::array<uint64_t,2UL>, PERMUTATION_REP_SIZE<N,2UL>> 
 PERMUTATION_REP = [] { // todo: generalize for K!=2 (maybe)
-    constexpr size_t K = 2UL;
+    constexpr uint64_t K = 2UL;
     // combination with repetition in upper column major order
-    std::array<std::array<size_t,K>, PERMUTATION_REP_SIZE<N,K>> result;
+    std::array<std::array<uint64_t,K>, PERMUTATION_REP_SIZE<N,K>> result;
     auto it_result = result.begin();
-    for (size_t j = 0UL; j != N; ++j) {
-        for (size_t i = 0UL; i != N; ++i) {
+    for (uint64_t j = 0UL; j != N; ++j) {
+        for (uint64_t i = 0UL; i != N; ++i) {
             *it_result = {i, j};
             ++it_result;
         }
@@ -102,20 +102,20 @@ PERMUTATION_REP = [] { // todo: generalize for K!=2 (maybe)
     return result;
 }();
 
-template<size_t N, size_t K> constexpr size_t COMBINATION_REP_SIZE = [] {
+template<uint64_t N, uint64_t K> constexpr uint64_t COMBINATION_REP_SIZE = [] {
     // combination with repetition
     return FACTORIAL<N+K-1UL> / (FACTORIAL<K> * FACTORIAL<N-1UL>);
 }();
 
-template<size_t N>
-constexpr std::array<std::array<size_t,2UL>, COMBINATION_REP_SIZE<N,2UL>> 
+template<uint64_t N>
+constexpr std::array<std::array<uint64_t,2UL>, COMBINATION_REP_SIZE<N,2UL>> 
 COMBINATION_REP = [] { // todo: generalize for K!=2 (maybe)
-    constexpr size_t K = 2UL;
+    constexpr uint64_t K = 2UL;
     // combination with repetition in upper column major order
-    std::array<std::array<size_t,K>, COMBINATION_REP_SIZE<N,K>> result;
+    std::array<std::array<uint64_t,K>, COMBINATION_REP_SIZE<N,K>> result;
     auto it_result = result.begin();
-    for (size_t j = 0UL; j != N; ++j) {
-        for (size_t i = 0UL; i != j+1UL; ++i) {
+    for (uint64_t j = 0UL; j != N; ++j) {
+        for (uint64_t i = 0UL; i != j+1UL; ++i) {
             *it_result = {i, j};
             ++it_result;
         }

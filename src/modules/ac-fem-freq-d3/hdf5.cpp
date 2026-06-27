@@ -153,8 +153,8 @@ void SimulationAcFemFreqD3Tet<O>::Impl::_write_simulation_inputs_to_hdf5_file(
     H5::Group vol_mat_grp = inputs_grp.createGroup("volume_materials");
     {   // physical_groups
         fz::SafePtr<uint64_t> _ivpg_to_evpg(_ivpg_count);
-        for (size_t ivpg = 0UL; ivpg != _ivpg_count; ++ivpg) {
-            const size_t evpg = _evpg_ivpg_bimap.right.at(ivpg);
+        for (uint64_t ivpg = 0UL; ivpg != _ivpg_count; ++ivpg) {
+            const uint64_t evpg = _evpg_ivpg_bimap.right.at(ivpg);
             _ivpg_to_evpg[ivpg] = evpg;
         }
         H5::DataSet dataset = write_dataset_uint64_1d(
@@ -169,8 +169,8 @@ void SimulationAcFemFreqD3Tet<O>::Impl::_write_simulation_inputs_to_hdf5_file(
     }
     {   // density
         fz::SafePtr<Cmplx> density(_ivpg_count * _fi_count);
-        for (size_t ivpg = 0UL; ivpg != _ivpg_count; ++ivpg) {
-            for (size_t fi = 0UL; fi != _fi_count; ++fi) {
+        for (uint64_t ivpg = 0UL; ivpg != _ivpg_count; ++ivpg) {
+            for (uint64_t fi = 0UL; fi != _fi_count; ++fi) {
                 const Float freq = _fi_to_freq[fi];
                 density[ivpg*_fi_count + fi] = 
                     (_ivpg_to_volprop[ivpg].density)(freq);
@@ -193,8 +193,8 @@ void SimulationAcFemFreqD3Tet<O>::Impl::_write_simulation_inputs_to_hdf5_file(
     }
     {   // sound_speed
         fz::SafePtr<Cmplx> soundspeed(_ivpg_count * _fi_count);
-        for (size_t ivpg = 0UL; ivpg != _ivpg_count; ++ivpg) {
-            for (size_t fi = 0UL; fi != _fi_count; ++fi) {
+        for (uint64_t ivpg = 0UL; ivpg != _ivpg_count; ++ivpg) {
+            for (uint64_t fi = 0UL; fi != _fi_count; ++fi) {
                 const Float freq = _fi_to_freq[fi];
                 soundspeed[ivpg*_fi_count + fi] = 
                     (_ivpg_to_volprop[ivpg].soundspeed)(freq);
@@ -220,8 +220,8 @@ void SimulationAcFemFreqD3Tet<O>::Impl::_write_simulation_inputs_to_hdf5_file(
     H5::Group sfc_mat_grp = inputs_grp.createGroup("surface_materials");
     {   // physical_groups
         fz::SafePtr<uint64_t> _ispgi_to_espg(_ispgi_count);
-        for (size_t ispgi = 0UL; ispgi != _ispgi_count; ++ispgi) {
-            const size_t espg = _espg_ispgi_bimap.right.at(ispgi);
+        for (uint64_t ispgi = 0UL; ispgi != _ispgi_count; ++ispgi) {
+            const uint64_t espg = _espg_ispgi_bimap.right.at(ispgi);
             _ispgi_to_espg[ispgi] = espg;
         }
         H5::DataSet dataset = write_dataset_uint64_1d(
@@ -236,8 +236,8 @@ void SimulationAcFemFreqD3Tet<O>::Impl::_write_simulation_inputs_to_hdf5_file(
     }
     {   // impedance
         fz::SafePtr<Cmplx> impedance(_ispgi_count * _fi_count);
-        for (size_t ispgi = 0UL; ispgi != _ispgi_count; ++ispgi) {
-            for (size_t fi = 0UL; fi != _fi_count; ++fi) {
+        for (uint64_t ispgi = 0UL; ispgi != _ispgi_count; ++ispgi) {
+            for (uint64_t fi = 0UL; fi != _fi_count; ++fi) {
                 const Float freq = _fi_to_freq[fi];
                 impedance[ispgi*_fi_count + fi] = 
                     (_ispgi_to_impedance[ispgi])(freq);
@@ -276,8 +276,8 @@ void SimulationAcFemFreqD3Tet<O>::Impl::_write_simulation_inputs_to_hdf5_file(
     }
     {   // point volume_velocity 
         fz::SafePtr<Cmplx> volvel(_vpi_count * _fi_count);
-        for (size_t vpi = 0UL; vpi != _vpi_count; ++vpi) {
-            for (size_t fi = 0UL; fi != _fi_count; ++fi) {
+        for (uint64_t vpi = 0UL; vpi != _vpi_count; ++vpi) {
+            for (uint64_t fi = 0UL; fi != _fi_count; ++fi) {
                 const Float freq = _fi_to_freq[fi];
                 volvel[vpi*_fi_count + fi] = (_vpi_to_volvel[vpi])(freq);
             }
@@ -311,8 +311,8 @@ void SimulationAcFemFreqD3Tet<O>::Impl::_write_simulation_inputs_to_hdf5_file(
     }
     {   // point pressure
         fz::SafePtr<Cmplx> pressure(_ppi_count * _fi_count);
-        for (size_t ppi = 0UL; ppi != _ppi_count; ++ppi) {
-            for (size_t fi = 0UL; fi != _fi_count; ++fi) {
+        for (uint64_t ppi = 0UL; ppi != _ppi_count; ++ppi) {
+            for (uint64_t fi = 0UL; fi != _fi_count; ++fi) {
                 const Float freq = _fi_to_freq[fi];
                 pressure[ppi*_fi_count + fi] = (_ppi_to_pressure[ppi])(freq);
             }
@@ -337,7 +337,7 @@ void SimulationAcFemFreqD3Tet<O>::Impl::_write_simulation_inputs_to_hdf5_file(
     H5::Group sfc_velocity_grp = sfc_src_grp.createGroup("particle_velocity");
     {   // surface physical_groups
         fz::SafePtr<uint64_t> ispgv_to_espg(_ispgv_count);
-        for (size_t ispgv = 0UL; ispgv != _ispgv_count; ++ispgv) {
+        for (uint64_t ispgv = 0UL; ispgv != _ispgv_count; ++ispgv) {
             ispgv_to_espg[ispgv] = _espg_ispgv_bimap.right.at(ispgv);
         }
         H5::DataSet dataset = write_dataset_uint64_1d(
@@ -352,8 +352,8 @@ void SimulationAcFemFreqD3Tet<O>::Impl::_write_simulation_inputs_to_hdf5_file(
     }
     {   // surface particle_velocity 
         fz::SafePtr<Cmplx> vel(_ispgv_count * _fi_count);
-        for (size_t ispgv = 0UL; ispgv != _ispgv_count; ++ispgv) {
-            for (size_t fi = 0UL; fi != _fi_count; ++fi) {
+        for (uint64_t ispgv = 0UL; ispgv != _ispgv_count; ++ispgv) {
+            for (uint64_t fi = 0UL; fi != _fi_count; ++fi) {
                 const Float freq = _fi_to_freq[fi];
                 vel[ispgv*_fi_count + fi] = (_ispgv_to_velocity[ispgv])(freq);
             }
@@ -376,7 +376,7 @@ void SimulationAcFemFreqD3Tet<O>::Impl::_write_simulation_inputs_to_hdf5_file(
     H5::Group sfc_pressure_grp = sfc_src_grp.createGroup("pressure");
     {   // surface physical_groups
         fz::SafePtr<uint64_t> ispgp_to_espg(_ispgp_count);
-        for (size_t ispgp = 0UL; ispgp != _ispgp_count; ++ispgp) {
+        for (uint64_t ispgp = 0UL; ispgp != _ispgp_count; ++ispgp) {
             ispgp_to_espg[ispgp] = _espg_ispgp_bimap.right.at(ispgp);
         }
         H5::DataSet dataset = write_dataset_uint64_1d(
@@ -391,8 +391,8 @@ void SimulationAcFemFreqD3Tet<O>::Impl::_write_simulation_inputs_to_hdf5_file(
     }
     {   // surface pressure 
         fz::SafePtr<Cmplx> pres(_ispgp_count * _fi_count);
-        for (size_t ispgp = 0UL; ispgp != _ispgp_count; ++ispgp) {
-            for (size_t fi = 0UL; fi != _fi_count; ++fi) {
+        for (uint64_t ispgp = 0UL; ispgp != _ispgp_count; ++ispgp) {
+            for (uint64_t fi = 0UL; fi != _fi_count; ++fi) {
                 const Float freq = _fi_to_freq[fi];
                 pres[ispgp*_fi_count + fi] = (_ispgp_to_pressure[ispgp])(freq);
             }
@@ -417,7 +417,7 @@ void SimulationAcFemFreqD3Tet<O>::Impl::_write_simulation_inputs_to_hdf5_file(
 template<ElementOrder O>
 void SimulationAcFemFreqD3Tet<O>::Impl::_write_solution_for_one_freq(
     H5::DataSet& pressure_dataset,
-    const size_t fi
+    const uint64_t fi
 ) {
     H5::CompType cmplx_type = get_hdf5_cmplx_type();
     const hsize_t row_size[2UL] = { 1UL, _ni_count };

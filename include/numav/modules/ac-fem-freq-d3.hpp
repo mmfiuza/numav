@@ -4,16 +4,16 @@
 
 namespace numav {
 
-enum class ElementShape : size_t {
+enum class ElementShape : uint64_t {
     TETRAHEDRON
 };
 
-enum class ElementOrder : size_t {
+enum class ElementOrder : uint64_t {
     O1,
     O2
 };
 
-enum class FrequencySamplingDensity : size_t {
+enum class FrequencySamplingDensity : uint64_t {
     CONSTANT,
     QUADRATIC
 };
@@ -28,7 +28,7 @@ enum class FrequencySamplingDensity : size_t {
         const Float, const Float\
     )\
     NUMAV_PUBLIC_METHOD(set_frequency_steps_count,\
-        const size_t\
+        const uint64_t\
     )\
     NUMAV_PUBLIC_METHOD(set_frequency_sampling_density,\
         const FrequencySamplingDensity\
@@ -40,40 +40,40 @@ enum class FrequencySamplingDensity : size_t {
         const char* const\
     )\
     NUMAV_PUBLIC_METHOD(add_volume_material,\
-        const size_t, const FuncFloatToCmplx&, const FuncFloatToCmplx&\
+        const uint64_t, const FuncFloatToCmplx&, const FuncFloatToCmplx&\
     )\
     NUMAV_PUBLIC_METHOD(add_volume_material,\
-        const size_t, const FuncFloatToCmplx&, const Cmplx\
+        const uint64_t, const FuncFloatToCmplx&, const Cmplx\
     )\
     NUMAV_PUBLIC_METHOD(add_volume_material,\
-        const size_t, const FuncFloatToCmplx&, const char* const\
+        const uint64_t, const FuncFloatToCmplx&, const char* const\
     )\
     NUMAV_PUBLIC_METHOD(add_volume_material,\
-        const size_t, const Cmplx, const FuncFloatToCmplx&\
+        const uint64_t, const Cmplx, const FuncFloatToCmplx&\
     )\
     NUMAV_PUBLIC_METHOD(add_volume_material,\
-        const size_t, const Cmplx, const Cmplx\
+        const uint64_t, const Cmplx, const Cmplx\
     )\
     NUMAV_PUBLIC_METHOD(add_volume_material,\
-        const size_t, const Cmplx, const char* const\
+        const uint64_t, const Cmplx, const char* const\
     )\
     NUMAV_PUBLIC_METHOD(add_volume_material,\
-        const size_t, const char* const, const FuncFloatToCmplx&\
+        const uint64_t, const char* const, const FuncFloatToCmplx&\
     )\
     NUMAV_PUBLIC_METHOD(add_volume_material,\
-        const size_t, const char* const, const Cmplx\
+        const uint64_t, const char* const, const Cmplx\
     )\
     NUMAV_PUBLIC_METHOD(add_volume_material,\
-        const size_t, const char* const, const char* const\
+        const uint64_t, const char* const, const char* const\
     )\
     NUMAV_PUBLIC_METHOD(add_surface_material,\
-        const size_t, const PhysicalQuantity, const FuncFloatToCmplx&\
+        const uint64_t, const PhysicalQuantity, const FuncFloatToCmplx&\
     )\
     NUMAV_PUBLIC_METHOD(add_surface_material,\
-        const size_t, const PhysicalQuantity, const Cmplx\
+        const uint64_t, const PhysicalQuantity, const Cmplx\
     )\
     NUMAV_PUBLIC_METHOD(add_surface_material,\
-        const size_t, const PhysicalQuantity, const char* const\
+        const uint64_t, const PhysicalQuantity, const char* const\
     )\
     NUMAV_PUBLIC_METHOD(add_sound_source,\
         const SourceType, const Coord,\
@@ -88,15 +88,15 @@ enum class FrequencySamplingDensity : size_t {
         const PhysicalQuantity, const char* const\
     )\
     NUMAV_PUBLIC_METHOD(add_sound_source,\
-        const SourceType, const size_t,\
+        const SourceType, const uint64_t,\
         const PhysicalQuantity, const FuncFloatToCmplx&\
     )\
     NUMAV_PUBLIC_METHOD(add_sound_source,\
-        const SourceType, const size_t,\
+        const SourceType, const uint64_t,\
         const PhysicalQuantity, const Cmplx\
     )\
     NUMAV_PUBLIC_METHOD(add_sound_source,\
-        const SourceType, const size_t,\
+        const SourceType, const uint64_t,\
         const PhysicalQuantity, const char* const\
     )\
     NUMAV_PUBLIC_METHOD(add_receiver,\

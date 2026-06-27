@@ -25,7 +25,7 @@ void SimulationAcFemFreqD3Tet<O>::Impl::_check_if_did_run() {
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3Tet<O>::Impl::_validate_espg(const size_t espg) {
+void SimulationAcFemFreqD3Tet<O>::Impl::_validate_espg(const uint64_t espg) {
     if (!(_existing_espg.count(espg) > 0)) {
         error("Physical group {} not found in mesh file.", espg);
     }
@@ -80,7 +80,7 @@ void SimulationAcFemFreqD3Tet<O>::Impl::set_frequency_range(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3Tet<O>::Impl::set_frequency_steps_count(
-    const size_t freq_steps_count
+    const uint64_t freq_steps_count
 ) {
     _check_if_did_run();
     if (_freq_type_defined_by_user == _FreqTypeDefinedByUser::UNDEFINED) {
@@ -120,7 +120,7 @@ void SimulationAcFemFreqD3Tet<O>::Impl::set_frequency_steps(
     _freq_min = freq_steps.front();
     _freq_max = freq_steps.back();
     _fi_to_freq = fz::SafePtr<Float>(_fi_count);
-    for (size_t i = 0UL; i != _fi_count; ++i) {
+    for (uint64_t i = 0UL; i != _fi_count; ++i) {
         _fi_to_freq[i] = freq_steps[i];
     }
     _freq_type_defined_by_user = _FreqTypeDefinedByUser::STEPS;
@@ -139,8 +139,8 @@ void SimulationAcFemFreqD3Tet<O>::Impl::load_mesh(
         _load_bdf(path_to_mesh);
     }
     else {
-        const size_t dot_position = str.find_last_of('.');
-        const size_t format_len = str.size() - dot_position;
+        const uint64_t dot_position = str.find_last_of('.');
+        const uint64_t format_len = str.size() - dot_position;
         const std::string format = std::string(
             str.substr(dot_position, format_len)
         );
@@ -152,7 +152,7 @@ void SimulationAcFemFreqD3Tet<O>::Impl::load_mesh(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3Tet<O>::Impl::add_volume_material(
-    const size_t evpg,
+    const uint64_t evpg,
     const FuncFloatToCmplx& density,
     const FuncFloatToCmplx& soundspeed
 ) {
@@ -164,14 +164,14 @@ void SimulationAcFemFreqD3Tet<O>::Impl::add_volume_material(
     if (_evpg_ivpg_bimap.left.count(evpg) > 0) {
         error("Physical group {} already assigned.", evpg);
     }
-    const size_t ivpg = _ivpg_count;
+    const uint64_t ivpg = _ivpg_count;
     ++_ivpg_count;
     _evpg_ivpg_bimap.insert({evpg, ivpg});
     _ivpg_to_volprop.emplace_back(density, soundspeed);
 }
 template <ElementOrder O>
 void SimulationAcFemFreqD3Tet<O>::Impl::add_volume_material(
-    const size_t evpg,
+    const uint64_t evpg,
     const FuncFloatToCmplx& density,
     const Cmplx soundspeed
 ) {
@@ -179,7 +179,7 @@ void SimulationAcFemFreqD3Tet<O>::Impl::add_volume_material(
 }
 template <ElementOrder O>
 void SimulationAcFemFreqD3Tet<O>::Impl::add_volume_material(
-    const size_t evpg,
+    const uint64_t evpg,
     const FuncFloatToCmplx& density,
     const char* const soundspeed
 ) {
@@ -187,7 +187,7 @@ void SimulationAcFemFreqD3Tet<O>::Impl::add_volume_material(
 }
 template <ElementOrder O>
 void SimulationAcFemFreqD3Tet<O>::Impl::add_volume_material(
-    const size_t evpg,
+    const uint64_t evpg,
     const Cmplx density,
     const FuncFloatToCmplx& soundspeed
 ) {
@@ -195,7 +195,7 @@ void SimulationAcFemFreqD3Tet<O>::Impl::add_volume_material(
 }
 template <ElementOrder O>
 void SimulationAcFemFreqD3Tet<O>::Impl::add_volume_material(
-    const size_t evpg,
+    const uint64_t evpg,
     const Cmplx density,
     const Cmplx soundspeed
 ) {
@@ -203,7 +203,7 @@ void SimulationAcFemFreqD3Tet<O>::Impl::add_volume_material(
 }
 template <ElementOrder O>
 void SimulationAcFemFreqD3Tet<O>::Impl::add_volume_material(
-    const size_t evpg,
+    const uint64_t evpg,
     const Cmplx density,
     const char* const soundspeed
 ) {
@@ -211,7 +211,7 @@ void SimulationAcFemFreqD3Tet<O>::Impl::add_volume_material(
 }
 template <ElementOrder O>
 void SimulationAcFemFreqD3Tet<O>::Impl::add_volume_material(
-    const size_t evpg,
+    const uint64_t evpg,
     const char* const density,
     const FuncFloatToCmplx& soundspeed
 ) {
@@ -219,7 +219,7 @@ void SimulationAcFemFreqD3Tet<O>::Impl::add_volume_material(
 }
 template <ElementOrder O>
 void SimulationAcFemFreqD3Tet<O>::Impl::add_volume_material(
-    const size_t evpg,
+    const uint64_t evpg,
     const char* const density,
     const Cmplx soundspeed
 ) {
@@ -227,7 +227,7 @@ void SimulationAcFemFreqD3Tet<O>::Impl::add_volume_material(
 }
 template <ElementOrder O>
 void SimulationAcFemFreqD3Tet<O>::Impl::add_volume_material(
-    const size_t evpg,
+    const uint64_t evpg,
     const char* const density,
     const char* const soundspeed
 ) {
@@ -236,7 +236,7 @@ void SimulationAcFemFreqD3Tet<O>::Impl::add_volume_material(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3Tet<O>::Impl::add_surface_material(
-    const size_t espg,
+    const uint64_t espg,
     const PhysicalQuantity pq,
     const FuncFloatToCmplx& pqv
 ) {
@@ -246,7 +246,7 @@ void SimulationAcFemFreqD3Tet<O>::Impl::add_surface_material(
     if (pq != PhysicalQuantity::IMPEDANCE) {
         error("Possible physical quantity type is only impedance");
     }
-    const size_t ispgi = _ispgi_count;
+    const uint64_t ispgi = _ispgi_count;
     ++_ispgi_count;
     _espg_ispgi_bimap.insert({espg, ispgi});
     _ispgi_to_impedance.emplace_back(pqv);
@@ -254,7 +254,7 @@ void SimulationAcFemFreqD3Tet<O>::Impl::add_surface_material(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3Tet<O>::Impl::add_surface_material(
-    const size_t espg,
+    const uint64_t espg,
     const PhysicalQuantity pq,
     const Cmplx pqv
 ) {
@@ -263,7 +263,7 @@ void SimulationAcFemFreqD3Tet<O>::Impl::add_surface_material(
 
 template <ElementOrder O>
 void SimulationAcFemFreqD3Tet<O>::Impl::add_surface_material(
-    const size_t espg,
+    const uint64_t espg,
     const PhysicalQuantity pq,
     const char* const pqv
 ) {
@@ -283,7 +283,7 @@ void SimulationAcFemFreqD3Tet<O>::Impl::add_sound_source(
     if (source_type != SourceType::POINT) {
         error("Tried to assign coordinates to a surface sound source.");
     }
-    const size_t closest_ni = _get_closest_point(point_coords);
+    const uint64_t closest_ni = _get_closest_point(point_coords);
     
     if (pq == PhysicalQuantity::VOLUME_VELOCITY) {
         _vpi_to_ni.emplace_back(closest_ni);
@@ -323,7 +323,7 @@ void SimulationAcFemFreqD3Tet<O>::Impl::add_sound_source(
 template <ElementOrder O>
 void SimulationAcFemFreqD3Tet<O>::Impl::add_sound_source(
     const SourceType source_type,
-    const size_t espg,
+    const uint64_t espg,
     const PhysicalQuantity pq,
     const FuncFloatToCmplx& pqv
 ) {
@@ -335,13 +335,13 @@ void SimulationAcFemFreqD3Tet<O>::Impl::add_sound_source(
     }
     
     if (pq == PhysicalQuantity::PARTICLE_VELOCITY) {
-        const size_t ispgv = _ispgv_count;
+        const uint64_t ispgv = _ispgv_count;
         ++_ispgv_count;
         _espg_ispgv_bimap.insert({espg, ispgv});
         _ispgv_to_velocity.emplace_back(pqv);
     }
     else if (pq == PhysicalQuantity::PRESSURE) {
-        const size_t ispgp = _ispgp_count;
+        const uint64_t ispgp = _ispgp_count;
         ++_ispgp_count;
         _espg_ispgp_bimap.insert({espg, ispgp});
         _ispgp_to_pressure.emplace_back(pqv);
@@ -355,7 +355,7 @@ void SimulationAcFemFreqD3Tet<O>::Impl::add_sound_source(
 template <ElementOrder O>
 void SimulationAcFemFreqD3Tet<O>::Impl::add_sound_source(
     const SourceType source_type,
-    const size_t espg,
+    const uint64_t espg,
     const PhysicalQuantity pq,
     const Cmplx pqv
 ) {
@@ -364,7 +364,7 @@ void SimulationAcFemFreqD3Tet<O>::Impl::add_sound_source(
 template <ElementOrder O>
 void SimulationAcFemFreqD3Tet<O>::Impl::add_sound_source(
     const SourceType source_type,
-    const size_t espg,
+    const uint64_t espg,
     const PhysicalQuantity pq,
     const char* const pqv
 ) {

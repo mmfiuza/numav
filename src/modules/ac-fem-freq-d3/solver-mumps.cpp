@@ -24,10 +24,10 @@ void
 SimulationAcFemFreqD3Tet<O>::Impl::_define_sparsity_pattern_using_mumps_solver()
 {
     // generate _a_row_idx and _a_col_idx
-    const size_t nzi_count = _ni_connections.size();
+    const uint64_t nzi_count = _ni_connections.size();
     _a_row_idx = fz::SafePtr<MUMPS_INT>(nzi_count);
     _a_col_idx = fz::SafePtr<MUMPS_INT>(nzi_count);
-    for (size_t nzi = 0UL; nzi != _ni_connections.size(); ++nzi) {
+    for (uint64_t nzi = 0UL; nzi != _ni_connections.size(); ++nzi) {
         _a_row_idx[nzi] = static_cast<MUMPS_INT>(
             _ni_connections[nzi].first + 1UL
         );
@@ -83,7 +83,7 @@ void SimulationAcFemFreqD3Tet<O>::Impl::_solve_using_mumps_solver()
 
     // dense b vector
     _b_dense.fill(Cmplx(0_F, 0_F));
-    for (size_t nzi = 0UL; nzi != _b_vals.size(); ++nzi) {
+    for (uint64_t nzi = 0UL; nzi != _b_vals.size(); ++nzi) {
         _b_dense[_b_row_idx[nzi]] = _b_vals[nzi];
     }
 
@@ -95,7 +95,7 @@ void SimulationAcFemFreqD3Tet<O>::Impl::_solve_using_mumps_solver()
     }
 
     // copy solution
-    for (size_t ni = 0UL; ni != _ni_count; ++ni) {
+    for (uint64_t ni = 0UL; ni != _ni_count; ++ni) {
         _x[ni] = _b_dense[ni];
     }
 }

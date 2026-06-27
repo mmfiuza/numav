@@ -12,14 +12,14 @@ void
 SimulationAcFemFreqD3Tet<O>::Impl::_define_sparsity_pattern_using_eigen_solver()
 {
     // rewrite A matrix in CSC form
-    const size_t nz_count = _ni_connections.size();
+    const uint64_t nz_count = _ni_connections.size();
     _a_row_idx = fz::SafePtr<Eigen::Index>(nz_count);
     _a_col_idx = fz::SafePtr<Eigen::Index>(_ni_count + 1UL);
     Eigen::Index* it_a_row_idx = _a_row_idx.begin();
     Eigen::Index* it_a_col_idx = _a_col_idx.begin();
     auto it_ni_connections = _ni_connections.begin();
-    size_t current_col = std::numeric_limits<size_t>::max();
-    for (size_t nzi = 0UL; nzi != nz_count; ++nzi) {
+    uint64_t current_col = std::numeric_limits<uint64_t>::max();
+    for (uint64_t nzi = 0UL; nzi != nz_count; ++nzi) {
         *it_a_row_idx = it_ni_connections->first;
         ++it_a_row_idx;
         if (it_ni_connections->second != current_col) {
@@ -45,7 +45,7 @@ SimulationAcFemFreqD3Tet<O>::Impl::_define_sparsity_pattern_using_eigen_solver()
     _b_col_idx_signed[0UL] = static_cast<Eigen::Index>(0);
     _b_col_idx_signed[1UL] = static_cast<Eigen::Index>(_b_vals.size());
     _b_row_idx_signed = fz::SafePtr<Eigen::Index>(_b_row_idx.size());
-    for (size_t i = 0UL; i != _b_row_idx.size(); ++i) {
+    for (uint64_t i = 0UL; i != _b_row_idx.size(); ++i) {
         _b_row_idx_signed[i] = static_cast<Eigen::Index>(_b_row_idx[i]);
     }
     _b_eigen.emplace(

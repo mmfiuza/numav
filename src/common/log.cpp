@@ -52,9 +52,9 @@ namespace numav::log {
             "\n";
     }
 
-    size_t start_progress_bar(
+    uint64_t start_progress_bar(
         std::unique_ptr<indicators::ProgressBar>& bar,
-        const size_t progress_max
+        const uint64_t progress_max
     ) {
         indicators::show_console_cursor(false);
         bar = std::make_unique<indicators::ProgressBar>(
@@ -75,14 +75,14 @@ namespace numav::log {
             indicators::option::MinProgress{0UL},
             indicators::option::MaxProgress{progress_max}
         );
-        size_t progress = 0UL;
+        uint64_t progress = 0UL;
         bar->set_progress(progress);
         return progress;
     }
 
     void increment_progress_bar(
         std::unique_ptr<indicators::ProgressBar>& bar,
-        size_t& bar_progress
+        uint64_t& bar_progress
     ) {
         ++bar_progress;
         bar->set_progress(bar_progress);

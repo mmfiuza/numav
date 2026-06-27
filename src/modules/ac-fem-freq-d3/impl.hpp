@@ -39,10 +39,10 @@ public:
 private:
     void _load_bdf(const char* const path);
     void _generate_extra_nodes();
-    size_t _get_closest_point(const std::array<Float,3UL> point_coords);
+    uint64_t _get_closest_point(const std::array<Float,3UL> point_coords);
     void _check_if_mesh_is_defined();
     void _check_if_did_run();
-    void _validate_espg(const size_t espg);
+    void _validate_espg(const uint64_t espg);
     void _check_if_it_can_run();
     void _define_freq_vector();
     void _organize_volume_physical_group_data();
@@ -63,7 +63,7 @@ private:
     void _post_process();
     H5::DataSet _begin_hdf5_file();
     void _write_simulation_inputs_to_hdf5_file();
-    void _write_solution_for_one_freq(H5::DataSet& ds, const size_t fi);
+    void _write_solution_for_one_freq(H5::DataSet& ds, const uint64_t fi);
     void _clear_data_not_used_in_freq_iterations();
     #if NUMAV_SYSTEM_SOLVER == NUMAV_INTERNAL
         void _define_sparsity_pattern_using_internal_solver();
@@ -81,7 +81,7 @@ private:
         void _terminate_mumps_solver();
     #endif
 
-    enum class _FreqTypeDefinedByUser : size_t {
+    enum class _FreqTypeDefinedByUser : uint64_t {
         UNDEFINED,
         MAXIMUM,
         RANGE,
@@ -96,13 +96,13 @@ private:
 
     H5::H5File _hdf5_file;
 
-    std::unordered_set<size_t> _existing_evpg;
-    std::unordered_set<size_t> _existing_espg;
+    std::unordered_set<uint64_t> _existing_evpg;
+    std::unordered_set<uint64_t> _existing_espg;
 
-    boost::bimap<size_t, size_t> _evpg_ivpg_bimap;
-    boost::bimap<size_t, size_t> _espg_ispgi_bimap;
-    boost::bimap<size_t, size_t> _espg_ispgv_bimap;
-    boost::bimap<size_t, size_t> _espg_ispgp_bimap;
+    boost::bimap<uint64_t, uint64_t> _evpg_ivpg_bimap;
+    boost::bimap<uint64_t, uint64_t> _espg_ispgi_bimap;
+    boost::bimap<uint64_t, uint64_t> _espg_ispgv_bimap;
+    boost::bimap<uint64_t, uint64_t> _espg_ispgp_bimap;
 
     std::vector<_VolProp> _ivpg_to_volprop;
     std::vector<FuncFloatToCmplx> _ispgi_to_impedance;
@@ -111,29 +111,29 @@ private:
 
     std::string _hdf5_file_path;
 
-    std::vector<size_t> _vpi_to_ni;
+    std::vector<uint64_t> _vpi_to_ni;
     std::vector<FuncFloatToCmplx> _vpi_to_volvel;
-    std::vector<size_t> _ppi_to_ni;
+    std::vector<uint64_t> _ppi_to_ni;
     std::vector<FuncFloatToCmplx> _ppi_to_pressure;
 
     std::vector<std::array<Float, DIM>> _receiver_points;
 
     // members allocated during mesh load
     fz::SafePtr<std::array<Float, DIM>> _ni_to_coords;
-    fz::SafePtr<std::array<size_t, ENIS_COUNT<O>>> _sei_to_ni;
-    fz::SafePtr<std::array<size_t, ENIV_COUNT<O>>> _vei_to_ni;
-    fz::SafePtr<size_t> _sei_to_espg;
-    fz::SafePtr<size_t> _vei_to_evpg;
+    fz::SafePtr<std::array<uint64_t, ENIS_COUNT<O>>> _sei_to_ni;
+    fz::SafePtr<std::array<uint64_t, ENIV_COUNT<O>>> _vei_to_ni;
+    fz::SafePtr<uint64_t> _sei_to_espg;
+    fz::SafePtr<uint64_t> _vei_to_evpg;
 
     // members allocated during the simulation run
-    fz::SafePtr<size_t> _isei_to_sei;
-    fz::SafePtr<size_t> _vsei_to_sei;
-    fz::SafePtr<size_t> _psei_to_sei;
-    fz::SafePtr<size_t> _vei_to_ivpg;
-    fz::SafePtr<size_t> _isei_to_ispgi;
-    fz::SafePtr<size_t> _vsei_to_ispgv;
-    fz::SafePtr<size_t> _psei_to_ispgp;
-    fz::SafePtr<std::pair<size_t, size_t>> _ni_connections;
+    fz::SafePtr<uint64_t> _isei_to_sei;
+    fz::SafePtr<uint64_t> _vsei_to_sei;
+    fz::SafePtr<uint64_t> _psei_to_sei;
+    fz::SafePtr<uint64_t> _vei_to_ivpg;
+    fz::SafePtr<uint64_t> _isei_to_ispgi;
+    fz::SafePtr<uint64_t> _vsei_to_ispgv;
+    fz::SafePtr<uint64_t> _psei_to_ispgp;
+    fz::SafePtr<std::pair<uint64_t, uint64_t>> _ni_connections;
     
     // members used during frequency iterations
     fz::SafePtr<Float> _fi_to_freq;
@@ -149,25 +149,25 @@ private:
     fz::SafePtr<fz::SafePtr<Cmplx*>> _apvi_to_ptr_in_a;
     fz::SafePtr<fz::SafePtr<Cmplx*>> _apvi_to_ptr_in_b;
     fz::SafePtr<Cmplx> _a_vals;
-    fz::SafePtr<size_t> _b_row_idx;
+    fz::SafePtr<uint64_t> _b_row_idx;
     fz::SafePtr<Cmplx> _b_vals;
     fz::SafePtr<Cmplx> _x;
 
-    size_t _fi_count;
-    size_t _ni_count;
-    size_t _sei_count;
-    size_t _vei_count;
-    size_t _isei_count;
-    size_t _vsei_count;
-    size_t _psei_count;
-    size_t _ivpg_count;
-    size_t _ispgi_count;
-    size_t _ispgp_count;
-    size_t _ispgv_count;
-    size_t _vpi_count;
-    size_t _ppi_count;
-    size_t _apvi_count;
-    size_t _ri_count;
+    uint64_t _fi_count;
+    uint64_t _ni_count;
+    uint64_t _sei_count;
+    uint64_t _vei_count;
+    uint64_t _isei_count;
+    uint64_t _vsei_count;
+    uint64_t _psei_count;
+    uint64_t _ivpg_count;
+    uint64_t _ispgi_count;
+    uint64_t _ispgp_count;
+    uint64_t _ispgv_count;
+    uint64_t _vpi_count;
+    uint64_t _ppi_count;
+    uint64_t _apvi_count;
+    uint64_t _ri_count;
 
     Float _freq_min;
     Float _freq_max;

@@ -27,7 +27,7 @@ SimulationAcFemFreqD3Tet<O>::Impl::_define_sparsity_pattern_using_onemkl_solver(
     MKL_INT* it_a_col_idx = a_col_idx.begin();
     MKL_INT* it_a_row_ptr = a_row_ptr.begin();
     auto it_ni_connections = _ni_connections.begin();
-    size_t current_row = std::numeric_limits<size_t>::max();
+    uint64_t current_row = std::numeric_limits<uint64_t>::max();
     for (MKL_INT i = static_cast<MKL_INT>(0); i != nnz_count; ++i) {
         *it_a_col_idx = it_ni_connections->second;
         ++it_a_col_idx;
@@ -96,7 +96,7 @@ void SimulationAcFemFreqD3Tet<O>::Impl::_solve_using_onemkl_solver()
     }
 
     // dense b vector
-    for (size_t i = 0UL; i != _b_vals.size(); ++i) {
+    for (uint64_t i = 0UL; i != _b_vals.size(); ++i) {
         _b_dense[_b_row_idx[i]] = _b_vals[i];
     }
     
