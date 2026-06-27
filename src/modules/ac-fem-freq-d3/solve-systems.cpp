@@ -46,7 +46,6 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
 
     _clear_data_not_used_in_freq_iterations();
 
-    // print start time
     log::print_start_time();
 
     // start progress bar
@@ -84,7 +83,6 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
         {
             const Cmplx velocity = (_ispgv_to_velocity[ispgv])(freq);
             const Cmplx fd_part = Cmplx(0_F, -omega) * velocity;
-
             const size_t fipi_count = _ispgv_to_ptr_in_b[ispgv].size();
             for (size_t fipi = 0UL; fipi != fipi_count; ++fipi) {
                 *_ispgv_to_ptr_in_b[ispgv][fipi] +=
@@ -97,7 +95,6 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
         {
             const Cmplx impedance = _ispgi_to_impedance[ispgi](freq);
             const Cmplx damp_fd_part = Cmplx(0_F, omega) / impedance;
-
             const size_t fipi_count = _ispgi_to_ptr_in_a[ispgi].size();
             for (size_t fipi = 0UL; fipi != fipi_count; ++fipi) {
                 *_ispgi_to_ptr_in_a[ispgi][fipi] +=
@@ -126,7 +123,6 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
         for (size_t apvi = 0UL; apvi != _apvi_count; ++apvi)
         {
             const Cmplx pressure = (_apvi_to_pressure[apvi])(freq);
-
             const size_t fipi_count = _apvi_to_ptr_in_a[apvi].size();
             for (size_t fipi = 0UL; fipi != fipi_count; ++fipi) {
                 *_apvi_to_ptr_in_a[apvi][fipi] += PENALTY_METHOD_CONSTANT;
@@ -163,11 +159,9 @@ void SimulationAcFemFreqD3<O>::Impl::_solve_systems()
     #elif NUMAV_SYSTEM_SOLVER == NUMAV_MUMPS
         _terminate_mumps_solver();
     #endif
-    
-    // finish progress bar
-    log::finish_progress_bar();
 
-    // print finish
+    _hdf5_file.close();
+    log::finish_progress_bar();
     log::print_finish_time();
 
     _did_run = true;

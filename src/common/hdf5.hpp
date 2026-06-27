@@ -49,40 +49,40 @@ void write_string_attr(
     const std::string& value
 );
 
-void write_int_attr(
+void write_uint64_attr(
     H5::H5Object& obj,
     const std::string& attr_name,
-    int value
+    const uint64_t value
 );
 
 H5::DataSet write_dataset_float64_1d(
     H5::Group& group,
     const std::string& name,
     const double* const data,
-    const hsize_t size
+    const size_t size
 );
 
 H5::DataSet write_dataset_uint64_1d(
     H5::Group& group,
     const std::string& name,
     const size_t* const data,
-    const hsize_t size
+    const size_t size
 );
 
 H5::DataSet write_dataset_float64_2d(
     H5::Group& group,
     const std::string& name,
     const double* const data,
-    const hsize_t row_count,
-    const hsize_t col_count
+    const size_t row_count,
+    const size_t col_count
 );
 
 H5::DataSet write_dataset_uint64_2d(
     H5::Group& group,
     const std::string& name,
     const size_t* const data,
-    const hsize_t row_count,
-    const hsize_t col_count
+    const size_t row_count,
+    const size_t col_count
 );
 
 H5::CompType get_hdf5_cmplx_type();
@@ -90,16 +90,16 @@ H5::CompType get_hdf5_cmplx_type();
 H5::DataSet write_dataset_cmplx128_2d(
     H5::Group& group,
     const std::string& name,
-    const Cmplx* const data,
-    const hsize_t row_count,
-    const hsize_t col_count
+    const std::complex<double>* const data,
+    const size_t row_count,
+    const size_t col_count
 );
 
 H5::DataSet create_cmplx128_dataset(
     H5::Group& group,
     const std::string& name,
-    const hsize_t row_count,
-    const hsize_t col_count
+    const size_t row_count,
+    const size_t col_count
 );
 
 } // namespace numav

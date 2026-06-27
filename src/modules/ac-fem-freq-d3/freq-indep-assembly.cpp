@@ -73,13 +73,13 @@ void SimulationAcFemFreqD3<O>::Impl::_allocate_a()
     #endif
     std::unordered_set<std::pair<size_t,size_t>> existing_pairs;
     for (size_t vei = 0UL; vei != _vei_count; ++vei) {
-        for (const auto& eni : ENI_PAIRS) {
+        for (const auto& eniv : ENI_PAIRS) {
             #if NUMAV_SYSTEM_SOLVER == NUMAV_INTERNAL
-                if (eni[0UL] == eni[1UL]) { continue; }
+                if (eniv[0UL] == eniv[1UL]) { continue; }
             #endif
             existing_pairs.insert(
                 make_ordered_rowcol_pair(
-                    _vei_to_ni[vei][eni[0UL]], _vei_to_ni[vei][eni[1UL]]
+                    _vei_to_ni[vei][eniv[0UL]], _vei_to_ni[vei][eniv[1UL]]
                 )
             );
         }
@@ -109,8 +109,8 @@ void SimulationAcFemFreqD3<O>::Impl::_allocate_b()
     std::unordered_set<size_t> existing_source_nodes;
     for (size_t vsei = 0UL; vsei != _vsei_count; ++vsei) {
         const size_t sei = _vsei_to_sei[vsei];
-        for (size_t eni = 0UL; eni != ENIS_COUNT<O>; ++eni) {
-            const size_t ni = _sei_to_ni[sei][eni];
+        for (size_t enis = 0UL; enis != ENIS_COUNT<O>; ++enis) {
+            const size_t ni = _sei_to_ni[sei][enis];
             existing_source_nodes.insert(ni);
         }
     }
@@ -119,8 +119,8 @@ void SimulationAcFemFreqD3<O>::Impl::_allocate_b()
     }
     for (size_t psei = 0UL; psei != _psei_count; ++psei) {
         const size_t sei = _psei_to_sei[psei];
-        for (size_t eni = 0UL; eni != ENIS_COUNT<O>; ++eni) {
-            const size_t ni = _sei_to_ni[sei][eni];
+        for (size_t enis = 0UL; enis != ENIS_COUNT<O>; ++enis) {
+            const size_t ni = _sei_to_ni[sei][enis];
             existing_source_nodes.insert(ni);
         }
     }
