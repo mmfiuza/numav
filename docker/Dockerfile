@@ -83,7 +83,8 @@ RUN julia +release -e 'using Pkg; Pkg.add([ \
     PackageSpec(name="HDF5") \
 ])'
 RUN julia +${BINARY_BUILDER_JULIA_VERSION} -e "using Pkg; Pkg.add([ \
-    PackageSpec(name=\"BinaryBuilder\",version=\"${BINARY_BUILDER_VERSION}\") \
+    PackageSpec(name=\"BinaryBuilder\",version=\"${BINARY_BUILDER_VERSION}\"),\
+    PackageSpec(name=\"BinaryBuilderBase\")\
 ])"
 RUN chmod -R 777 ${JULIA_DEPOT_PATH}
 
