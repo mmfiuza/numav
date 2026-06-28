@@ -1,6 +1,6 @@
 name = "Numav"
 uuid = "8e910097-05db-4d5e-bf44-3d692aba33cf"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>"]
 
 [deps]
@@ -11,5 +11,5 @@ numav_julia_jll = "57785b2f-0453-510f-a9c0-981eddda5fac"
 [compat]
 Test = "1.10"
 CxxWrap = "0.17.5"
-numav_julia_jll = "=0.1.0"
+numav_julia_jll = "=0.2.0"
 julia = "~1.10, ~1.11, ~1.12, ~1.13, ~1.14"
