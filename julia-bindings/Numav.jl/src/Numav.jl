@@ -136,7 +136,7 @@ using Base.Threads
 
 # global storage for user-defined functions
 const _user_functions::Vector{Ref{Function}} = [ ]
-global _next_index::Int = 1
+global _next_index::UInt = 1
 _lock = ReentrantLock()
 
 function _cmplx_split_and_store(f::Function)
@@ -170,7 +170,7 @@ function add_volume_material(
         ElementShape.tetrahedron,
         ElementOrder.o1
     };
-    physical_group::Int,
+    physical_group::Integer,
     density::Union{Function, Number, String},
     sound_speed::Union{Function, Number, String}
 )
@@ -193,7 +193,10 @@ function add_volume_material(
     end
 
     _add_volume_material(
-        simulation, physical_group, density_args..., sound_speed_args...
+        simulation,
+        UInt64(physical_group),
+        density_args...,
+        sound_speed_args...
     )
 end
 
@@ -206,7 +209,7 @@ function add_surface_material(
         ElementShape.tetrahedron,
         ElementOrder.o1
     };
-    physical_group::Int,
+    physical_group::Integer,
     impedance::Union{Function, Number, String, _Empty},
 )
     impedance_args =
@@ -220,7 +223,7 @@ function add_surface_material(
 
     _add_surface_material(
         simulation,
-        physical_group,
+        UInt64(physical_group),
         PhysicalQuantity.impedance,
         impedance_args...
     )
@@ -236,7 +239,7 @@ function add_sound_source(
         ElementOrder.o1
     };
     coordinates::Union{Vector, _Empty} = _empty,
-    physical_group::Union{Int, _Empty}  = _empty,
+    physical_group::Union{Integer, _Empty} = _empty,
     volume_velocity::Union{Function, Number, String, _Empty} = _empty,
     particle_velocity::Union{Function, Number, String, _Empty} = _empty,
     pressure::Union{Function, Number, String, _Empty} = _empty
@@ -297,9 +300,9 @@ function add_sound_source(
 
     source_args =
     if coordinates != _empty
-        (SourceType.point, coordinates)
+        (SourceType.point, Float64.(coordinates))
     elseif physical_group != _empty
-        (SourceType.surface, physical_group)
+        (SourceType.surface, UInt64(physical_group))
     end
 
     _add_sound_source(simulation, source_args..., pq_type, pq_args...)
