@@ -9,6 +9,7 @@ s = Simulation{
     NumericalMethod.fem,
     Domain.frequency,
     Dimension.d3,
+    ElementShape.tetrahedron,
     ElementOrder.o1
 }()
 

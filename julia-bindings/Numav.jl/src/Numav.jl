@@ -10,6 +10,7 @@ export
     Dimension,
     SourceType,
     PhysicalQuantity,
+    ElementShape,
     ElementOrder,
     FrequencySamplingDensity
 
@@ -90,6 +91,16 @@ module PhysicalQuantity
     end
 end
 
+# wrap the ElementShape enum class
+module ElementShape
+    using CxxWrap
+    using numav_julia_jll
+    @wrapmodule(() -> libnumav_julia, :define_module_ElementShape)
+    function __init__()
+        @initcxx
+    end
+end
+
 # wrap the ElementOrder enum class
 module ElementOrder
     using CxxWrap
@@ -156,6 +167,7 @@ function add_volume_material(
         NumericalMethod.fem,
         Domain.frequency,
         Dimension.d3,
+        ElementShape.tetrahedron,
         ElementOrder.o1
     };
     physical_group::Int,
@@ -191,6 +203,7 @@ function add_surface_material(
         NumericalMethod.fem,
         Domain.frequency,
         Dimension.d3,
+        ElementShape.tetrahedron,
         ElementOrder.o1
     };
     physical_group::Int,
@@ -219,6 +232,7 @@ function add_sound_source(
         NumericalMethod.fem,
         Domain.frequency,
         Dimension.d3,
+        ElementShape.tetrahedron,
         ElementOrder.o1
     };
     coordinates::Union{Vector, _Empty} = _empty,
