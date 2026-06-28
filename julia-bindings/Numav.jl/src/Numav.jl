@@ -275,6 +275,11 @@ function add_sound_source(
             "simultaneously"
         ))
     end
+    if coordinates != _empty && length(coordinates) != 3
+        throw(ArgumentError(
+            "`coordinates` vector does not have 3 elements"
+        ))
+    end
 
     # Check if volume_velocity, particle_velocity or pressure was given
     pqv = Ref{Any}()
