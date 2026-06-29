@@ -8,63 +8,123 @@
 using namespace numav;
 
 // Phenomenon enum class
-JLCXX_MODULE define_module_Phenomenon(jlcxx::Module& mod) {
-    mod.add_bits<Phenomenon>("type", jlcxx::julia_type("CppEnum"));
-    mod.set_const("acoustic", Phenomenon::ACOUSTIC);
+JLCXX_MODULE Phenomenon_module(jlcxx::Module& mod) {
+    mod.add_enum<Phenomenon>("Phenomenon",
+        std::vector<const char*>({
+            "acoustic"
+        }),
+        std::vector<uint64_t>({
+            static_cast<uint64_t>(Phenomenon::ACOUSTIC)
+        })
+    );
 }
 
 // NumericalMethod enum class
-JLCXX_MODULE define_module_NumericalMethod(jlcxx::Module& mod) {
-    mod.add_bits<NumericalMethod>("type", jlcxx::julia_type("CppEnum"));
-    mod.set_const("fem", NumericalMethod::FEM);
+JLCXX_MODULE NumericalMethod_module(jlcxx::Module& mod) {
+    mod.add_enum<NumericalMethod>("NumericalMethod",
+        std::vector<const char*>({
+            "fem"
+        }),
+        std::vector<uint64_t>({
+            static_cast<uint64_t>(NumericalMethod::FEM)
+        })
+    );
 }
 
 // Domain enum class
-JLCXX_MODULE define_module_Domain(jlcxx::Module& mod) {
-    mod.add_bits<Domain>("type", jlcxx::julia_type("CppEnum"));
-    mod.set_const("frequency", Domain::FREQUENCY);
+JLCXX_MODULE Domain_module(jlcxx::Module& mod) {
+    mod.add_enum<Domain>("Domain",
+        std::vector<const char*>({
+            "frequency"
+        }),
+        std::vector<uint64_t>({
+            static_cast<uint64_t>(Domain::FREQUENCY)
+        })
+    );
 }
 
 // Dimension enum class
-JLCXX_MODULE define_module_Dimension(jlcxx::Module& mod) {
-    mod.add_bits<Dimension>("type", jlcxx::julia_type("CppEnum"));
-    mod.set_const("d3", Dimension::D3);
+JLCXX_MODULE Dimension_module(jlcxx::Module& mod) {
+    mod.add_enum<Dimension>("Dimension",
+        std::vector<const char*>({
+            "d3"
+        }),
+        std::vector<uint64_t>({
+            static_cast<uint64_t>(Dimension::D3)
+        })
+    );
 }
 
 // SourceType enum class
-JLCXX_MODULE define_module_SourceType(jlcxx::Module& mod) {
-    mod.add_bits<SourceType>("type", jlcxx::julia_type("CppEnum"));
-    mod.set_const("point", SourceType::POINT);
-    mod.set_const("surface", SourceType::SURFACE);
+JLCXX_MODULE SourceType_module(jlcxx::Module& mod) {
+    mod.add_enum<SourceType>("SourceType",
+        std::vector<const char*>({
+            "point",
+            "surface"
+        }),
+        std::vector<uint64_t>({
+            static_cast<uint64_t>(SourceType::POINT),
+            static_cast<uint64_t>(SourceType::SURFACE),
+        })
+    );
 }
 
 // PhysicalQuantity enum class
-JLCXX_MODULE define_module_PhysicalQuantity(jlcxx::Module& mod) {
-    mod.add_bits<PhysicalQuantity>("type", jlcxx::julia_type("CppEnum"));
-    mod.set_const("volume_velocity", PhysicalQuantity::VOLUME_VELOCITY);
-    mod.set_const("particle_velocity", PhysicalQuantity::PARTICLE_VELOCITY);
-    mod.set_const("pressure", PhysicalQuantity::PRESSURE);
-    mod.set_const("impedance", PhysicalQuantity::IMPEDANCE);
+JLCXX_MODULE PhysicalQuantity_module(jlcxx::Module& mod) {
+    mod.add_enum<PhysicalQuantity>("PhysicalQuantity",
+        std::vector<const char*>({
+            "volume_velocity",
+            "particle_velocity",
+            "pressure",
+            "impedance"
+        }),
+        std::vector<uint64_t>({
+            static_cast<uint64_t>(PhysicalQuantity::VOLUME_VELOCITY),
+            static_cast<uint64_t>(PhysicalQuantity::PARTICLE_VELOCITY),
+            static_cast<uint64_t>(PhysicalQuantity::PRESSURE),
+            static_cast<uint64_t>(PhysicalQuantity::IMPEDANCE)
+        })
+    );
 }
 
 // ElementShape enum class
-JLCXX_MODULE define_module_ElementShape(jlcxx::Module& mod) {
-    mod.add_bits<ElementShape>("type", jlcxx::julia_type("CppEnum"));
-    mod.set_const("tetrahedron", ElementShape::TETRAHEDRON);
+JLCXX_MODULE ElementShape_module(jlcxx::Module& mod) {
+    mod.add_enum<ElementShape>("ElementShape",
+        std::vector<const char*>({
+            "tetrahedron"
+        }),
+        std::vector<uint64_t>({
+            static_cast<uint64_t>(ElementShape::TETRAHEDRON)
+        })
+    );
 }
 
 // ElementOrder enum class
-JLCXX_MODULE define_module_ElementOrder(jlcxx::Module& mod) {
-    mod.add_bits<ElementOrder>("type", jlcxx::julia_type("CppEnum"));
-    mod.set_const("o1", ElementOrder::O1);
-    mod.set_const("o2", ElementOrder::O2);
+JLCXX_MODULE ElementOrder_module(jlcxx::Module& mod) {
+    mod.add_enum<ElementOrder>("ElementOrder",
+        std::vector<const char*>({
+            "o1",
+            "o2"
+        }),
+        std::vector<uint64_t>({
+            static_cast<uint64_t>(ElementOrder::O1),
+            static_cast<uint64_t>(ElementOrder::O2)
+        })
+    );
 }
 
 // FrequencySamplingDensity enum class
-JLCXX_MODULE define_module_FrequencySamplingDensity(jlcxx::Module& mod) {
-    mod.add_bits<FrequencySamplingDensity>("type",jlcxx::julia_type("CppEnum"));
-    mod.set_const("constant", FrequencySamplingDensity::CONSTANT);
-    mod.set_const("quadratic", FrequencySamplingDensity::QUADRATIC);
+JLCXX_MODULE FrequencySamplingDensity_module(jlcxx::Module& mod) {
+    mod.add_enum<FrequencySamplingDensity>("FrequencySamplingDensity",
+        std::vector<const char*>({
+            "constant",
+            "quadratic"
+        }),
+        std::vector<uint64_t>({
+            static_cast<uint64_t>(FrequencySamplingDensity::CONSTANT),
+            static_cast<uint64_t>(FrequencySamplingDensity::QUADRATIC)
+        })
+    );
 }
 
 namespace jlcxx
