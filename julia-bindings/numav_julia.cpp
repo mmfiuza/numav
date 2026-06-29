@@ -427,8 +427,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
                 const char* const path_to_hdf5_file
             ) { w.set_result_export_path(path_to_hdf5_file); }
         );
-        // "run" is a native Julia function, so we choose simulate as a name
-        wrapped.module().method("simulate", 
+        wrapped.module().method("_run", 
             [](WrappedT& w) { w.run(); }
         );
     });

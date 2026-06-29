@@ -28,8 +28,7 @@ export
     add_volume_material,
     add_sound_source,
     add_surface_material,
-    set_result_export_path,
-    simulate
+    set_result_export_path
 
 # wrap the Phenomenon enum class
 module Phenomenon
@@ -311,6 +310,20 @@ function add_sound_source(
     end
 
     _add_sound_source(simulation, source_args..., pq_type, pq_args...)
+end
+
+# "run" is a native julia function from Base, so we extended it
+function Base.run(
+    simulation::Simulation{
+        Phenomenon.acoustic,
+        NumericalMethod.fem,
+        Domain.frequency,
+        Dimension.d3,
+        ElementShape.tetrahedron,
+        ElementOrder.o1
+    }
+) 
+    _run(simulation)
 end
 
 end # module Numav

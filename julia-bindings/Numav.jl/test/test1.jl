@@ -48,7 +48,7 @@ add_surface_material(s, physical_group=9, impedance=pqv)
 
 set_result_export_path(s, "test1.h5")
 
-simulate(s)
+run(s)
 
 return true # Passed if code reaches here
 
