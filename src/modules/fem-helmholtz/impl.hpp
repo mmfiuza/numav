@@ -4,9 +4,9 @@
 
 #include "numav/numav.hpp"
 #include "numav/aliases.hpp"
-#include "modules/ac-fem-freq-d3/macros.hpp"
-#include "modules/ac-fem-freq-d3/compile-options.hpp"
-#include "modules/ac-fem-freq-d3/constants.hpp"
+#include "modules/fem-helmholtz/macros.hpp"
+#include "modules/fem-helmholtz/compile-options.hpp"
+#include "modules/fem-helmholtz/constants.hpp"
 
 #include <unordered_map>
 #include <unordered_set>
@@ -24,7 +24,7 @@
 namespace numav {
 
 template<ElementOrder O>
-class SimulationAcFemFreqD3Tet<O>::Impl
+class SimulationFemHelmTet<O>::Impl
 {
 public:
     Impl();

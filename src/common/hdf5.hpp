@@ -7,30 +7,12 @@
 
 namespace numav {
 
-const H5std_string HDF5_SIGNATURE("numav_result_hdf5_1.0.0");
+const H5std_string HDF5_SIGNATURE("numav_result_hdf5_0.2.0");
 
-template<Phenomenon P>
-const H5std_string HDF5_PHENOMENON = [] {
-    if constexpr (P == Phenomenon::ACOUSTIC) {
-        return "acoustic";
-    }
-}();
 template<NumericalMethod N>
 const H5std_string HDF5_NUMERICAL_METHOD = [] {
     if constexpr (N == NumericalMethod::FEM) {
         return "finite_element_method";
-    }
-}();
-template<Domain D>
-const H5std_string HDF5_DOMAIN = [] {
-    if constexpr (D == Domain::FREQUENCY) {
-        return "frequency";
-    }
-}();
-template<Dimension D>
-const H5std_string HDF5_DIMENSION = [] {
-    if constexpr (D == Dimension::D3) {
-        return "3d";
     }
 }();
 

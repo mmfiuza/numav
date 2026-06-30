@@ -1,31 +1,31 @@
 // Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
-#include "modules/ac-fem-freq-d3/impl.hpp"
+#include "modules/fem-helmholtz/impl.hpp"
 
 #include "common/log.hpp"
 
 namespace numav {
 
 template <ElementOrder O>
-SimulationAcFemFreqD3Tet<O>::Simulation() {
+SimulationFemHelmTet<O>::Simulation() {
     _pimpl = std::make_unique<Impl>();
 }
 
 template <ElementOrder O>
-SimulationAcFemFreqD3Tet<O>::~Simulation() = default;
+SimulationFemHelmTet<O>::~Simulation() = default;
 
 template<ElementOrder O>
-SimulationAcFemFreqD3Tet<O>::Simulation(
+SimulationFemHelmTet<O>::Simulation(
     Simulation&& other
 ) noexcept = default;
 
 template<ElementOrder O>
-SimulationAcFemFreqD3Tet<O>& SimulationAcFemFreqD3Tet<O>::operator=(
+SimulationFemHelmTet<O>& SimulationFemHelmTet<O>::operator=(
     Simulation&& other
 ) noexcept = default;
 
 template<ElementOrder O>
-SimulationAcFemFreqD3Tet<O>::Impl::Impl() {
+SimulationFemHelmTet<O>::Impl::Impl() {
     log::set_level();
     log::set_pattern();
     _is_mesh_defined = false;
@@ -50,7 +50,7 @@ SimulationAcFemFreqD3Tet<O>::Impl::Impl() {
 }
 
 template<ElementOrder O>
-SimulationAcFemFreqD3Tet<O>::Impl::~Impl() {
+SimulationFemHelmTet<O>::Impl::~Impl() {
     if (!_did_run && _is_mesh_defined) {
         _ni_to_coords.free();
         _sei_to_ni.free();
@@ -113,13 +113,13 @@ SimulationAcFemFreqD3Tet<O>::Impl::~Impl() {
 }
 
 template<ElementOrder O>
-SimulationAcFemFreqD3Tet<O>::Impl::Impl(
+SimulationFemHelmTet<O>::Impl::Impl(
     Impl&& other
 ) noexcept = default;
 
 template<ElementOrder O>
-typename SimulationAcFemFreqD3Tet<O>::Impl&
-SimulationAcFemFreqD3Tet<O>::Impl::operator=(
+typename SimulationFemHelmTet<O>::Impl&
+SimulationFemHelmTet<O>::Impl::operator=(
     Impl&& other
 ) noexcept = default;
 

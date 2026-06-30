@@ -1,6 +1,6 @@
 // Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
-#include "modules/ac-fem-freq-d3/impl.hpp"
+#include "modules/fem-helmholtz/impl.hpp"
 
 #include <tuple>
 #include <fstream>
@@ -15,7 +15,7 @@
 namespace numav {
 
 template <ElementOrder O>
-uint64_t SimulationAcFemFreqD3Tet<O>::Impl::_get_closest_point(
+uint64_t SimulationFemHelmTet<O>::Impl::_get_closest_point(
     const std::array<Float,DIM> point_coords
 ) {
     Float minimum_distance_squared = std::numeric_limits<Float>::max();
@@ -35,7 +35,7 @@ uint64_t SimulationAcFemFreqD3Tet<O>::Impl::_get_closest_point(
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3Tet<O>::Impl::_load_bdf(const char* const path_to_mesh)
+void SimulationFemHelmTet<O>::Impl::_load_bdf(const char* const path_to_mesh)
 {
     constexpr uint64_t MAX_BDF_CHARACTERS_PER_LINE = 80UL;
     std::ifstream file(path_to_mesh);
@@ -112,27 +112,27 @@ void SimulationAcFemFreqD3Tet<O>::Impl::_load_bdf(const char* const path_to_mesh
 }
 
 template<>
-void SimulationAcFemFreqD3Tet<ElementOrder::O1>::Impl::_generate_extra_nodes() {
+void SimulationFemHelmTet<ElementOrder::LINEAR>::Impl::_generate_extra_nodes() {
     // nothing needs to be done in this case (in order 1)
 }
 
 template<>
-void SimulationAcFemFreqD3Tet<ElementOrder::O2>::Impl::_generate_extra_nodes()
+void SimulationFemHelmTet<ElementOrder::QUADRATIC>::Impl::_generate_extra_nodes()
 {
     constexpr std::array<
-        std::array<uint64_t,2UL>, EXTRA_ENIV_COUNT<ElementOrder::O2>
+        std::array<uint64_t,2UL>, EXTRA_ENIV_COUNT<ElementOrder::QUADRATIC>
     > VTX_PAIRS_VOL = {{
         {0UL,1UL}, {0UL,2UL}, {0UL,3UL}, {1UL,2UL}, {1UL,3UL}, {2UL,3UL}
     }};
 
     constexpr std::array<
-        std::array<uint64_t,2UL>, EXTRA_ENIS_COUNT<ElementOrder::O2>
+        std::array<uint64_t,2UL>, EXTRA_ENIS_COUNT<ElementOrder::QUADRATIC>
     > VTX_PAIRS_SFC = {{ {0UL,1UL}, {0UL,2UL}, {1UL,2UL} }};
 
     std::unordered_map<std::tuple<uint64_t,uint64_t>,uint64_t> idxs_extra_nodes;
     
     // first pass: count extra nodes and save idx tuples
-    fz::SafePtr<std::array<bool,EXTRA_ENIV_COUNT<ElementOrder::O2>>>
+    fz::SafePtr<std::array<bool,EXTRA_ENIV_COUNT<ElementOrder::QUADRATIC>>>
         is_extra_node(_vei_count);
     for (uint64_t vei = 0UL; vei != _vei_count; ++vei) {
         for (uint64_t i = 0UL; i != VTX_PAIRS_VOL.size(); ++i)
@@ -143,12 +143,12 @@ void SimulationAcFemFreqD3Tet<ElementOrder::O2>::Impl::_generate_extra_nodes()
             );
             if (!(idxs_extra_nodes.count(tup) > 0)) {
                 is_extra_node[vei][i] = true;
-                _vei_to_ni[vei][ENIV_COUNT<ElementOrder::O1> + i] = _ni_count;
+                _vei_to_ni[vei][ENIV_COUNT<ElementOrder::LINEAR> + i] = _ni_count;
                 idxs_extra_nodes.insert({tup, _ni_count});
                 ++_ni_count;
             } else {
                 is_extra_node[vei][i] = false;          
-                _vei_to_ni[vei][ENIV_COUNT<ElementOrder::O1> + i] =
+                _vei_to_ni[vei][ENIV_COUNT<ElementOrder::LINEAR> + i] =
                     idxs_extra_nodes.at(tup);
             }     
         }
@@ -197,7 +197,7 @@ void SimulationAcFemFreqD3Tet<ElementOrder::O2>::Impl::_generate_extra_nodes()
                 _sei_to_ni[sei][VTX_PAIRS_SFC[i][0UL]],
                 _sei_to_ni[sei][VTX_PAIRS_SFC[i][1UL]]
             );
-            _sei_to_ni[sei][ENIS_COUNT<ElementOrder::O1> + i] =
+            _sei_to_ni[sei][ENIS_COUNT<ElementOrder::LINEAR> + i] =
                 idxs_extra_nodes.at(tup);
         }
     }

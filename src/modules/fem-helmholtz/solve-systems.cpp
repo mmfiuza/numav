@@ -1,6 +1,6 @@
 // Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
-#include "modules/ac-fem-freq-d3/impl.hpp"
+#include "modules/fem-helmholtz/impl.hpp"
 
 #include <cmath>
 
@@ -10,7 +10,7 @@
 namespace numav {
 
 template<ElementOrder O>
-void SimulationAcFemFreqD3Tet<O>::Impl::_clear_data_not_used_in_freq_iterations()
+void SimulationFemHelmTet<O>::Impl::_clear_data_not_used_in_freq_iterations()
 {
     // TODO: call shrink_to_fit in all std::vectors here  
 
@@ -39,7 +39,7 @@ void SimulationAcFemFreqD3Tet<O>::Impl::_clear_data_not_used_in_freq_iterations(
 }
 
 template<ElementOrder O>
-void SimulationAcFemFreqD3Tet<O>::Impl::_solve_systems()
+void SimulationFemHelmTet<O>::Impl::_solve_systems()
 {
     H5::DataSet pressure_data_set = _begin_hdf5_file();
     _write_simulation_inputs_to_hdf5_file();

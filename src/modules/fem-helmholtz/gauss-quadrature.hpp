@@ -3,28 +3,28 @@
 #pragma once
 
 #include "common/maths.hpp"
-#include "modules/ac-fem-freq-d3/impl.hpp"
+#include "modules/fem-helmholtz/impl.hpp"
 
 namespace numav {
 
 template<ElementOrder O> constexpr uint64_t NGP_FORC = [] {
-    if constexpr (O == ElementOrder::O1) { return 1UL; }
-    if constexpr (O == ElementOrder::O2) { return 3UL; }
+    if constexpr (O == ElementOrder::LINEAR) { return 1UL; }
+    if constexpr (O == ElementOrder::QUADRATIC) { return 3UL; }
 }();
 
 template<ElementOrder O> constexpr uint64_t NGP_DAMP = [] {
-    if constexpr (O == ElementOrder::O1) { return 1UL; }
-    if constexpr (O == ElementOrder::O2) { return 3UL; }
+    if constexpr (O == ElementOrder::LINEAR) { return 1UL; }
+    if constexpr (O == ElementOrder::QUADRATIC) { return 3UL; }
 }();
 
 template<ElementOrder O> constexpr uint64_t NGP_STIF = [] {
-    if constexpr (O == ElementOrder::O1) { return 1UL; }
-    if constexpr (O == ElementOrder::O2) { return 4UL; }
+    if constexpr (O == ElementOrder::LINEAR) { return 1UL; }
+    if constexpr (O == ElementOrder::QUADRATIC) { return 4UL; }
 }();
 
 template<ElementOrder O> constexpr uint64_t NGP_MASS = [] {
-    if constexpr (O == ElementOrder::O1) { return 4UL;  }
-    if constexpr (O == ElementOrder::O2) { return 15UL; }
+    if constexpr (O == ElementOrder::LINEAR) { return 4UL;  }
+    if constexpr (O == ElementOrder::QUADRATIC) { return 15UL; }
 }();
 
 template<uint64_t N>

@@ -1,6 +1,6 @@
 // Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
-#include "modules/ac-fem-freq-d3/impl.hpp"
+#include "modules/fem-helmholtz/impl.hpp"
 
 #define NUMAV_PARAMS_0()
 #define NUMAV_PARAMS_1(t1) t1 v1
@@ -28,7 +28,7 @@
 #undef NUMAV_PUBLIC_METHOD
 #define NUMAV_PUBLIC_METHOD(method_name, ...)\
     template <ElementOrder O>\
-    void SimulationAcFemFreqD3Tet<O>::method_name(NUMAV_PARAMS(__VA_ARGS__)) {\
+    void SimulationFemHelmTet<O>::method_name(NUMAV_PARAMS(__VA_ARGS__)) {\
         _pimpl->method_name(NUMAV_ARGS(__VA_ARGS__));\
     }
 

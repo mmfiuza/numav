@@ -4,13 +4,29 @@
 
 namespace numav {
 
+enum class Equation : uint64_t {
+    HELMHOLTZ
+};
+
 enum class ElementShape : uint64_t {
     TETRAHEDRON
 };
 
 enum class ElementOrder : uint64_t {
-    O1,
-    O2
+    LINEAR,
+    QUADRATIC
+};
+
+enum class SourceType : uint64_t {
+    POINT,
+    SURFACE
+};
+
+enum class PhysicalQuantity : uint64_t {
+    VOLUME_VELOCITY,
+    PARTICLE_VELOCITY,
+    PRESSURE,
+    IMPEDANCE
 };
 
 enum class FrequencySamplingDensity : uint64_t {
@@ -110,10 +126,8 @@ enum class FrequencySamplingDensity : uint64_t {
 
 template<ElementOrder O>
 class Simulation<
-    Phenomenon::ACOUSTIC,
     NumericalMethod::FEM,
-    Domain::FREQUENCY,
-    Dimension::D3,
+    Equation::HELMHOLTZ,
     ElementShape::TETRAHEDRON,
     O
 > {
@@ -134,11 +148,9 @@ private:
 
 // alias for simulation type
 template<ElementOrder O>
-using SimulationAcFemFreqD3Tet = Simulation<
-    Phenomenon::ACOUSTIC,
+using SimulationFemHelmTet = Simulation<
     NumericalMethod::FEM,
-    Domain::FREQUENCY,
-    Dimension::D3,
+    Equation::HELMHOLTZ,
     ElementShape::TETRAHEDRON,
     O
 >;

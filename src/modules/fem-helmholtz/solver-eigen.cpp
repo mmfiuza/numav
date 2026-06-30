@@ -1,7 +1,7 @@
 // Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
 #include "common/exception.hpp"
-#include "modules/ac-fem-freq-d3/impl.hpp"
+#include "modules/fem-helmholtz/impl.hpp"
 
 #if NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
 
@@ -9,7 +9,7 @@ namespace numav {
 
 template <ElementOrder O>
 void
-SimulationAcFemFreqD3Tet<O>::Impl::_define_sparsity_pattern_using_eigen_solver()
+SimulationFemHelmTet<O>::Impl::_define_sparsity_pattern_using_eigen_solver()
 {
     // rewrite A matrix in CSC form
     const uint64_t nz_count = _ni_connections.size();
@@ -72,7 +72,7 @@ SimulationAcFemFreqD3Tet<O>::Impl::_define_sparsity_pattern_using_eigen_solver()
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3Tet<O>::Impl::_solve_using_eigen_solver()
+void SimulationFemHelmTet<O>::Impl::_solve_using_eigen_solver()
 {
     _solver->factorize(*_a_eigen);
     if (_solver->info() != Eigen::Success) {

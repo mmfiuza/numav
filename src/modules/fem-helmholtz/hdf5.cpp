@@ -3,24 +3,38 @@
 #include "common/exception.hpp"
 #include "common/utils.hpp"
 #include "common/hdf5.hpp"
-#include "modules/ac-fem-freq-d3/impl.hpp"
+#include "modules/fem-helmholtz/impl.hpp"
 
 #include "H5DSpublic.h"
 
 namespace numav {
 
+template<Equation E>
+const H5std_string HDF5_EQUATION = [] {
+    if constexpr (E == Equation::HELMHOLTZ) {
+        return "helmholtz";
+    }
+}();
+
+template<ElementShape S>
+const H5std_string HDF5_ELEMENT_SHAPE = [] {
+    if constexpr (S == ElementShape::TETRAHEDRON) {
+        return "tetrahedron";
+    }
+}();
+
 template<ElementOrder O>
-const H5std_string HDF5_ORDER = [] {
-    if constexpr (O == ElementOrder::O1) {
+const H5std_string HDF5_ELEMENT_ORDER = [] {
+    if constexpr (O == ElementOrder::LINEAR) {
         return "linear";
     }
-    if constexpr (O == ElementOrder::O2) {
+    if constexpr (O == ElementOrder::QUADRATIC) {
         return "quadratic";
     }
 }();
 
 template <ElementOrder O>
-H5::DataSet SimulationAcFemFreqD3Tet<O>::Impl::_begin_hdf5_file(
+H5::DataSet SimulationFemHelmTet<O>::Impl::_begin_hdf5_file(
 ) {
     // create the file
     _hdf5_file = H5::H5File(_hdf5_file_path, H5F_ACC_TRUNC);
@@ -30,20 +44,17 @@ H5::DataSet SimulationAcFemFreqD3Tet<O>::Impl::_begin_hdf5_file(
 
     // write simulation type
     H5::Group sim_type_grp = _hdf5_file.createGroup("/simulation_type");
-    write_string_attr(sim_type_grp,
-        "phenomenon", HDF5_PHENOMENON<Phenomenon::ACOUSTIC>
-    );
     write_string_attr(sim_type_grp, 
         "numerical_method", HDF5_NUMERICAL_METHOD<NumericalMethod::FEM>
     );
-    write_string_attr(sim_type_grp,
-        "domain", HDF5_DOMAIN<Domain::FREQUENCY>
+    write_string_attr(sim_type_grp, 
+        "equation", HDF5_EQUATION<Equation::HELMHOLTZ>
     );
     write_string_attr(sim_type_grp,
-        "dimension", HDF5_DIMENSION<Dimension::D3>
+        "element_shape", HDF5_ELEMENT_SHAPE<ElementShape::TETRAHEDRON>
     );
     write_string_attr(sim_type_grp,
-        "element_order", HDF5_ORDER<O>
+        "element_order", HDF5_ELEMENT_ORDER<O>
     );
 
     // allocate pressure solution matrix
@@ -62,7 +73,7 @@ H5::DataSet SimulationAcFemFreqD3Tet<O>::Impl::_begin_hdf5_file(
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3Tet<O>::Impl::_write_simulation_inputs_to_hdf5_file(
+void SimulationFemHelmTet<O>::Impl::_write_simulation_inputs_to_hdf5_file(
 ) {
     H5::Group inputs_grp = _hdf5_file.createGroup("/inputs");
 
@@ -191,7 +202,7 @@ void SimulationAcFemFreqD3Tet<O>::Impl::_write_simulation_inputs_to_hdf5_file(
         H5DSset_label(dataset.getId(), 1UL, "frequency_index");
         H5DSattach_scale(dataset.getId(), dataset_freq.getId(), 1UL);
     }
-    {   // sound_speed
+    {   // speed_of_sound
         fz::SafePtr<Cmplx> soundspeed(_ivpg_count * _fi_count);
         for (uint64_t ivpg = 0UL; ivpg != _ivpg_count; ++ivpg) {
             for (uint64_t fi = 0UL; fi != _fi_count; ++fi) {
@@ -202,7 +213,7 @@ void SimulationAcFemFreqD3Tet<O>::Impl::_write_simulation_inputs_to_hdf5_file(
         }
         H5::DataSet dataset = write_dataset_cmplx128_2d(
             vol_mat_grp,
-            "sound_speed",
+            "speed_of_sound",
             static_cast_contiguous_data<std::complex<double>>(
                 soundspeed.data(), soundspeed.size()
             ).get(),
@@ -415,7 +426,7 @@ void SimulationAcFemFreqD3Tet<O>::Impl::_write_simulation_inputs_to_hdf5_file(
 }
 
 template<ElementOrder O>
-void SimulationAcFemFreqD3Tet<O>::Impl::_write_solution_for_one_freq(
+void SimulationFemHelmTet<O>::Impl::_write_solution_for_one_freq(
     H5::DataSet& pressure_dataset,
     const uint64_t fi
 ) {

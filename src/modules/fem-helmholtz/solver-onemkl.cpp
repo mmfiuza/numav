@@ -2,7 +2,7 @@
 
 #include "common/exception.hpp"
 #include "common/utils.hpp"
-#include "modules/ac-fem-freq-d3/impl.hpp"
+#include "modules/fem-helmholtz/impl.hpp"
 
 #if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
 
@@ -15,7 +15,7 @@ void print_dss_error(const MKL_INT error_id) {
 
 template <ElementOrder O>
 void
-SimulationAcFemFreqD3Tet<O>::Impl::_define_sparsity_pattern_using_onemkl_solver()
+SimulationFemHelmTet<O>::Impl::_define_sparsity_pattern_using_onemkl_solver()
 {
     // problem dimensions
     const MKL_INT node_count = static_cast<MKL_INT>(_ni_count);
@@ -79,7 +79,7 @@ SimulationAcFemFreqD3Tet<O>::Impl::_define_sparsity_pattern_using_onemkl_solver(
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3Tet<O>::Impl::_solve_using_onemkl_solver()
+void SimulationFemHelmTet<O>::Impl::_solve_using_onemkl_solver()
 {
     // error code
     MKL_INT error_id;
@@ -115,7 +115,7 @@ void SimulationAcFemFreqD3Tet<O>::Impl::_solve_using_onemkl_solver()
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3Tet<O>::Impl::_terminate_onemkl_solver()
+void SimulationFemHelmTet<O>::Impl::_terminate_onemkl_solver()
 {
     // error code
     MKL_INT error_id = dss_delete(

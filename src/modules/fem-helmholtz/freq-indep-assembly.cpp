@@ -1,14 +1,14 @@
 // Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
-#include "modules/ac-fem-freq-d3/impl.hpp"
+#include "modules/fem-helmholtz/impl.hpp"
 
 #include "common/exception.hpp"
 #include "common/maths.hpp"
 #include "common/hash-functions.hpp"
 #include "common/utils.hpp"
-#include "modules/ac-fem-freq-d3/shape-functions.hpp"
-#include "modules/ac-fem-freq-d3/analytic-integration.hpp"
-#include "modules/ac-fem-freq-d3/gauss-quadrature.hpp"
+#include "modules/fem-helmholtz/shape-functions.hpp"
+#include "modules/fem-helmholtz/analytic-integration.hpp"
+#include "modules/fem-helmholtz/gauss-quadrature.hpp"
 
 #include <set>
 
@@ -58,7 +58,7 @@ std::pair<T,T> make_ordered_rowcol_pair(const T a, const T b)
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3Tet<O>::Impl::_allocate_a()
+void SimulationFemHelmTet<O>::Impl::_allocate_a()
 {
     #if NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
         constexpr std::array<
@@ -104,7 +104,7 @@ void SimulationAcFemFreqD3Tet<O>::Impl::_allocate_a()
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3Tet<O>::Impl::_allocate_b()
+void SimulationFemHelmTet<O>::Impl::_allocate_b()
 {
     std::unordered_set<uint64_t> existing_source_nodes;
     for (uint64_t vsei = 0UL; vsei != _vsei_count; ++vsei) {
@@ -138,13 +138,13 @@ void SimulationAcFemFreqD3Tet<O>::Impl::_allocate_b()
 }
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3Tet<O>::Impl::_allocate_x()
+void SimulationFemHelmTet<O>::Impl::_allocate_x()
 {
     _x = fz::SafePtr<Cmplx>(_ni_count);
 }
 
 template<ElementOrder O>
-void SimulationAcFemFreqD3Tet<O>::Impl::_assemble_fi_part_for_vol_elements()
+void SimulationFemHelmTet<O>::Impl::_assemble_fi_part_for_vol_elements()
 {
     #if NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
         constexpr std::array<
@@ -369,7 +369,7 @@ std::array<std::array<Float,2UL>,ENIS_COUNT<O>> project_triangle_to_2d(
 }
 
 template<ElementOrder O>
-void SimulationAcFemFreqD3Tet<O>::Impl::_assemble_fi_part_for_sfc_impedance()
+void SimulationFemHelmTet<O>::Impl::_assemble_fi_part_for_sfc_impedance()
 {
     #if NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
         constexpr std::array<
@@ -522,7 +522,7 @@ void SimulationAcFemFreqD3Tet<O>::Impl::_assemble_fi_part_for_sfc_impedance()
 }
 
 template<ElementOrder O>
-void SimulationAcFemFreqD3Tet<O>::Impl::_assemble_fi_part_for_sfc_velocity()
+void SimulationFemHelmTet<O>::Impl::_assemble_fi_part_for_sfc_velocity()
 {
     // count the fipi for each ispgv
     fz::SafePtr<std::unordered_map<uint64_t,uint64_t>> ispgv_to_map_to_fipi(
@@ -642,7 +642,7 @@ void SimulationAcFemFreqD3Tet<O>::Impl::_assemble_fi_part_for_sfc_velocity()
 }
 
 template<ElementOrder O>
-void SimulationAcFemFreqD3Tet<O>::Impl::_assemble_fi_part_for_point_velocity()
+void SimulationFemHelmTet<O>::Impl::_assemble_fi_part_for_point_velocity()
 {
     _vpi_to_ptr_in_b = fz::SafePtr<Cmplx*>(_vpi_count);
     for (uint64_t vpi = 0UL; vpi != _vpi_count; ++vpi)
@@ -678,7 +678,7 @@ std::unordered_map<std::vector<uint64_t>, std::vector<T>> find_set_intersections
 }
 
 template<ElementOrder O>
-void SimulationAcFemFreqD3Tet<O>::Impl::_assemble_fi_part_for_pressure()
+void SimulationFemHelmTet<O>::Impl::_assemble_fi_part_for_pressure()
 {
     // create the mathmatical sets of nodes for each pressure value assigned
     fz::SafePtr<fz::SafePtr<uint64_t>> sets(_ppi_count + _ispgp_count);
@@ -783,7 +783,7 @@ void SimulationAcFemFreqD3Tet<O>::Impl::_assemble_fi_part_for_pressure()
 }
 
 template<ElementOrder O>
-void SimulationAcFemFreqD3Tet<O>::Impl::_assemble_freq_independent_parts()
+void SimulationFemHelmTet<O>::Impl::_assemble_freq_independent_parts()
 {   
     _allocate_a();
     _allocate_b();

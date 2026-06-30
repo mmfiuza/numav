@@ -8,12 +8,10 @@ int main()
 
     // create the simulation object with some numerical method
     auto s = Simulation<
-        Phenomenon::ACOUSTIC,
         NumericalMethod::FEM,
-        Domain::FREQUENCY,
-        Dimension::D3,
+        Equation::HELMHOLTZ,
         ElementShape::TETRAHEDRON,
-        ElementOrder::O1
+        ElementOrder::LINEAR
     >();
 
     // load the mesh

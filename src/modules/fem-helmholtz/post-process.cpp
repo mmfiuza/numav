@@ -1,11 +1,11 @@
 // Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
-#include "modules/ac-fem-freq-d3/impl.hpp"
+#include "modules/fem-helmholtz/impl.hpp"
 
 namespace numav {
 
 template <ElementOrder O>
-void SimulationAcFemFreqD3Tet<O>::Impl::_post_process()
+void SimulationFemHelmTet<O>::Impl::_post_process()
 {
     // TODO   
 }
