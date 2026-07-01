@@ -400,6 +400,10 @@ template <ElementOrder O>
 void SimulationFemHelmTet<O>::Impl::_check_if_it_can_run() {
     _check_if_mesh_is_defined();
     _check_if_did_run();
+    if (_hdf5_file_path.empty()) {
+        error("Result export path not defined."
+            " Call set_result_export_path to do so.");
+    }
     if (!_is_any_source_defined){
         error("No sound source was defined."
             " Call add_sound_source to do so.");
