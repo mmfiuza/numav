@@ -18,6 +18,7 @@ export Simulation
 # export functions
 export
     create_simulation,
+    set_frequency!,
     set_maximum_frequency!,
     set_frequency_range!,
     set_frequency_steps_count!,
@@ -137,9 +138,6 @@ function _cmplx_split_and_store(f::Function)
     return (f_real, f_imag)
 end
 
-struct _Empty end
-const _empty = _Empty()
-
 function create_simulation(;
     numerical_method::Symbol,
     equation::Symbol,
@@ -163,6 +161,70 @@ function create_simulation(;
         args = (args..., ElementOrder.quadratic)
     end
     return Simulation{args...}()
+end
+
+function cubspace(start::Real, finish::Real, num_points::Integer)
+    @assert num_points != 0 && num_points != 1
+    x = range(0, 1, length=num_points)
+    return @. cbrt( start^3 + (finish^3 - start^3) * x );
+end
+
+function create_freq_vector(
+    freq_min::Real,
+    freq_max::Real,
+    step_count::Integer,
+    sampling_density::Symbol
+)
+    if sampling_density == :constant
+        return Vector(range(freq_min, freq_max, length=step_count))
+    elseif sampling_density == :quadratic
+        return Vector(cubspace(freq_min, freq_max, step_count))
+    else
+        throw(ArgumentError(
+            "`sampling_density` must be `:constant` or `:quadratic`"
+        ))
+    end
+end
+
+function set_frequency!( 
+    simulation::Simulation{
+        NumericalMethod.fem,
+        Equation.helmholtz,
+        ElementShape.tetrahedron,
+        O
+    };
+    min::Union{Real, Nothing} = nothing,
+    max::Union{Real, Nothing} = nothing,
+    step_count::Union{Integer, Nothing} = nothing,
+    sampling_density::Union{Symbol, Nothing} = nothing,
+    steps::Union{AbstractVector{<:Real}, Nothing} = nothing
+) where O
+    if isnothing(max) && isnothing(steps)
+        throw(ArgumentError("Invalid argument combination"))
+    end
+
+    if !isnothing(max) && !isnothing(steps)
+        throw(ArgumentError("Invalid argument combination"))
+    end
+
+    if !isnothing(steps)
+        if (
+            !isnothing(min) ||
+            !isnothing(step_count) ||
+            !isnothing(sampling_density)
+        )
+            throw(ArgumentError("Invalid argument combination"))
+        end
+    end
+
+    if !isnothing(max)
+        min = something(min, 0)
+        step_count = something(step_count, 409)
+        sampling_density = something(sampling_density, :quadratic)
+        steps = create_freq_vector(min, max, step_count, sampling_density)
+    end
+
+    set_frequency_steps!(simulation, Float64.(steps))
 end
 
 function add_volume_material!( 
@@ -210,7 +272,7 @@ function add_surface_material!(
         O
     };
     physical_group::Integer,
-    impedance::Union{Function, Number, String, _Empty},
+    impedance::Union{Function, Number, String},
 ) where O
     impedance_args =
     if impedance isa Function
@@ -236,44 +298,37 @@ function add_sound_source!(
         ElementShape.tetrahedron,
         O
     };
-    coordinates::Union{Vector, _Empty} = _empty,
-    physical_group::Union{Integer, _Empty} = _empty,
-    volume_velocity::Union{Function, Number, String, _Empty} = _empty,
-    particle_velocity::Union{Function, Number, String, _Empty} = _empty,
-    pressure::Union{Function, Number, String, _Empty} = _empty
+    coordinates::Union{AbstractVector{<:Real}, Nothing} = nothing,
+    physical_group::Union{Integer, Nothing} = nothing,
+    volume_velocity::Union{Function, Number, String, Nothing} = nothing,
+    particle_velocity::Union{Function, Number, String, Nothing} = nothing,
+    pressure::Union{Function, Number, String, Nothing} = nothing
 ) where O
-    if coordinates == _empty && physical_group == _empty
+    if isnothing(coordinates) && isnothing(physical_group)
         throw(ArgumentError(
             "`coordinates` and `physical_group` not defined"
         ))
     end
-    if coordinates != _empty && physical_group != _empty
+    if !isnothing(coordinates) && !isnothing(physical_group)
         throw(ArgumentError(
             "`coordinates` and `physical_group` defined simultaneously"
         ))
     end
-    non_empty_count = 0
-    if volume_velocity != _empty
-        non_empty_count += 1
-    end
-    if particle_velocity != _empty
-        non_empty_count += 1
-    end
-    if pressure != _empty
-        non_empty_count += 1
-    end
-    if non_empty_count == 0
+    pq_count = count(
+        !isnothing, (volume_velocity, particle_velocity, pressure)
+    )
+    if pq_count == 0
         throw(ArgumentError(
             "`volume_velocity`, `particle_velocity` and `pressure` not defined"
         ))
     end
-    if non_empty_count > 1
+    if pq_count > 1
         throw(ArgumentError(
             "`volume_velocity`, `particle_velocity` or `pressure` defined " *
             "simultaneously"
         ))
     end
-    if coordinates != _empty && length(coordinates) != 3
+    if !isnothing(coordinates) && length(coordinates) != 3
         throw(ArgumentError(
             "`coordinates` vector does not have 3 elements"
         ))
@@ -281,13 +336,13 @@ function add_sound_source!(
 
     # Check if volume_velocity, particle_velocity or pressure was given
     pqv = Ref{Any}()
-    if volume_velocity != _empty
+    if !isnothing(volume_velocity)
         pq_type = PhysicalQuantity.volume_velocity
         pqv[] = volume_velocity
-    elseif particle_velocity != _empty
+    elseif !isnothing(particle_velocity)
         pq_type = PhysicalQuantity.particle_velocity
         pqv[] = particle_velocity
-    elseif pressure != _empty
+    elseif !isnothing(pressure)
         pq_type = PhysicalQuantity.pressure
         pqv[] = pressure
     end
@@ -302,9 +357,9 @@ function add_sound_source!(
     end
 
     source_args =
-    if coordinates != _empty
+    if !isnothing(coordinates)
         (SourceType.point, Float64.(coordinates))
-    elseif physical_group != _empty
+    elseif !isnothing(physical_group)
         (SourceType.surface, UInt64(physical_group))
     end
 
