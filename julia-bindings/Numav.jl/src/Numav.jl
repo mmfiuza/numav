@@ -18,16 +18,17 @@ export Simulation
 # export functions
 export
     create_simulation,
-    set_maximum_frequency,
-    set_frequency_range,
-    set_frequency_steps_count,
-    set_frequency_sampling_density,
-    set_frequency_steps,
-    load_mesh,
-    add_volume_material,
-    add_sound_source,
-    add_surface_material,
-    set_result_export_path
+    set_maximum_frequency!,
+    set_frequency_range!,
+    set_frequency_steps_count!,
+    set_frequency_sampling_density!,
+    set_frequency_steps!,
+    load_mesh!,
+    add_volume_material!,
+    add_sound_source!,
+    add_surface_material!,
+    set_result_export_path!,
+    run!
 
 # wrap the NumericalMethod enum class
 module NumericalMethod
@@ -164,7 +165,7 @@ function create_simulation(;
     return Simulation{args...}()
 end
 
-function add_volume_material( 
+function add_volume_material!( 
     simulation::Simulation{
         NumericalMethod.fem,
         Equation.helmholtz,
@@ -193,7 +194,7 @@ function add_volume_material(
         (speed_of_sound,)
     end
 
-    _add_volume_material(
+    _add_volume_material!(
         simulation,
         UInt64(physical_group),
         density_args...,
@@ -201,7 +202,7 @@ function add_volume_material(
     )
 end
 
-function add_surface_material( 
+function add_surface_material!( 
     simulation::Simulation{
         NumericalMethod.fem,
         Equation.helmholtz,
@@ -220,7 +221,7 @@ function add_surface_material(
         (impedance,)
     end
 
-    _add_surface_material(
+    _add_surface_material!(
         simulation,
         UInt64(physical_group),
         PhysicalQuantity.impedance,
@@ -228,7 +229,7 @@ function add_surface_material(
     )
 end
 
-function add_sound_source( 
+function add_sound_source!( 
     simulation::Simulation{
         NumericalMethod.fem,
         Equation.helmholtz,
@@ -307,19 +308,7 @@ function add_sound_source(
         (SourceType.surface, UInt64(physical_group))
     end
 
-    _add_sound_source(simulation, source_args..., pq_type, pq_args...)
-end
-
-# "run" is a native julia function from Base, so we extended it
-function Base.run(
-    simulation::Simulation{
-        NumericalMethod.fem,
-        Equation.helmholtz,
-        ElementShape.tetrahedron,
-        O
-    }
-) where O
-    _run(simulation)
+    _add_sound_source!(simulation, source_args..., pq_type, pq_args...)
 end
 
 end # module Numav

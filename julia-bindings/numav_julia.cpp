@@ -156,28 +156,28 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
     >([](auto&& wrapped) {
         using WrappedT = typename std::decay_t<decltype(wrapped)>::type;
         wrapped.template constructor<>();
-        wrapped.module().method("set_maximum_frequency",
+        wrapped.module().method("set_maximum_frequency!",
             []( WrappedT& w,
                 const Float freq_max
             ) { w.set_maximum_frequency(freq_max); }
         );
-        wrapped.module().method("set_frequency_range",
+        wrapped.module().method("set_frequency_range!",
             []( WrappedT& w,
                 const Float freq_min,
                 const Float freq_max
             ) { w.set_frequency_range(freq_min, freq_max); }
         );
-        wrapped.module().method("set_frequency_steps_count",
+        wrapped.module().method("set_frequency_steps_count!",
             []( WrappedT& w,
                 const uint64_t freq_steps_count
             ) { w.set_frequency_steps_count(freq_steps_count); }
         );
-        wrapped.module().method("set_frequency_sampling_density",
+        wrapped.module().method("set_frequency_sampling_density!",
             []( WrappedT& w,
                 const FrequencySamplingDensity pqv1
             ) { w.set_frequency_sampling_density(pqv1); }
         );
-        wrapped.module().method("set_frequency_steps",
+        wrapped.module().method("set_frequency_steps!",
             []( WrappedT& w,
                 const jlcxx::ArrayRef<Float> freq_steps
             ) { 
@@ -189,14 +189,14 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
                 w.set_frequency_steps(cpp_vec);
             }
         );
-        wrapped.module().method("load_mesh",
+        wrapped.module().method("load_mesh!",
             []( WrappedT& w,
                 const char* const path_to_mesh
             ) { w.load_mesh(path_to_mesh); }
         );
 
         // _add_volume_material
-        wrapped.module().method("_add_volume_material",
+        wrapped.module().method("_add_volume_material!",
             []( WrappedT& w,
                 const uint64_t evpg,
                 jlcxx::SafeCFunction pqv1_re,
@@ -211,7 +211,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
                 );
             }
         );
-        wrapped.module().method("_add_volume_material",
+        wrapped.module().method("_add_volume_material!",
             []( WrappedT& w,
                 const uint64_t evpg,
                 jlcxx::SafeCFunction pqv1_re,
@@ -223,7 +223,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
                 );
             }
         );
-        wrapped.module().method("_add_volume_material",
+        wrapped.module().method("_add_volume_material!",
             []( WrappedT& w,
                 const uint64_t evpg,
                 jlcxx::SafeCFunction pqv1_re,
@@ -235,7 +235,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
                 );
             }
         );
-        wrapped.module().method("_add_volume_material",
+        wrapped.module().method("_add_volume_material!",
             []( WrappedT& w,
                 const uint64_t evpg,
                 const Cmplx pqv1,
@@ -247,21 +247,21 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
                 );
             }
         );
-        wrapped.module().method("_add_volume_material",
+        wrapped.module().method("_add_volume_material!",
             []( WrappedT& w,
                 const uint64_t evpg,
                 const Cmplx pqv1,
                 const Cmplx pqv2
             ) { w.add_volume_material(evpg, pqv1, pqv2); }
         );
-        wrapped.module().method("_add_volume_material",
+        wrapped.module().method("_add_volume_material!",
             []( WrappedT& w,
                 const uint64_t evpg,
                 const Cmplx pqv1,
                 const char* const pqv2
             ) { w.add_volume_material(evpg, pqv1, pqv2); }
         );
-        wrapped.module().method("_add_volume_material",
+        wrapped.module().method("_add_volume_material!",
             []( WrappedT& w,
                 const uint64_t evpg,
                 const char* const pqv1,
@@ -272,14 +272,14 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
                     evpg, pqv1, cmplx_func(pqv2_re, pqv2_im));
                 }
         );
-        wrapped.module().method("_add_volume_material",
+        wrapped.module().method("_add_volume_material!",
             []( WrappedT& w,
                 const uint64_t evpg,
                 const char* const pqv1,
                 const Cmplx pqv2
             ) { w.add_volume_material(evpg, pqv1, pqv2); }
         );
-        wrapped.module().method("_add_volume_material",
+        wrapped.module().method("_add_volume_material!",
             []( WrappedT& w,
                 const uint64_t evpg,
                 const char* const pqv1,
@@ -288,7 +288,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
         );
 
         // _add_surface_material
-        wrapped.module().method("_add_surface_material",
+        wrapped.module().method("_add_surface_material!",
             []( WrappedT& w,
                 const uint64_t espg,
                 const PhysicalQuantity pq,
@@ -296,14 +296,14 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
                 jlcxx::SafeCFunction pqv_im
             ) { w.add_surface_material(espg, pq, cmplx_func(pqv_re, pqv_im)); }
         );
-        wrapped.module().method("_add_surface_material",
+        wrapped.module().method("_add_surface_material!",
             []( WrappedT& w,
                 const uint64_t espg,
                 const PhysicalQuantity pq,
                 const Cmplx pqv
             ) { w.add_surface_material(espg, pq, pqv); }
         );
-        wrapped.module().method("_add_surface_material",
+        wrapped.module().method("_add_surface_material!",
             []( WrappedT& w,
                 const uint64_t espg,
                 const PhysicalQuantity pq,
@@ -312,7 +312,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
         );
         
         // _add_sound_source
-        wrapped.module().method("_add_sound_source",
+        wrapped.module().method("_add_sound_source!",
             []( WrappedT& w,
                 const SourceType source_type,
                 const jlcxx::ArrayRef<Float> coords,
@@ -328,7 +328,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
                 );
             }
         );
-        wrapped.module().method("_add_sound_source",
+        wrapped.module().method("_add_sound_source!",
             []( WrappedT& w,
                 const SourceType source_type,
                 const jlcxx::ArrayRef<Float> coords,
@@ -338,7 +338,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
                 w.add_sound_source(source_type, jl2cpp_array(coords), pq, pqv);
             }
         );
-        wrapped.module().method("_add_sound_source",
+        wrapped.module().method("_add_sound_source!",
             []( WrappedT& w,
                 const SourceType source_type,
                 const jlcxx::ArrayRef<Float> coords,
@@ -348,7 +348,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
                 w.add_sound_source(source_type, jl2cpp_array(coords), pq, pqv);
             }
         );
-        wrapped.module().method("_add_sound_source",
+        wrapped.module().method("_add_sound_source!",
             []( WrappedT& w,
                 const SourceType source_type,
                 const uint64_t espg,
@@ -361,7 +361,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
                 );
             }
         );
-        wrapped.module().method("_add_sound_source",
+        wrapped.module().method("_add_sound_source!",
             []( WrappedT& w,
                 const SourceType source_type,
                 const uint64_t espg,
@@ -369,7 +369,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
                 const Cmplx pqv
             ) { w.add_sound_source(source_type, espg, pq, pqv); }
         );
-        wrapped.module().method("_add_sound_source",
+        wrapped.module().method("_add_sound_source!",
             []( WrappedT& w,
                 const SourceType source_type,
                 const uint64_t espg,
@@ -378,17 +378,17 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
             ) { w.add_sound_source(source_type, espg, pq, pqv); }
         );
 
-        wrapped.module().method("add_receiver", 
+        wrapped.module().method("add_receiver!", 
             []( WrappedT& w,
                 const jlcxx::ArrayRef<Float> coords
             ) { w.add_receiver(jl2cpp_array(coords)); }
         );
-        wrapped.module().method("set_result_export_path", 
+        wrapped.module().method("set_result_export_path!", 
             []( WrappedT& w,
                 const char* const path_to_hdf5_file
             ) { w.set_result_export_path(path_to_hdf5_file); }
         );
-        wrapped.module().method("_run", 
+        wrapped.module().method("run!", 
             [](WrappedT& w) { w.run(); }
         );
     });
