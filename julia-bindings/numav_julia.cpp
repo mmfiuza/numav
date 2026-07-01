@@ -7,18 +7,6 @@
 
 using namespace numav;
 
-// Phenomenon enum class
-JLCXX_MODULE Phenomenon_module(jlcxx::Module& mod) {
-    mod.add_enum<Phenomenon>("Phenomenon",
-        std::vector<const char*>({
-            "acoustic"
-        }),
-        std::vector<uint64_t>({
-            static_cast<uint64_t>(Phenomenon::ACOUSTIC)
-        })
-    );
-}
-
 // NumericalMethod enum class
 JLCXX_MODULE NumericalMethod_module(jlcxx::Module& mod) {
     mod.add_enum<NumericalMethod>("NumericalMethod",
@@ -31,26 +19,40 @@ JLCXX_MODULE NumericalMethod_module(jlcxx::Module& mod) {
     );
 }
 
-// Domain enum class
-JLCXX_MODULE Domain_module(jlcxx::Module& mod) {
-    mod.add_enum<Domain>("Domain",
+// Equation enum class
+JLCXX_MODULE Equation_module(jlcxx::Module& mod) {
+    mod.add_enum<Equation>("Equation",
         std::vector<const char*>({
-            "frequency"
+            "helmholtz"
         }),
         std::vector<uint64_t>({
-            static_cast<uint64_t>(Domain::FREQUENCY)
+            static_cast<uint64_t>(Equation::HELMHOLTZ)
         })
     );
 }
 
-// Dimension enum class
-JLCXX_MODULE Dimension_module(jlcxx::Module& mod) {
-    mod.add_enum<Dimension>("Dimension",
+// ElementShape enum class
+JLCXX_MODULE ElementShape_module(jlcxx::Module& mod) {
+    mod.add_enum<ElementShape>("ElementShape",
         std::vector<const char*>({
-            "d3"
+            "tetrahedron"
         }),
         std::vector<uint64_t>({
-            static_cast<uint64_t>(Dimension::D3)
+            static_cast<uint64_t>(ElementShape::TETRAHEDRON)
+        })
+    );
+}
+
+// ElementOrder enum class
+JLCXX_MODULE ElementOrder_module(jlcxx::Module& mod) {
+    mod.add_enum<ElementOrder>("ElementOrder",
+        std::vector<const char*>({
+            "linear",
+            "quadratic"
+        }),
+        std::vector<uint64_t>({
+            static_cast<uint64_t>(ElementOrder::LINEAR),
+            static_cast<uint64_t>(ElementOrder::QUADRATIC)
         })
     );
 }
@@ -87,32 +89,6 @@ JLCXX_MODULE PhysicalQuantity_module(jlcxx::Module& mod) {
     );
 }
 
-// ElementShape enum class
-JLCXX_MODULE ElementShape_module(jlcxx::Module& mod) {
-    mod.add_enum<ElementShape>("ElementShape",
-        std::vector<const char*>({
-            "tetrahedron"
-        }),
-        std::vector<uint64_t>({
-            static_cast<uint64_t>(ElementShape::TETRAHEDRON)
-        })
-    );
-}
-
-// ElementOrder enum class
-JLCXX_MODULE ElementOrder_module(jlcxx::Module& mod) {
-    mod.add_enum<ElementOrder>("ElementOrder",
-        std::vector<const char*>({
-            "o1",
-            "o2"
-        }),
-        std::vector<uint64_t>({
-            static_cast<uint64_t>(ElementOrder::O1),
-            static_cast<uint64_t>(ElementOrder::O2)
-        })
-    );
-}
-
 // FrequencySamplingDensity enum class
 JLCXX_MODULE FrequencySamplingDensity_module(jlcxx::Module& mod) {
     mod.add_enum<FrequencySamplingDensity>("FrequencySamplingDensity",
@@ -129,22 +105,13 @@ JLCXX_MODULE FrequencySamplingDensity_module(jlcxx::Module& mod) {
 
 namespace jlcxx
 {
-    template<
-        Phenomenon PHE,
-        NumericalMethod NUM,
-        Domain DOM,
-        Dimension DIM,
-        ElementShape SHA,
-        ElementOrder ORD
-    >
-    struct BuildParameterList<Simulation<PHE, NUM, DOM, DIM, SHA, ORD>> {
+    template<NumericalMethod N, Equation E, ElementShape S, ElementOrder O>
+    struct BuildParameterList<Simulation<N, E, S, O>> {
         typedef ParameterList<
-            std::integral_constant<Phenomenon, PHE>,
-            std::integral_constant<NumericalMethod, NUM>,
-            std::integral_constant<Domain, DOM>,
-            std::integral_constant<Dimension, DIM>,
-            std::integral_constant<ElementShape, SHA>,
-            std::integral_constant<ElementOrder, ORD>
+            std::integral_constant<NumericalMethod, N>,
+            std::integral_constant<Equation, E>,
+            std::integral_constant<ElementShape, S>,
+            std::integral_constant<ElementOrder, O>
         > type;
     };
 }
@@ -171,26 +138,20 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
             jlcxx::TypeVar<1>,
             jlcxx::TypeVar<2>,
             jlcxx::TypeVar<3>,
-            jlcxx::TypeVar<4>,
-            jlcxx::TypeVar<5>,
-            jlcxx::TypeVar<6>
+            jlcxx::TypeVar<4>
         >
     >("Simulation").apply<
         Simulation<
-            Phenomenon::ACOUSTIC,
             NumericalMethod::FEM,
-            Domain::FREQUENCY,
-            Dimension::D3,
+            Equation::HELMHOLTZ,
             ElementShape::TETRAHEDRON,
-            ElementOrder::O1
+            ElementOrder::LINEAR
         >,
         Simulation<
-            Phenomenon::ACOUSTIC,
             NumericalMethod::FEM,
-            Domain::FREQUENCY,
-            Dimension::D3,
+            Equation::HELMHOLTZ,
             ElementShape::TETRAHEDRON,
-            ElementOrder::O2
+            ElementOrder::QUADRATIC
         >
     >([](auto&& wrapped) {
         using WrappedT = typename std::decay_t<decltype(wrapped)>::type;

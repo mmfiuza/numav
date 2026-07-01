@@ -4,14 +4,12 @@ module Numav
 
 # export enums
 export 
-    Phenomenon,
     NumericalMethod,
-    Domain,
-    Dimension,
-    SourceType,
-    PhysicalQuantity,
+    Equation,
     ElementShape,
     ElementOrder,
+    SourceType,
+    PhysicalQuantity,
     FrequencySamplingDensity
 
 # export structs
@@ -19,6 +17,7 @@ export Simulation
 
 # export functions
 export
+    create_simulation,
     set_maximum_frequency,
     set_frequency_range,
     set_frequency_steps_count,
@@ -30,16 +29,6 @@ export
     add_surface_material,
     set_result_export_path
 
-# wrap the Phenomenon enum class
-module Phenomenon
-    using CxxWrap
-    using numav_julia_jll
-    @wrapmodule(() -> libnumav_julia, :Phenomenon_module)
-    function __init__()
-        @initcxx
-    end
-end
-
 # wrap the NumericalMethod enum class
 module NumericalMethod
     using CxxWrap
@@ -50,41 +39,11 @@ module NumericalMethod
     end
 end
 
-# wrap the Domain enum class
-module Domain
+# wrap the Equation enum class
+module Equation
     using CxxWrap
     using numav_julia_jll
-    @wrapmodule(() -> libnumav_julia, :Domain_module)
-    function __init__()
-        @initcxx
-    end
-end
-
-# wrap the Dimension enum class
-module Dimension
-    using CxxWrap
-    using numav_julia_jll
-    @wrapmodule(() -> libnumav_julia, :Dimension_module)
-    function __init__()
-        @initcxx
-    end
-end
-
-# wrap the SourceType enum class
-module SourceType
-    using CxxWrap
-    using numav_julia_jll
-    @wrapmodule(() -> libnumav_julia, :SourceType_module)
-    function __init__()
-        @initcxx
-    end
-end
-
-# wrap the PhysicalQuantity enum class
-module PhysicalQuantity
-    using CxxWrap
-    using numav_julia_jll
-    @wrapmodule(() -> libnumav_julia, :PhysicalQuantity_module)
+    @wrapmodule(() -> libnumav_julia, :Equation_module)
     function __init__()
         @initcxx
     end
@@ -105,6 +64,26 @@ module ElementOrder
     using CxxWrap
     using numav_julia_jll
     @wrapmodule(() -> libnumav_julia, :ElementOrder_module)
+    function __init__()
+        @initcxx
+    end
+end
+
+# wrap the SourceType enum class
+module SourceType
+    using CxxWrap
+    using numav_julia_jll
+    @wrapmodule(() -> libnumav_julia, :SourceType_module)
+    function __init__()
+        @initcxx
+    end
+end
+
+# wrap the PhysicalQuantity enum class
+module PhysicalQuantity
+    using CxxWrap
+    using numav_julia_jll
+    @wrapmodule(() -> libnumav_julia, :PhysicalQuantity_module)
     function __init__()
         @initcxx
     end
@@ -160,19 +139,42 @@ end
 struct _Empty end
 const _empty = _Empty()
 
+function create_simulation(;
+    numerical_method::Symbol,
+    equation::Symbol,
+    element_shape::Symbol,
+    element_order::Symbol
+)
+    args = ()
+    if numerical_method == :fem
+        args = (args..., NumericalMethod.fem)
+    end
+    if equation == :helmholtz 
+        args = (args..., Equation.helmholtz)
+    end
+    if element_shape == :tetrahedron
+        args = (args..., ElementShape.tetrahedron)
+    end
+    if element_order == :linear
+        args = (args..., ElementOrder.linear)
+    end
+    if element_order == :quadratic
+        args = (args..., ElementOrder.quadratic)
+    end
+    return Simulation{args...}()
+end
+
 function add_volume_material( 
     simulation::Simulation{
-        Phenomenon.acoustic,
         NumericalMethod.fem,
-        Domain.frequency,
-        Dimension.d3,
+        Equation.helmholtz,
         ElementShape.tetrahedron,
-        ElementOrder.o1
+        O
     };
     physical_group::Integer,
     density::Union{Function, Number, String},
-    sound_speed::Union{Function, Number, String}
-)
+    speed_of_sound::Union{Function, Number, String}
+) where O
     density_args =
     if density isa Function
         _cmplx_split_and_store(density)
@@ -182,35 +184,33 @@ function add_volume_material(
         (density,)
     end
 
-    sound_speed_args =
-    if sound_speed isa Function
-        _cmplx_split_and_store(sound_speed)
-    elseif sound_speed isa Number
-        (ComplexF64(sound_speed),)
+    speed_of_sound_args =
+    if speed_of_sound isa Function
+        _cmplx_split_and_store(speed_of_sound)
+    elseif speed_of_sound isa Number
+        (ComplexF64(speed_of_sound),)
     else
-        (sound_speed,)
+        (speed_of_sound,)
     end
 
     _add_volume_material(
         simulation,
         UInt64(physical_group),
         density_args...,
-        sound_speed_args...
+        speed_of_sound_args...
     )
 end
 
 function add_surface_material( 
     simulation::Simulation{
-        Phenomenon.acoustic,
         NumericalMethod.fem,
-        Domain.frequency,
-        Dimension.d3,
+        Equation.helmholtz,
         ElementShape.tetrahedron,
-        ElementOrder.o1
+        O
     };
     physical_group::Integer,
     impedance::Union{Function, Number, String, _Empty},
-)
+) where O
     impedance_args =
     if impedance isa Function
         _cmplx_split_and_store(impedance)
@@ -230,19 +230,17 @@ end
 
 function add_sound_source( 
     simulation::Simulation{
-        Phenomenon.acoustic,
         NumericalMethod.fem,
-        Domain.frequency,
-        Dimension.d3,
+        Equation.helmholtz,
         ElementShape.tetrahedron,
-        ElementOrder.o1
+        O
     };
     coordinates::Union{Vector, _Empty} = _empty,
     physical_group::Union{Integer, _Empty} = _empty,
     volume_velocity::Union{Function, Number, String, _Empty} = _empty,
     particle_velocity::Union{Function, Number, String, _Empty} = _empty,
     pressure::Union{Function, Number, String, _Empty} = _empty
-)
+) where O
     if coordinates == _empty && physical_group == _empty
         throw(ArgumentError(
             "`coordinates` and `physical_group` not defined"
@@ -315,14 +313,12 @@ end
 # "run" is a native julia function from Base, so we extended it
 function Base.run(
     simulation::Simulation{
-        Phenomenon.acoustic,
         NumericalMethod.fem,
-        Domain.frequency,
-        Dimension.d3,
+        Equation.helmholtz,
         ElementShape.tetrahedron,
-        ElementOrder.o1
+        O
     }
-) 
+) where O
     _run(simulation)
 end
 
