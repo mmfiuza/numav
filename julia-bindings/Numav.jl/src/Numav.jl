@@ -19,11 +19,6 @@ export Simulation
 export
     create_simulation,
     set_frequency!,
-    set_maximum_frequency!,
-    set_frequency_range!,
-    set_frequency_steps_count!,
-    set_frequency_sampling_density!,
-    set_frequency_steps!,
     load_mesh!,
     add_volume_material!,
     add_sound_source!,
@@ -163,27 +158,10 @@ function create_simulation(;
     return Simulation{args...}()
 end
 
-function cubspace(start::Real, finish::Real, num_points::Integer)
-    @assert num_points != 0 && num_points != 1
-    x = range(0, 1, length=num_points)
-    return @. cbrt( start^3 + (finish^3 - start^3) * x );
-end
-
-function create_freq_vector(
-    freq_min::Real,
-    freq_max::Real,
-    step_count::Integer,
-    sampling_density::Symbol
-)
-    if sampling_density == :constant
-        return Vector(range(freq_min, freq_max, length=step_count))
-    elseif sampling_density == :quadratic
-        return Vector(cubspace(freq_min, freq_max, step_count))
-    else
-        throw(ArgumentError(
-            "`sampling_density` must be `:constant` or `:quadratic`"
-        ))
-    end
+function cubic_range(start::Real, stop::Real, length::Integer)
+    @assert length != 0 && length != 1
+    x = range(0, 1, length=length)
+    return @. cbrt( start^3 + (stop^3 - start^3) * x );
 end
 
 function set_frequency!( 
@@ -193,38 +171,58 @@ function set_frequency!(
         ElementShape.tetrahedron,
         O
     };
-    min::Union{Real, Nothing} = nothing,
     max::Union{Real, Nothing} = nothing,
-    step_count::Union{Integer, Nothing} = nothing,
+    vector::Union{AbstractVector{<:Real}, Nothing} = nothing,
+    min::Union{Real, Nothing} = nothing,
+    length::Union{Integer, Nothing} = nothing,
     sampling_density::Union{Symbol, Nothing} = nothing,
-    steps::Union{AbstractVector{<:Real}, Nothing} = nothing
+    step::Union{Real, Nothing} = nothing,
 ) where O
-    if isnothing(max) && isnothing(steps)
-        throw(ArgumentError("Invalid argument combination"))
+    if isnothing(max) && isnothing(vector)
+        throw(ArgumentError("`max` or `vector` must be passed"))
     end
-
-    if !isnothing(max) && !isnothing(steps)
-        throw(ArgumentError("Invalid argument combination"))
-    end
-
-    if !isnothing(steps)
+    if !isnothing(vector)
         if (
+            !isnothing(max) ||
             !isnothing(min) ||
-            !isnothing(step_count) ||
-            !isnothing(sampling_density)
+            !isnothing(length) ||
+            !isnothing(sampling_density) ||
+            !isnothing(step)
         )
-            throw(ArgumentError("Invalid argument combination"))
+            throw(ArgumentError(
+                "If `vector` is passed, no other parameter is allowed"
+            ))
         end
     end
-
+    if !isnothing(step) && !isnothing(length)
+        throw(ArgumentError(
+            "`step` and `length` cannot be passed simultaneously"
+        ))
+    end
+    if !isnothing(step) && !isnothing(sampling_density)
+        throw(ArgumentError(
+            "`step` and `sampling_density` cannot be passed simultaneously"
+        ))
+    end
     if !isnothing(max)
         min = something(min, 0)
-        step_count = something(step_count, 4096)
-        sampling_density = something(sampling_density, :quadratic)
-        steps = create_freq_vector(min, max, step_count, sampling_density)
+        if !isnothing(step)
+            vector = range(min, max, step=step)
+        else
+            length = something(length, 4096)
+            sampling_density = something(sampling_density, :quadratic)
+            if sampling_density == :constant
+                vector = range(min, max, length=length)
+            elseif sampling_density == :quadratic
+                vector = cubic_range(min, max, length)
+            else
+                throw(ArgumentError(
+                    "`sampling_density` must be `:constant` or `:quadratic`"
+                ))
+            end
+        end
     end
-
-    set_frequency_steps!(simulation, Float64.(steps))
+    set_frequency_steps!(simulation, Float64.(Vector(vector)))
 end
 
 function add_volume_material!( 
