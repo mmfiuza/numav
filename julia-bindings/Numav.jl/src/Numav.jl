@@ -2,16 +2,6 @@
 
 module Numav
 
-# export enums
-export 
-    NumericalMethod,
-    Equation,
-    ElementShape,
-    ElementOrder,
-    SourceType,
-    PhysicalQuantity,
-    FrequencySamplingDensity
-
 # export structs
 export Simulation
 
@@ -26,77 +16,7 @@ export
     set_result_export_path!,
     run!
 
-# wrap the NumericalMethod enum class
-module NumericalMethod
-    using CxxWrap
-    using numav_julia_jll
-    @wrapmodule(() -> libnumav_julia, :NumericalMethod_module)
-    function __init__()
-        @initcxx
-    end
-end
-
-# wrap the Equation enum class
-module Equation
-    using CxxWrap
-    using numav_julia_jll
-    @wrapmodule(() -> libnumav_julia, :Equation_module)
-    function __init__()
-        @initcxx
-    end
-end
-
-# wrap the ElementShape enum class
-module ElementShape
-    using CxxWrap
-    using numav_julia_jll
-    @wrapmodule(() -> libnumav_julia, :ElementShape_module)
-    function __init__()
-        @initcxx
-    end
-end
-
-# wrap the ElementOrder enum class
-module ElementOrder
-    using CxxWrap
-    using numav_julia_jll
-    @wrapmodule(() -> libnumav_julia, :ElementOrder_module)
-    function __init__()
-        @initcxx
-    end
-end
-
-# wrap the SourceType enum class
-module SourceType
-    using CxxWrap
-    using numav_julia_jll
-    @wrapmodule(() -> libnumav_julia, :SourceType_module)
-    function __init__()
-        @initcxx
-    end
-end
-
-# wrap the PhysicalQuantity enum class
-module PhysicalQuantity
-    using CxxWrap
-    using numav_julia_jll
-    @wrapmodule(() -> libnumav_julia, :PhysicalQuantity_module)
-    function __init__()
-        @initcxx
-    end
-end
-
-# wrap the FrequencySamplingDensity enum class
-module FrequencySamplingDensity
-    using CxxWrap
-    using numav_julia_jll
-    @wrapmodule(() -> libnumav_julia, :FrequencySamplingDensity_module)
-    function __init__()
-        @initcxx
-    end
-end
-
-# wrap the main Numav module
+# wrap the C++ part
 using CxxWrap
 using numav_julia_jll
 @wrapmodule(() -> libnumav_julia)
@@ -141,19 +61,19 @@ function create_simulation(;
 )
     args = ()
     if numerical_method == :fem
-        args = (args..., NumericalMethod.fem)
+        args = (args..., NumericalMethod_fem)
     end
     if equation == :helmholtz 
-        args = (args..., Equation.helmholtz)
+        args = (args..., Equation_helmholtz)
     end
     if element_shape == :tetrahedron
-        args = (args..., ElementShape.tetrahedron)
+        args = (args..., ElementShape_tetrahedron)
     end
     if element_order == :linear
-        args = (args..., ElementOrder.linear)
+        args = (args..., ElementOrder_linear)
     end
     if element_order == :quadratic
-        args = (args..., ElementOrder.quadratic)
+        args = (args..., ElementOrder_quadratic)
     end
     return Simulation{args...}()
 end
@@ -166,9 +86,9 @@ end
 
 function set_frequency!( 
     simulation::Simulation{
-        NumericalMethod.fem,
-        Equation.helmholtz,
-        ElementShape.tetrahedron,
+        NumericalMethod_fem,
+        Equation_helmholtz,
+        ElementShape_tetrahedron,
         O
     };
     max::Union{Real, Nothing} = nothing,
@@ -227,9 +147,9 @@ end
 
 function add_volume_material!( 
     simulation::Simulation{
-        NumericalMethod.fem,
-        Equation.helmholtz,
-        ElementShape.tetrahedron,
+        NumericalMethod_fem,
+        Equation_helmholtz,
+        ElementShape_tetrahedron,
         O
     };
     physical_group::Integer,
@@ -264,9 +184,9 @@ end
 
 function add_surface_material!( 
     simulation::Simulation{
-        NumericalMethod.fem,
-        Equation.helmholtz,
-        ElementShape.tetrahedron,
+        NumericalMethod_fem,
+        Equation_helmholtz,
+        ElementShape_tetrahedron,
         O
     };
     physical_group::Integer,
@@ -284,16 +204,16 @@ function add_surface_material!(
     _add_surface_material!(
         simulation,
         UInt64(physical_group),
-        PhysicalQuantity.impedance,
+        PhysicalQuantity_impedance,
         impedance_args...
     )
 end
 
 function add_sound_source!( 
     simulation::Simulation{
-        NumericalMethod.fem,
-        Equation.helmholtz,
-        ElementShape.tetrahedron,
+        NumericalMethod_fem,
+        Equation_helmholtz,
+        ElementShape_tetrahedron,
         O
     };
     coordinates::Union{AbstractVector{<:Real}, Nothing} = nothing,
@@ -335,13 +255,13 @@ function add_sound_source!(
     # Check if volume_velocity, particle_velocity or pressure was given
     pqv = Ref{Any}()
     if !isnothing(volume_velocity)
-        pq_type = PhysicalQuantity.volume_velocity
+        pq_type = PhysicalQuantity_volume_velocity
         pqv[] = volume_velocity
     elseif !isnothing(particle_velocity)
-        pq_type = PhysicalQuantity.particle_velocity
+        pq_type = PhysicalQuantity_particle_velocity
         pqv[] = particle_velocity
     elseif !isnothing(pressure)
-        pq_type = PhysicalQuantity.pressure
+        pq_type = PhysicalQuantity_pressure
         pqv[] = pressure
     end
 
@@ -356,9 +276,9 @@ function add_sound_source!(
 
     source_args =
     if !isnothing(coordinates)
-        (SourceType.point, Float64.(coordinates))
+        (SourceType_point, Float64.(coordinates))
     elseif !isnothing(physical_group)
-        (SourceType.surface, UInt64(physical_group))
+        (SourceType_surface, UInt64(physical_group))
     end
 
     _add_sound_source!(simulation, source_args..., pq_type, pq_args...)

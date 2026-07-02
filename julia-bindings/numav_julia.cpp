@@ -7,102 +7,6 @@
 
 using namespace numav;
 
-// NumericalMethod enum class
-JLCXX_MODULE NumericalMethod_module(jlcxx::Module& mod) {
-    mod.add_enum<NumericalMethod>("NumericalMethod",
-        std::vector<const char*>({
-            "fem"
-        }),
-        std::vector<uint64_t>({
-            static_cast<uint64_t>(NumericalMethod::FEM)
-        })
-    );
-}
-
-// Equation enum class
-JLCXX_MODULE Equation_module(jlcxx::Module& mod) {
-    mod.add_enum<Equation>("Equation",
-        std::vector<const char*>({
-            "helmholtz"
-        }),
-        std::vector<uint64_t>({
-            static_cast<uint64_t>(Equation::HELMHOLTZ)
-        })
-    );
-}
-
-// ElementShape enum class
-JLCXX_MODULE ElementShape_module(jlcxx::Module& mod) {
-    mod.add_enum<ElementShape>("ElementShape",
-        std::vector<const char*>({
-            "tetrahedron"
-        }),
-        std::vector<uint64_t>({
-            static_cast<uint64_t>(ElementShape::TETRAHEDRON)
-        })
-    );
-}
-
-// ElementOrder enum class
-JLCXX_MODULE ElementOrder_module(jlcxx::Module& mod) {
-    mod.add_enum<ElementOrder>("ElementOrder",
-        std::vector<const char*>({
-            "linear",
-            "quadratic"
-        }),
-        std::vector<uint64_t>({
-            static_cast<uint64_t>(ElementOrder::LINEAR),
-            static_cast<uint64_t>(ElementOrder::QUADRATIC)
-        })
-    );
-}
-
-// SourceType enum class
-JLCXX_MODULE SourceType_module(jlcxx::Module& mod) {
-    mod.add_enum<SourceType>("SourceType",
-        std::vector<const char*>({
-            "point",
-            "surface"
-        }),
-        std::vector<uint64_t>({
-            static_cast<uint64_t>(SourceType::POINT),
-            static_cast<uint64_t>(SourceType::SURFACE),
-        })
-    );
-}
-
-// PhysicalQuantity enum class
-JLCXX_MODULE PhysicalQuantity_module(jlcxx::Module& mod) {
-    mod.add_enum<PhysicalQuantity>("PhysicalQuantity",
-        std::vector<const char*>({
-            "volume_velocity",
-            "particle_velocity",
-            "pressure",
-            "impedance"
-        }),
-        std::vector<uint64_t>({
-            static_cast<uint64_t>(PhysicalQuantity::VOLUME_VELOCITY),
-            static_cast<uint64_t>(PhysicalQuantity::PARTICLE_VELOCITY),
-            static_cast<uint64_t>(PhysicalQuantity::PRESSURE),
-            static_cast<uint64_t>(PhysicalQuantity::IMPEDANCE)
-        })
-    );
-}
-
-// FrequencySamplingDensity enum class
-JLCXX_MODULE FrequencySamplingDensity_module(jlcxx::Module& mod) {
-    mod.add_enum<FrequencySamplingDensity>("FrequencySamplingDensity",
-        std::vector<const char*>({
-            "constant",
-            "quadratic"
-        }),
-        std::vector<uint64_t>({
-            static_cast<uint64_t>(FrequencySamplingDensity::CONSTANT),
-            static_cast<uint64_t>(FrequencySamplingDensity::QUADRATIC)
-        })
-    );
-}
-
 namespace jlcxx
 {
     template<NumericalMethod N, Equation E, ElementShape S, ElementOrder O>
@@ -133,6 +37,64 @@ std::array<Float,3UL> jl2cpp_array(const jlcxx::ArrayRef<Float> jl_array) {
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
 {
+    mod.add_enum<NumericalMethod>("NumericalMethod",
+        std::vector<const char*>({
+            "NumericalMethod_fem"
+        }),
+        std::vector<uint64_t>({
+            static_cast<uint64_t>(NumericalMethod::FEM)
+        })
+    );
+    mod.add_enum<Equation>("Equation",
+        std::vector<const char*>({
+            "Equation_helmholtz"
+        }),
+        std::vector<uint64_t>({
+            static_cast<uint64_t>(Equation::HELMHOLTZ)
+        })
+    );
+    mod.add_enum<ElementShape>("ElementShape",
+        std::vector<const char*>({
+            "ElementShape_tetrahedron"
+        }),
+        std::vector<uint64_t>({
+            static_cast<uint64_t>(ElementShape::TETRAHEDRON)
+        })
+    );
+    mod.add_enum<ElementOrder>("ElementOrder",
+        std::vector<const char*>({
+            "ElementOrder_linear",
+            "ElementOrder_quadratic"
+        }),
+        std::vector<uint64_t>({
+            static_cast<uint64_t>(ElementOrder::LINEAR),
+            static_cast<uint64_t>(ElementOrder::QUADRATIC)
+        })
+    );
+    mod.add_enum<SourceType>("SourceType",
+        std::vector<const char*>({
+            "SourceType_point",
+            "SourceType_surface"
+        }),
+        std::vector<uint64_t>({
+            static_cast<uint64_t>(SourceType::POINT),
+            static_cast<uint64_t>(SourceType::SURFACE),
+        })
+    );
+    mod.add_enum<PhysicalQuantity>("PhysicalQuantity",
+        std::vector<const char*>({
+            "PhysicalQuantity_volume_velocity",
+            "PhysicalQuantity_particle_velocity",
+            "PhysicalQuantity_pressure",
+            "PhysicalQuantity_impedance"
+        }),
+        std::vector<uint64_t>({
+            static_cast<uint64_t>(PhysicalQuantity::VOLUME_VELOCITY),
+            static_cast<uint64_t>(PhysicalQuantity::PARTICLE_VELOCITY),
+            static_cast<uint64_t>(PhysicalQuantity::PRESSURE),
+            static_cast<uint64_t>(PhysicalQuantity::IMPEDANCE)
+        })
+    );
     mod.add_type<
         jlcxx::Parametric<
             jlcxx::TypeVar<1>,
@@ -156,27 +118,6 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
     >([](auto&& wrapped) {
         using WrappedT = typename std::decay_t<decltype(wrapped)>::type;
         wrapped.template constructor<>();
-        wrapped.module().method("set_maximum_frequency!",
-            []( WrappedT& w,
-                const Float freq_max
-            ) { w.set_maximum_frequency(freq_max); }
-        );
-        wrapped.module().method("set_frequency_range!",
-            []( WrappedT& w,
-                const Float freq_min,
-                const Float freq_max
-            ) { w.set_frequency_range(freq_min, freq_max); }
-        );
-        wrapped.module().method("set_frequency_steps_count!",
-            []( WrappedT& w,
-                const uint64_t freq_steps_count
-            ) { w.set_frequency_steps_count(freq_steps_count); }
-        );
-        wrapped.module().method("set_frequency_sampling_density!",
-            []( WrappedT& w,
-                const FrequencySamplingDensity pqv1
-            ) { w.set_frequency_sampling_density(pqv1); }
-        );
         wrapped.module().method("set_frequency_steps!",
             []( WrappedT& w,
                 const jlcxx::ArrayRef<Float> freq_steps
