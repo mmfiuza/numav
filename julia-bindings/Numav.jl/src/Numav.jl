@@ -219,7 +219,7 @@ function set_frequency!(
 
     if !isnothing(max)
         min = something(min, 0)
-        step_count = something(step_count, 409)
+        step_count = something(step_count, 4096)
         sampling_density = something(sampling_density, :quadratic)
         steps = create_freq_vector(min, max, step_count, sampling_density)
     end
