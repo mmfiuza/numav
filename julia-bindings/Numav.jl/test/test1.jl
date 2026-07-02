@@ -18,16 +18,32 @@ s = create_simulation(
     element_order = :linear
 )
 @test_throws ErrorException run!(s)
-set_frequency!(s, steps=[20, 30, 50, 80, 90, 100])
-@test_throws ArgumentError set_frequency!(s, steps=[20, 30], max=100)
+@test_throws ArgumentError set_frequency!(s, vector=[1,2], max=100)
+@test_throws ArgumentError set_frequency!(s, vector=[1,2], min=10)
+@test_throws ArgumentError set_frequency!(s, vector=[1,2], length=1000)
+@test_throws ArgumentError set_frequency!(s, vector=[1,2], sampling_density=:constant)
+@test_throws ArgumentError set_frequency!(s, vector=[1,2], step=1)
+@test_throws ArgumentError set_frequency!(s, min=20)
+@test_throws ArgumentError set_frequency!(s, max=300, step=1, length=200)
+@test_throws ArgumentError set_frequency!(s, max=300, step=1, sampling_density=:constant)
+@test_throws ArgumentError set_frequency!(s, max=300, sampling_density=:foo)
+set_frequency!(s, max=200)
+@test_throws ErrorException set_frequency!(s, vector=[20,30])
 load_mesh!(s, mesh_path)
 @test_throws ErrorException load_mesh!(s, mesh_path)
 @test_throws ErrorException run!(s)
+@test_throws ErrorException add_volume_material!(s, physical_group=999, density=1, speed_of_sound=1)
+@test_throws UndefKeywordError add_volume_material!(s, physical_group=1, speed_of_sound=1)
+@test_throws UndefKeywordError add_volume_material!(s, physical_group=1, density=1)
+@test_throws UndefKeywordError add_volume_material!(s, physical_group=1)
 add_volume_material!(s, physical_group=1, density=func, speed_of_sound=f->f)
 add_volume_material!(s, physical_group=2, density=func, speed_of_sound=1)
 add_volume_material!(s, physical_group=3, density=func, speed_of_sound=pqv)
-@test_throws ErrorException add_volume_material!(
-    s, physical_group=9, density=1, speed_of_sound=1)
+@test_throws ArgumentError add_sound_source!(s, physical_group=1, coordinates=[1.0, 1.0, 1.0], pressure=1)
+@test_throws ArgumentError add_sound_source!(s, pressure=pqv)
+@test_throws ArgumentError add_sound_source!(s, physical_group=1, pressure=1, volume_velocity=1)
+@test_throws ErrorException add_sound_source!(s, physical_group=999, pressure=1)
+@test_throws ArgumentError add_sound_source!(s, coordinates=[1.0, 1.0], pressure=1)
 add_sound_source!(s, coordinates=[1.0, 1.0, 1.0], volume_velocity=f->f)
 add_sound_source!(s, coordinates=[1, 1, 1], volume_velocity=1)
 add_sound_source!(s, coordinates=1:3, volume_velocity=pqv)
@@ -40,15 +56,11 @@ add_sound_source!(s, coordinates=[1.0, 1.0, 1.0], pressure=pqv)
 add_sound_source!(s, physical_group=4, pressure=f->f)
 add_sound_source!(s, physical_group=5, pressure=1)
 add_sound_source!(s, physical_group=6, pressure=pqv)
-@test_throws ErrorException add_sound_source!(
-    s, physical_group=100, pressure=1)
-@test_throws ArgumentError add_sound_source!(
-    s, coordinates=[1.0, 1.0], pressure=1)
+@test_throws UndefKeywordError add_surface_material!(s, physical_group=7)
+@test_throws ErrorException add_surface_material!(s, physical_group=999, specific_acoustic_impedance=1)
 add_surface_material!(s, physical_group=7, specific_acoustic_impedance=f->f)
 add_surface_material!(s, physical_group=8, specific_acoustic_impedance=1)
 add_surface_material!(s, physical_group=9, specific_acoustic_impedance=pqv)
-@test_throws ErrorException add_surface_material!(
-    s, physical_group=100, specific_acoustic_impedance=1)
 @test_throws ErrorException run!(s)
 set_result_export_path!(s, result_path)
 run!(s)
@@ -60,7 +72,7 @@ s = create_simulation(
     element_shape = :tetrahedron,
     element_order = :quadratic
 )
-set_frequency!(s, max=100)
+set_frequency!(s, min=10, max=300, length=100, sampling_density=:constant)
 load_mesh!(s, mesh_path)
 add_volume_material!(s, physical_group=1, density=1, speed_of_sound=f->f)
 add_volume_material!(s, physical_group=2, density=1, speed_of_sound=1)
@@ -75,7 +87,22 @@ s = create_simulation(
     element_shape = :tetrahedron,
     element_order = :linear
 )
-set_frequency!(s, min=30, max=100, step_count=1000, sampling_density=:constant)
+set_frequency!(s, min=30, max=100, step=2)
+load_mesh!(s, mesh_path)
+add_volume_material!(s, physical_group=1, density=pqv, speed_of_sound=f->f)
+add_volume_material!(s, physical_group=2, density=pqv, speed_of_sound=1)
+add_volume_material!(s, physical_group=3, density=pqv, speed_of_sound=pqv)
+add_sound_source!(s, coordinates=[1.0, 1.0, 1.0], volume_velocity=func)
+set_result_export_path!(s, result_path)
+run!(s)
+
+s = create_simulation(
+    numerical_method = :fem,
+    equation = :helmholtz,
+    element_shape = :tetrahedron,
+    element_order = :linear
+)
+set_frequency!(s, vector=[20, 30, 50, 70, 110])
 load_mesh!(s, mesh_path)
 add_volume_material!(s, physical_group=1, density=pqv, speed_of_sound=f->f)
 add_volume_material!(s, physical_group=2, density=pqv, speed_of_sound=1)
