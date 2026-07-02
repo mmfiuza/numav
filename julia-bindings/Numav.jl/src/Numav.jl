@@ -272,15 +272,15 @@ function add_surface_material!(
         O
     };
     physical_group::Integer,
-    impedance::Union{Function, Number, String},
+    specific_acoustic_impedance::Union{Function, Number, String},
 ) where O
     impedance_args =
-    if impedance isa Function
-        _cmplx_split_and_store(impedance)
-    elseif impedance isa Number
-        (ComplexF64(impedance),)
-    elseif impedance isa String
-        (impedance,)
+    if specific_acoustic_impedance isa Function
+        _cmplx_split_and_store(specific_acoustic_impedance)
+    elseif specific_acoustic_impedance isa Number
+        (ComplexF64(specific_acoustic_impedance),)
+    elseif specific_acoustic_impedance isa String
+        (specific_acoustic_impedance,)
     end
 
     _add_surface_material!(
