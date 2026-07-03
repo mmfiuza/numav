@@ -50,7 +50,6 @@ add_library(numav ${NUMAV_SOURCES} ${NUMAV_HEADERS})
 target_include_directories(numav 
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
-    PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         ${CMAKE_CURRENT_SOURCE_DIR}/third-party/indicators/include
         ${CMAKE_CURRENT_SOURCE_DIR}/third-party/safe-ptr/include
@@ -70,7 +69,7 @@ target_compile_definitions(numav PUBLIC
     ${ADDITIONAL_COMPILE_DEFINITIONS}
 )
 
-target_link_libraries(numav PRIVATE
+target_link_libraries(numav PUBLIC
     Eigen3::Eigen
     spdlog::spdlog_header_only
     hdf5::hdf5_cpp

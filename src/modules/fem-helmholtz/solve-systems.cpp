@@ -1,16 +1,15 @@
 // Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
-#include "modules/fem-helmholtz/impl.hpp"
-
-#include <cmath>
-
+#include "numav/numav.hpp"
 #include "common/utils.hpp"
 #include "common/log.hpp"
+
+#include <cmath>
 
 namespace numav {
 
 template<ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::_clear_data_not_used_in_freq_iterations()
+void SimulationFemHelmTet<O>::_clear_data_not_used_in_freq_iterations()
 {
     // TODO: call shrink_to_fit in all std::vectors here  
 
@@ -39,7 +38,7 @@ void SimulationFemHelmTet<O>::Impl::_clear_data_not_used_in_freq_iterations()
 }
 
 template<ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::_solve_systems()
+void SimulationFemHelmTet<O>::_solve_systems()
 {
     H5::DataSet pressure_data_set = _begin_hdf5_file();
     _write_simulation_inputs_to_hdf5_file();

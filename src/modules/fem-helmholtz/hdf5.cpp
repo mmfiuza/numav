@@ -1,9 +1,9 @@
 // Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
+#include "numav/numav.hpp"
 #include "common/exception.hpp"
 #include "common/utils.hpp"
 #include "common/hdf5.hpp"
-#include "modules/fem-helmholtz/impl.hpp"
 
 #include "H5DSpublic.h"
 
@@ -34,7 +34,7 @@ const H5std_string HDF5_ELEMENT_ORDER = [] {
 }();
 
 template <ElementOrder O>
-H5::DataSet SimulationFemHelmTet<O>::Impl::_begin_hdf5_file(
+H5::DataSet SimulationFemHelmTet<O>::_begin_hdf5_file(
 ) {
     // create the file
     _hdf5_file = H5::H5File(_hdf5_file_path, H5F_ACC_TRUNC);
@@ -73,7 +73,7 @@ H5::DataSet SimulationFemHelmTet<O>::Impl::_begin_hdf5_file(
 }
 
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::_write_simulation_inputs_to_hdf5_file(
+void SimulationFemHelmTet<O>::_write_simulation_inputs_to_hdf5_file(
 ) {
     H5::Group inputs_grp = _hdf5_file.createGroup("/inputs");
 
@@ -426,7 +426,7 @@ void SimulationFemHelmTet<O>::Impl::_write_simulation_inputs_to_hdf5_file(
 }
 
 template<ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::_write_solution_for_one_freq(
+void SimulationFemHelmTet<O>::_write_solution_for_one_freq(
     H5::DataSet& pressure_dataset,
     const uint64_t fi
 ) {

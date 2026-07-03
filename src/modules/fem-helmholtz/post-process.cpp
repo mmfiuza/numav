@@ -1,11 +1,11 @@
 // Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
-#include "modules/fem-helmholtz/impl.hpp"
+#include "numav/numav.hpp"
 
 namespace numav {
 
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::_post_process()
+void SimulationFemHelmTet<O>::_post_process()
 {
     // TODO   
 }

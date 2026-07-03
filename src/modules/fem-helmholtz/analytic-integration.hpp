@@ -19,8 +19,9 @@ Eigen::Matrix<Float,ENIV_COUNT<O>,ENIV_COUNT<O>> get_stif_matrix_const_part(
 );
 
 template<>
-Eigen::Matrix<Float,ENIV_COUNT<ElementOrder::LINEAR>,ENIV_COUNT<ElementOrder::LINEAR>>
-get_stif_matrix_const_part<ElementOrder::LINEAR>(
+Eigen::Matrix<
+    Float,ENIV_COUNT<ElementOrder::LINEAR>,ENIV_COUNT<ElementOrder::LINEAR>
+> get_stif_matrix_const_part<ElementOrder::LINEAR>(
     const Eigen::Matrix<Float,DIM,ENIV_COUNT<ElementOrder::LINEAR>> coords
 ) {
     const Float x03 = coords(0UL, 0UL) - coords(0UL, 3UL);
@@ -83,12 +84,17 @@ Eigen::Matrix<Float,3UL,3UL> adjugate(const Eigen::Matrix<Float,3UL,3UL> mat) {
 }
 
 template<>
-Eigen::Matrix<Float,ENIV_COUNT<ElementOrder::QUADRATIC>,ENIV_COUNT<ElementOrder::QUADRATIC>>
-get_stif_matrix_const_part<ElementOrder::QUADRATIC>(
+Eigen::Matrix<
+    Float,
+    ENIV_COUNT<ElementOrder::QUADRATIC>,
+    ENIV_COUNT<ElementOrder::QUADRATIC>
+> get_stif_matrix_const_part<ElementOrder::QUADRATIC>(
     const Eigen::Matrix<Float,DIM,ENIV_COUNT<ElementOrder::QUADRATIC>> coords
 ) {
-    Eigen::Matrix<Float,
-        ENIV_COUNT<ElementOrder::QUADRATIC>, ENIV_COUNT<ElementOrder::QUADRATIC>
+    Eigen::Matrix<
+        Float,
+        ENIV_COUNT<ElementOrder::QUADRATIC>,
+        ENIV_COUNT<ElementOrder::QUADRATIC>
     > matrix;
     matrix.setZero();
 

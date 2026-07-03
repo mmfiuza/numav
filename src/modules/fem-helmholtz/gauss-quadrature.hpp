@@ -2,8 +2,8 @@
 
 #pragma once
 
+#include "numav/numav.hpp"
 #include "common/maths.hpp"
-#include "modules/fem-helmholtz/impl.hpp"
 
 namespace numav {
 

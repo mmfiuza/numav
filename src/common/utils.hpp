@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "numav/aliases.hpp"
+#include "numav/numav.hpp"
 
 #include <string_view>
 #include <charconv>
@@ -53,14 +53,6 @@ FuncFloatToCmplx const2func(
 FuncFloatToCmplx table2func(
     const char* const impedance_text_file
 );
-
-inline constexpr Float operator"" _F(unsigned long long v) noexcept {
-    return static_cast<Float>(v);
-}
-
-inline constexpr Float operator"" _F(long double v) noexcept {
-    return static_cast<Float>(v);
-}
 
 template<typename T>
 std::tuple<T,T> make_ascending_tuple(const T a, const T b) {

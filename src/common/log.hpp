@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "numav/aliases.hpp"
+#include "numav/numav.hpp"
 
 #include "spdlog/spdlog.h"
 #include "fmt/core.h"

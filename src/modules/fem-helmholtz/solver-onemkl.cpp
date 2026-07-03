@@ -1,8 +1,8 @@
 // Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
+#include "numav/numav.hpp"
 #include "common/exception.hpp"
 #include "common/utils.hpp"
-#include "modules/fem-helmholtz/impl.hpp"
 
 #if NUMAV_SYSTEM_SOLVER == NUMAV_ONEMKL
 
@@ -14,8 +14,7 @@ void print_dss_error(const MKL_INT error_id) {
 }
 
 template <ElementOrder O>
-void
-SimulationFemHelmTet<O>::Impl::_define_sparsity_pattern_using_onemkl_solver()
+void SimulationFemHelmTet<O>::_define_sparsity_pattern_using_onemkl_solver()
 {
     // problem dimensions
     const MKL_INT node_count = static_cast<MKL_INT>(_ni_count);
@@ -79,7 +78,7 @@ SimulationFemHelmTet<O>::Impl::_define_sparsity_pattern_using_onemkl_solver()
 }
 
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::_solve_using_onemkl_solver()
+void SimulationFemHelmTet<O>::_solve_using_onemkl_solver()
 {
     // error code
     MKL_INT error_id;
@@ -115,7 +114,7 @@ void SimulationFemHelmTet<O>::Impl::_solve_using_onemkl_solver()
 }
 
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::_terminate_onemkl_solver()
+void SimulationFemHelmTet<O>::_terminate_onemkl_solver()
 {
     // error code
     MKL_INT error_id = dss_delete(

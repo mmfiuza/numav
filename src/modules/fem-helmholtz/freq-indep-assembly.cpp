@@ -1,6 +1,6 @@
 // Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
-#include "modules/fem-helmholtz/impl.hpp"
+#include "numav/numav.hpp"
 
 #include "common/exception.hpp"
 #include "common/maths.hpp"
@@ -58,7 +58,7 @@ std::pair<T,T> make_ordered_rowcol_pair(const T a, const T b)
 }
 
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::_allocate_a()
+void SimulationFemHelmTet<O>::_allocate_a()
 {
     #if NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
         constexpr std::array<
@@ -104,7 +104,7 @@ void SimulationFemHelmTet<O>::Impl::_allocate_a()
 }
 
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::_allocate_b()
+void SimulationFemHelmTet<O>::_allocate_b()
 {
     std::unordered_set<uint64_t> existing_source_nodes;
     for (uint64_t vsei = 0UL; vsei != _vsei_count; ++vsei) {
@@ -138,13 +138,13 @@ void SimulationFemHelmTet<O>::Impl::_allocate_b()
 }
 
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::_allocate_x()
+void SimulationFemHelmTet<O>::_allocate_x()
 {
     _x = fz::SafePtr<Cmplx>(_ni_count);
 }
 
 template<ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::_assemble_fi_part_for_vol_elements()
+void SimulationFemHelmTet<O>::_assemble_fi_part_for_vol_elements()
 {
     #if NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
         constexpr std::array<
@@ -214,7 +214,8 @@ void SimulationFemHelmTet<O>::Impl::_assemble_fi_part_for_vol_elements()
                 }
             #endif
 
-            const std::pair<uint64_t,uint64_t>* const pair_ptr = std::lower_bound(
+            const std::pair<uint64_t,uint64_t>* const pair_ptr =
+            std::lower_bound(
                 _ni_connections.begin(),
                 _ni_connections.end(),
                 pair,
@@ -369,7 +370,7 @@ std::array<std::array<Float,2UL>,ENIS_COUNT<O>> project_triangle_to_2d(
 }
 
 template<ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::_assemble_fi_part_for_sfc_impedance()
+void SimulationFemHelmTet<O>::_assemble_fi_part_for_sfc_impedance()
 {
     #if NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
         constexpr std::array<
@@ -438,7 +439,8 @@ void SimulationFemHelmTet<O>::Impl::_assemble_fi_part_for_sfc_impedance()
                 }
             #endif
 
-            const std::pair<uint64_t,uint64_t>* const pair_ptr = std::lower_bound(
+            const std::pair<uint64_t,uint64_t>* const pair_ptr =
+            std::lower_bound(
                 _ni_connections.begin(),
                 _ni_connections.end(),
                 pair,
@@ -522,7 +524,7 @@ void SimulationFemHelmTet<O>::Impl::_assemble_fi_part_for_sfc_impedance()
 }
 
 template<ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::_assemble_fi_part_for_sfc_velocity()
+void SimulationFemHelmTet<O>::_assemble_fi_part_for_sfc_velocity()
 {
     // count the fipi for each ispgv
     fz::SafePtr<std::unordered_map<uint64_t,uint64_t>> ispgv_to_map_to_fipi(
@@ -642,7 +644,7 @@ void SimulationFemHelmTet<O>::Impl::_assemble_fi_part_for_sfc_velocity()
 }
 
 template<ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::_assemble_fi_part_for_point_velocity()
+void SimulationFemHelmTet<O>::_assemble_fi_part_for_point_velocity()
 {
     _vpi_to_ptr_in_b = fz::SafePtr<Cmplx*>(_vpi_count);
     for (uint64_t vpi = 0UL; vpi != _vpi_count; ++vpi)
@@ -657,9 +659,8 @@ void SimulationFemHelmTet<O>::Impl::_assemble_fi_part_for_point_velocity()
 }
 
 template<typename T>
-std::unordered_map<std::vector<uint64_t>, std::vector<T>> find_set_intersections(
-    const fz::SafePtr<fz::SafePtr<T>>& sets
-) {
+std::unordered_map<std::vector<uint64_t>, std::vector<T>>
+find_set_intersections(const fz::SafePtr<fz::SafePtr<T>>& sets) {
     // map each element to the indices of sets that contain it
     std::unordered_map<T, std::vector<uint64_t>> element_to_sets;
     for (uint64_t set_index = 0UL; set_index != sets.size(); ++set_index) {
@@ -678,7 +679,7 @@ std::unordered_map<std::vector<uint64_t>, std::vector<T>> find_set_intersections
 }
 
 template<ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::_assemble_fi_part_for_pressure()
+void SimulationFemHelmTet<O>::_assemble_fi_part_for_pressure()
 {
     // create the mathmatical sets of nodes for each pressure value assigned
     fz::SafePtr<fz::SafePtr<uint64_t>> sets(_ppi_count + _ispgp_count);
@@ -756,7 +757,8 @@ void SimulationFemHelmTet<O>::Impl::_assemble_fi_part_for_pressure()
                 continue;
             #else
                 // _apvi_to_ptr_in_a
-                const std::pair<uint64_t,uint64_t> pair = std::make_pair(ni, ni);
+                const std::pair<uint64_t,uint64_t> pair = 
+                    std::make_pair(ni, ni);
                 const std::pair<uint64_t,uint64_t>* const pair_ptr =
                     std::lower_bound(
                         _ni_connections.begin(),
@@ -783,7 +785,7 @@ void SimulationFemHelmTet<O>::Impl::_assemble_fi_part_for_pressure()
 }
 
 template<ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::_assemble_freq_independent_parts()
+void SimulationFemHelmTet<O>::_assemble_freq_independent_parts()
 {   
     _allocate_a();
     _allocate_b();

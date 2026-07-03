@@ -1,13 +1,13 @@
 // Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
-#include "modules/fem-helmholtz/impl.hpp"
+#include "numav/numav.hpp"
 
 #include "common/maths.hpp"
 
 namespace numav {
 
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::_define_freq_vector() {
+void SimulationFemHelmTet<O>::_define_freq_vector() {
     if(_freq_type_defined_by_user == _FreqTypeDefinedByUser::MAXIMUM) {
         _freq_min = 0_F;
     }

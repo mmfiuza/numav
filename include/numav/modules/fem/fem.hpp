@@ -2,10 +2,23 @@
 
 #pragma once
 
-#include "numav/aliases.hpp"
-#include "common/utils.hpp"
-
 namespace numav {
+
+constexpr uint64_t DIM = 3UL; // dimension count in space
+constexpr Cmplx PENALTY_METHOD_CONSTANT = Cmplx(1e12_F, 0_F);
+
+enum class Equation : uint64_t {
+    HELMHOLTZ
+};
+
+enum class ElementShape : uint64_t {
+    TETRAHEDRON
+};
+
+enum class ElementOrder : uint64_t {
+    LINEAR,
+    QUADRATIC
+};
 
 template<ElementOrder O> constexpr uint64_t ENIS_COUNT = [] {
     if constexpr (O == ElementOrder::LINEAR) { return 3UL; }
@@ -27,10 +40,7 @@ template<ElementOrder O> constexpr uint64_t EXTRA_ENIV_COUNT = [] {
     return ENIV_COUNT<O> - ENIV_COUNT<ElementOrder::LINEAR>;
 }();
 
-// dimension count in space (not the dimension of mesh elements)
-constexpr uint64_t DIM = 3UL;
-constexpr Cmplx PENALTY_METHOD_CONSTANT = Cmplx(1e12_F, 0_F);
-constexpr uint64_t DEFAULT_FREQ_STEPS_COUNT = 4096UL;
-constexpr Float PI = 3.14159265358979323846_F;
-
 } // namespace numav
+
+// include modules
+#include "numav/modules/fem/helmholtz/helmholtz.hpp"

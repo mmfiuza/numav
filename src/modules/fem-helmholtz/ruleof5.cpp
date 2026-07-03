@@ -1,31 +1,12 @@
 // Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
-#include "modules/fem-helmholtz/impl.hpp"
-
+#include "numav/numav.hpp"
 #include "common/log.hpp"
 
 namespace numav {
 
-template <ElementOrder O>
+template<ElementOrder O>
 SimulationFemHelmTet<O>::Simulation() {
-    _pimpl = std::make_unique<Impl>();
-}
-
-template <ElementOrder O>
-SimulationFemHelmTet<O>::~Simulation() = default;
-
-template<ElementOrder O>
-SimulationFemHelmTet<O>::Simulation(
-    Simulation&& other
-) noexcept = default;
-
-template<ElementOrder O>
-SimulationFemHelmTet<O>& SimulationFemHelmTet<O>::operator=(
-    Simulation&& other
-) noexcept = default;
-
-template<ElementOrder O>
-SimulationFemHelmTet<O>::Impl::Impl() {
     log::set_level();
     log::set_pattern();
     _is_mesh_defined = false;
@@ -50,7 +31,7 @@ SimulationFemHelmTet<O>::Impl::Impl() {
 }
 
 template<ElementOrder O>
-SimulationFemHelmTet<O>::Impl::~Impl() {
+SimulationFemHelmTet<O>::~Simulation() {
     if (!_did_run && _is_mesh_defined) {
         _ni_to_coords.free();
         _sei_to_ni.free();
@@ -113,14 +94,13 @@ SimulationFemHelmTet<O>::Impl::~Impl() {
 }
 
 template<ElementOrder O>
-SimulationFemHelmTet<O>::Impl::Impl(
-    Impl&& other
+SimulationFemHelmTet<O>::Simulation(
+    Simulation&& other
 ) noexcept = default;
 
 template<ElementOrder O>
-typename SimulationFemHelmTet<O>::Impl&
-SimulationFemHelmTet<O>::Impl::operator=(
-    Impl&& other
+SimulationFemHelmTet<O>& SimulationFemHelmTet<O>::operator=(
+    Simulation&& other
 ) noexcept = default;
 
 } // namespace numav

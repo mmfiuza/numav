@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include "numav/aliases.hpp"
-
 // define the linear system solver
 #define NUMAV_INTERNAL 11
 #define NUMAV_EIGEN 12

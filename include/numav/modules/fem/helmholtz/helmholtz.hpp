@@ -2,11 +2,7 @@
 
 #pragma once
 
-#include "numav/numav.hpp"
-#include "numav/aliases.hpp"
-#include "modules/fem-helmholtz/macros.hpp"
-#include "modules/fem-helmholtz/compile-options.hpp"
-#include "modules/fem-helmholtz/constants.hpp"
+#include "numav/modules/fem/helmholtz/compile-options.hpp"
 
 #include <unordered_map>
 #include <unordered_set>
@@ -23,18 +19,126 @@
 
 namespace numav {
 
-template<ElementOrder O>
-class SimulationFemHelmTet<O>::Impl
-{
-public:
-    Impl();
-    ~Impl();
-    Impl(const Impl&) = delete;
-    Impl& operator=(const Impl&) = delete;
-    Impl(Impl&&) noexcept;
-    Impl& operator=(Impl&&) noexcept;
+enum class SourceType : uint64_t {
+    POINT,
+    SURFACE
+};
 
-    NUMAV_SIM_AC_FEM_FREQ_D3_PUBLIC_METHODS
+enum class PhysicalQuantity : uint64_t {
+    VOLUME_VELOCITY,
+    PARTICLE_VELOCITY,
+    PRESSURE,
+    IMPEDANCE
+};
+
+enum class FrequencySamplingDensity : uint64_t {
+    CONSTANT,
+    QUADRATIC
+};
+
+constexpr uint64_t DEFAULT_FREQ_STEPS_COUNT = 4096UL;
+
+template<ElementOrder O>
+class Simulation<
+    NumericalMethod::FEM,
+    Equation::HELMHOLTZ,
+    ElementShape::TETRAHEDRON,
+    O
+> {
+public:
+    Simulation();
+    ~Simulation();
+    Simulation(const Simulation&) = delete;
+    Simulation& operator=(const Simulation&) = delete;
+    Simulation(Simulation&&) noexcept;
+    Simulation& operator=(Simulation&&) noexcept;
+    
+    void set_maximum_frequency(
+        const Float
+    );
+    void set_frequency_range(
+        const Float, const Float
+    );
+    void set_frequency_steps_count(
+        const uint64_t
+    );
+    void set_frequency_sampling_density(
+        const FrequencySamplingDensity
+    );
+    void set_frequency_steps(
+        const std::vector<Float>&
+    );
+    void load_mesh(
+        const char* const
+    );
+    void add_volume_material(
+        const uint64_t, const FuncFloatToCmplx&, const FuncFloatToCmplx&
+    );
+    void add_volume_material(
+        const uint64_t, const FuncFloatToCmplx&, const Cmplx
+    );
+    void add_volume_material(
+        const uint64_t, const FuncFloatToCmplx&, const char* const
+    );
+    void add_volume_material(
+        const uint64_t, const Cmplx, const FuncFloatToCmplx&
+    );
+    void add_volume_material(
+        const uint64_t, const Cmplx, const Cmplx
+    );
+    void add_volume_material(
+        const uint64_t, const Cmplx, const char* const
+    );
+    void add_volume_material(
+        const uint64_t, const char* const, const FuncFloatToCmplx&
+    );
+    void add_volume_material(
+        const uint64_t, const char* const, const Cmplx
+    );
+    void add_volume_material(
+        const uint64_t, const char* const, const char* const
+    );
+    void add_surface_material(
+        const uint64_t, const PhysicalQuantity, const FuncFloatToCmplx&
+    );
+    void add_surface_material(
+        const uint64_t, const PhysicalQuantity, const Cmplx
+    );
+    void add_surface_material(
+        const uint64_t, const PhysicalQuantity, const char* const
+    );
+    void add_sound_source(
+        const SourceType, const Coord,
+        const PhysicalQuantity, const FuncFloatToCmplx&
+    );
+    void add_sound_source(
+        const SourceType, const Coord,
+        const PhysicalQuantity, const Cmplx
+    );
+    void add_sound_source(
+        const SourceType, const Coord,
+        const PhysicalQuantity, const char* const
+    );
+    void add_sound_source(
+        const SourceType, const uint64_t,
+        const PhysicalQuantity, const FuncFloatToCmplx&
+    );
+    void add_sound_source(
+        const SourceType, const uint64_t,
+        const PhysicalQuantity, const Cmplx
+    );
+    void add_sound_source(
+        const SourceType, const uint64_t,
+        const PhysicalQuantity, const char* const
+    );
+    void add_receiver(
+        const Coord
+    );
+    void set_result_export_path(
+        const char* const
+    );
+    void run(
+    );
 
 private:
     void _load_bdf(const char* const path);
@@ -214,5 +318,31 @@ private:
         fz::SafePtr<Cmplx> _b_dense;
     #endif
 };
+
+// alias for simulation type
+template<ElementOrder O>
+using SimulationFemHelmTet = Simulation<
+    NumericalMethod::FEM,
+    Equation::HELMHOLTZ,
+    ElementShape::TETRAHEDRON,
+    O
+>;
+
+// macro for explicit instantiation declarations
+#define NUMAV_INSTANTIATE_SIM_AC_FEM_FREQ_D3 \
+    namespace numav { \
+        template class Simulation< \
+            NumericalMethod::FEM, \
+            Equation::HELMHOLTZ, \
+            ElementShape::TETRAHEDRON, \
+            ElementOrder::LINEAR \
+        >; \
+        template class Simulation< \
+            NumericalMethod::FEM, \
+            Equation::HELMHOLTZ, \
+            ElementShape::TETRAHEDRON, \
+            ElementOrder::QUADRATIC \
+        >; \
+    }
 
 } // namespace numav

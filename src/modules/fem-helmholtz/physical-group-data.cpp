@@ -1,11 +1,11 @@
 // Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
-#include "modules/fem-helmholtz/impl.hpp"
+#include "numav/numav.hpp"
 
 namespace numav {
 
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::_organize_volume_physical_group_data()
+void SimulationFemHelmTet<O>::_organize_volume_physical_group_data()
 {
     _vei_to_ivpg = fz::SafePtr<uint64_t>(_vei_count);
     for (uint64_t vei = 0; vei != _vei_count; ++vei) {
@@ -14,7 +14,7 @@ void SimulationFemHelmTet<O>::Impl::_organize_volume_physical_group_data()
 }
 
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::_organize_impedance_physical_group_data()
+void SimulationFemHelmTet<O>::_organize_impedance_physical_group_data()
 {
     _isei_count = 0UL;
     for (uint64_t sei = 0UL; sei != _sei_count; ++sei) {
@@ -38,7 +38,7 @@ void SimulationFemHelmTet<O>::Impl::_organize_impedance_physical_group_data()
 }
 
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::_organize_velocity_physical_group_data()
+void SimulationFemHelmTet<O>::_organize_velocity_physical_group_data()
 {
     _vsei_count = 0UL;
     for (uint64_t sei = 0UL; sei != _sei_count; ++sei) {
@@ -62,7 +62,7 @@ void SimulationFemHelmTet<O>::Impl::_organize_velocity_physical_group_data()
 }
 
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::_organize_pressure_physical_group_data()
+void SimulationFemHelmTet<O>::_organize_pressure_physical_group_data()
 {
     _psei_count = 0UL;
     for (uint64_t sei = 0UL; sei != _sei_count; ++sei) {
@@ -86,7 +86,7 @@ void SimulationFemHelmTet<O>::Impl::_organize_pressure_physical_group_data()
 }
 
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::_organize_physical_group_data() {
+void SimulationFemHelmTet<O>::_organize_physical_group_data() {
     _organize_volume_physical_group_data();
     _organize_impedance_physical_group_data();
     _organize_velocity_physical_group_data();

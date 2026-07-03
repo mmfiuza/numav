@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "numav/aliases.hpp"
+#include "numav/numav.hpp"
 
 #include <cstddef>
 #include <tuple>

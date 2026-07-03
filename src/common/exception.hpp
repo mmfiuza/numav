@@ -2,12 +2,12 @@
 
 #pragma once
 
-#include "numav/aliases.hpp"
+#include "numav/numav.hpp"
 #include "common/log.hpp"
 
-#include "fmt/core.h"
-
 #include <stdexcept>
+
+#include "fmt/core.h"
 
 namespace numav {
 

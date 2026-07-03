@@ -1,7 +1,6 @@
 // Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
-#include "modules/fem-helmholtz/impl.hpp"
-
+#include "numav/numav.hpp"
 #include "common/exception.hpp"
 #include "common/log.hpp"
 #include "common/utils.hpp"
@@ -11,21 +10,21 @@
 namespace numav {
 
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::_check_if_mesh_is_defined() {
+void SimulationFemHelmTet<O>::_check_if_mesh_is_defined() {
     if (!_is_mesh_defined){
         error("Mesh not defined. Call load_mesh to do so.");
     }
 }
 
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::_check_if_did_run() {
+void SimulationFemHelmTet<O>::_check_if_did_run() {
     if (_did_run) {
         error("This simulation has already been run.");
     }
 }
 
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::_validate_espg(const uint64_t espg) {
+void SimulationFemHelmTet<O>::_validate_espg(const uint64_t espg) {
     if (!(_existing_espg.count(espg) > 0)) {
         error("Physical group {} not found in mesh file.", espg);
     }
@@ -38,7 +37,7 @@ void SimulationFemHelmTet<O>::Impl::_validate_espg(const uint64_t espg) {
 }
 
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::set_maximum_frequency(
+void SimulationFemHelmTet<O>::set_maximum_frequency(
     const Float freq_max
 ) {
     _check_if_did_run();
@@ -56,7 +55,7 @@ void SimulationFemHelmTet<O>::Impl::set_maximum_frequency(
 }
 
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::set_frequency_range(
+void SimulationFemHelmTet<O>::set_frequency_range(
     const Float freq_min,
     const Float freq_max
 ) {
@@ -79,7 +78,7 @@ void SimulationFemHelmTet<O>::Impl::set_frequency_range(
 }
 
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::set_frequency_steps_count(
+void SimulationFemHelmTet<O>::set_frequency_steps_count(
     const uint64_t freq_steps_count
 ) {
     _check_if_did_run();
@@ -94,7 +93,7 @@ void SimulationFemHelmTet<O>::Impl::set_frequency_steps_count(
 }
 
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::set_frequency_sampling_density(
+void SimulationFemHelmTet<O>::set_frequency_sampling_density(
     const FrequencySamplingDensity freq_sampling_density
 ) {
     _check_if_did_run();
@@ -109,7 +108,7 @@ void SimulationFemHelmTet<O>::Impl::set_frequency_sampling_density(
 }
 
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::set_frequency_steps(
+void SimulationFemHelmTet<O>::set_frequency_steps(
     const std::vector<Float>& freq_steps
 ) {
     _check_if_did_run();
@@ -127,7 +126,7 @@ void SimulationFemHelmTet<O>::Impl::set_frequency_steps(
 }
 
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::load_mesh(
+void SimulationFemHelmTet<O>::load_mesh(
     const char* const path_to_mesh
 ) {
     _check_if_did_run();
@@ -151,7 +150,7 @@ void SimulationFemHelmTet<O>::Impl::load_mesh(
 }
 
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::add_volume_material(
+void SimulationFemHelmTet<O>::add_volume_material(
     const uint64_t evpg,
     const FuncFloatToCmplx& density,
     const FuncFloatToCmplx& soundspeed
@@ -170,7 +169,7 @@ void SimulationFemHelmTet<O>::Impl::add_volume_material(
     _ivpg_to_volprop.emplace_back(density, soundspeed);
 }
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::add_volume_material(
+void SimulationFemHelmTet<O>::add_volume_material(
     const uint64_t evpg,
     const FuncFloatToCmplx& density,
     const Cmplx soundspeed
@@ -178,7 +177,7 @@ void SimulationFemHelmTet<O>::Impl::add_volume_material(
     add_volume_material(evpg, density, const2func(soundspeed));
 }
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::add_volume_material(
+void SimulationFemHelmTet<O>::add_volume_material(
     const uint64_t evpg,
     const FuncFloatToCmplx& density,
     const char* const soundspeed
@@ -186,7 +185,7 @@ void SimulationFemHelmTet<O>::Impl::add_volume_material(
     add_volume_material(evpg, density, table2func(soundspeed));
 }
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::add_volume_material(
+void SimulationFemHelmTet<O>::add_volume_material(
     const uint64_t evpg,
     const Cmplx density,
     const FuncFloatToCmplx& soundspeed
@@ -194,7 +193,7 @@ void SimulationFemHelmTet<O>::Impl::add_volume_material(
     add_volume_material(evpg, const2func(density), soundspeed);
 }
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::add_volume_material(
+void SimulationFemHelmTet<O>::add_volume_material(
     const uint64_t evpg,
     const Cmplx density,
     const Cmplx soundspeed
@@ -202,7 +201,7 @@ void SimulationFemHelmTet<O>::Impl::add_volume_material(
     add_volume_material(evpg, const2func(density), const2func(soundspeed));
 }
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::add_volume_material(
+void SimulationFemHelmTet<O>::add_volume_material(
     const uint64_t evpg,
     const Cmplx density,
     const char* const soundspeed
@@ -210,7 +209,7 @@ void SimulationFemHelmTet<O>::Impl::add_volume_material(
     add_volume_material(evpg, const2func(density), table2func(soundspeed));
 }
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::add_volume_material(
+void SimulationFemHelmTet<O>::add_volume_material(
     const uint64_t evpg,
     const char* const density,
     const FuncFloatToCmplx& soundspeed
@@ -218,7 +217,7 @@ void SimulationFemHelmTet<O>::Impl::add_volume_material(
     add_volume_material(evpg, table2func(density), soundspeed);
 }
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::add_volume_material(
+void SimulationFemHelmTet<O>::add_volume_material(
     const uint64_t evpg,
     const char* const density,
     const Cmplx soundspeed
@@ -226,7 +225,7 @@ void SimulationFemHelmTet<O>::Impl::add_volume_material(
     add_volume_material(evpg, table2func(density), const2func(soundspeed));
 }
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::add_volume_material(
+void SimulationFemHelmTet<O>::add_volume_material(
     const uint64_t evpg,
     const char* const density,
     const char* const soundspeed
@@ -235,7 +234,7 @@ void SimulationFemHelmTet<O>::Impl::add_volume_material(
 }
 
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::add_surface_material(
+void SimulationFemHelmTet<O>::add_surface_material(
     const uint64_t espg,
     const PhysicalQuantity pq,
     const FuncFloatToCmplx& pqv
@@ -253,7 +252,7 @@ void SimulationFemHelmTet<O>::Impl::add_surface_material(
 }
 
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::add_surface_material(
+void SimulationFemHelmTet<O>::add_surface_material(
     const uint64_t espg,
     const PhysicalQuantity pq,
     const Cmplx pqv
@@ -262,7 +261,7 @@ void SimulationFemHelmTet<O>::Impl::add_surface_material(
 }
 
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::add_surface_material(
+void SimulationFemHelmTet<O>::add_surface_material(
     const uint64_t espg,
     const PhysicalQuantity pq,
     const char* const pqv
@@ -271,7 +270,7 @@ void SimulationFemHelmTet<O>::Impl::add_surface_material(
 }
 
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::add_sound_source(
+void SimulationFemHelmTet<O>::add_sound_source(
     const SourceType source_type,
     const std::array<Float,3UL> point_coords,
     const PhysicalQuantity pq,
@@ -302,7 +301,7 @@ void SimulationFemHelmTet<O>::Impl::add_sound_source(
     _is_any_source_defined = true;
 }
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::add_sound_source(
+void SimulationFemHelmTet<O>::add_sound_source(
     const SourceType source_type,
     const std::array<Float,3UL> point_coords,
     const PhysicalQuantity pq,
@@ -311,7 +310,7 @@ void SimulationFemHelmTet<O>::Impl::add_sound_source(
     add_sound_source(source_type, point_coords, pq, const2func(pqv));
 }
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::add_sound_source(
+void SimulationFemHelmTet<O>::add_sound_source(
     const SourceType source_type,
     const std::array<Float,3UL> point_coords,
     const PhysicalQuantity pq,
@@ -321,7 +320,7 @@ void SimulationFemHelmTet<O>::Impl::add_sound_source(
 }
 
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::add_sound_source(
+void SimulationFemHelmTet<O>::add_sound_source(
     const SourceType source_type,
     const uint64_t espg,
     const PhysicalQuantity pq,
@@ -353,7 +352,7 @@ void SimulationFemHelmTet<O>::Impl::add_sound_source(
     _is_any_source_defined = true;
 }
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::add_sound_source(
+void SimulationFemHelmTet<O>::add_sound_source(
     const SourceType source_type,
     const uint64_t espg,
     const PhysicalQuantity pq,
@@ -362,7 +361,7 @@ void SimulationFemHelmTet<O>::Impl::add_sound_source(
     add_sound_source(source_type, espg, pq, const2func(pqv));
 }
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::add_sound_source(
+void SimulationFemHelmTet<O>::add_sound_source(
     const SourceType source_type,
     const uint64_t espg,
     const PhysicalQuantity pq,
@@ -372,7 +371,7 @@ void SimulationFemHelmTet<O>::Impl::add_sound_source(
 }
 
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::add_receiver(
+void SimulationFemHelmTet<O>::add_receiver(
     const std::array<Float,DIM> point_coords
 ) {
     _check_if_mesh_is_defined();
@@ -386,7 +385,7 @@ void SimulationFemHelmTet<O>::Impl::add_receiver(
 }
 
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::set_result_export_path(
+void SimulationFemHelmTet<O>::set_result_export_path(
     const char* const path_to_result
 ) {
     _check_if_did_run();
@@ -397,7 +396,7 @@ void SimulationFemHelmTet<O>::Impl::set_result_export_path(
 }
 
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::_check_if_it_can_run() {
+void SimulationFemHelmTet<O>::_check_if_it_can_run() {
     _check_if_mesh_is_defined();
     _check_if_did_run();
     if (_hdf5_file_path.empty()) {
@@ -421,7 +420,7 @@ void SimulationFemHelmTet<O>::Impl::_check_if_it_can_run() {
 }
 
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::run()
+void SimulationFemHelmTet<O>::run()
 {
     _check_if_it_can_run();
     log::print_opening();

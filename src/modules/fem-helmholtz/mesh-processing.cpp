@@ -1,21 +1,20 @@
 // Copyright (c) 2026 Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>
 
-#include "modules/fem-helmholtz/impl.hpp"
-
-#include <tuple>
-#include <fstream>
-#include <limits>
-
+#include "numav/numav.hpp"
 #include "common/exception.hpp"
 #include "common/log.hpp"
 #include "common/hash-functions.hpp"
 #include "common/maths.hpp"
 #include "common/utils.hpp"
 
+#include <tuple>
+#include <fstream>
+#include <limits>
+
 namespace numav {
 
 template <ElementOrder O>
-uint64_t SimulationFemHelmTet<O>::Impl::_get_closest_point(
+uint64_t SimulationFemHelmTet<O>::_get_closest_point(
     const std::array<Float,DIM> point_coords
 ) {
     Float minimum_distance_squared = std::numeric_limits<Float>::max();
@@ -35,7 +34,7 @@ uint64_t SimulationFemHelmTet<O>::Impl::_get_closest_point(
 }
 
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::Impl::_load_bdf(const char* const path_to_mesh)
+void SimulationFemHelmTet<O>::_load_bdf(const char* const path_to_mesh)
 {
     constexpr uint64_t MAX_BDF_CHARACTERS_PER_LINE = 80UL;
     std::ifstream file(path_to_mesh);
@@ -112,12 +111,12 @@ void SimulationFemHelmTet<O>::Impl::_load_bdf(const char* const path_to_mesh)
 }
 
 template<>
-void SimulationFemHelmTet<ElementOrder::LINEAR>::Impl::_generate_extra_nodes() {
+void SimulationFemHelmTet<ElementOrder::LINEAR>::_generate_extra_nodes() {
     // nothing needs to be done in this case (in order 1)
 }
 
 template<>
-void SimulationFemHelmTet<ElementOrder::QUADRATIC>::Impl::_generate_extra_nodes()
+void SimulationFemHelmTet<ElementOrder::QUADRATIC>::_generate_extra_nodes()
 {
     constexpr std::array<
         std::array<uint64_t,2UL>, EXTRA_ENIV_COUNT<ElementOrder::QUADRATIC>
@@ -143,7 +142,8 @@ void SimulationFemHelmTet<ElementOrder::QUADRATIC>::Impl::_generate_extra_nodes(
             );
             if (!(idxs_extra_nodes.count(tup) > 0)) {
                 is_extra_node[vei][i] = true;
-                _vei_to_ni[vei][ENIV_COUNT<ElementOrder::LINEAR> + i] = _ni_count;
+                _vei_to_ni[vei][ENIV_COUNT<ElementOrder::LINEAR> + i] =
+                    _ni_count;
                 idxs_extra_nodes.insert({tup, _ni_count});
                 ++_ni_count;
             } else {
