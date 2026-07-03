@@ -58,7 +58,7 @@ cmake -B build \
 -D CMAKE_INSTALL_PREFIX=julia-bindings/override \
 -D CMAKE_PREFIX_PATH="\
 /opt/intel/oneapi/mkl/2025.2/lib/cmake;\
-/usr/local/share/julia/artifacts/662f181f562225e139306f1e6e383c70bc9255f9;\
+/usr/local/share/julia/artifacts/6d260b2393efd5030d726537e5efe3573d0fbd28;\
 /HDF_Group/HDF5/2.1.1" &&
 cmake --build build --parallel ${nproc} &&
 cmake --install ./build
@@ -68,12 +68,12 @@ cmake --install ./build
 ```
 rm -rf build && rm -rf install && rm -rf products && julia +1.12.4 \
 /workspace/julia-bindings/Yggdrasil/N/numav_julia/build_tarballs.jl \
---deploy-jll=local
+--deploy-jll=local x86_64-linux-gnu-julia_version+1.12.0
 
 ```
 
 ## Dev the Julia packages
 ```
-dev numav_julia_jll
+dev /usr/local/share/julia/dev/numav_julia_jll
 dev /workspace/julia-bindings/Numav.jl
 ```
