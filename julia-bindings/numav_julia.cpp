@@ -7,6 +7,17 @@
 
 using namespace numav;
 
+FuncFloatToCmplx cmplx_func(
+    const jlcxx::SafeCFunction& real,
+    const jlcxx::SafeCFunction& imag
+) {
+    auto f_real = jlcxx::make_function_pointer<Float(Float)>(real);
+    auto f_imag = jlcxx::make_function_pointer<Float(Float)>(imag);
+    return [f_real, f_imag](const Float f) -> Cmplx {
+        return Cmplx(f_real(f), f_imag(f));
+    };
+}
+
 namespace jlcxx
 {
     template<NumericalMethod N, Equation E, ElementShape S, ElementOrder O>
@@ -17,17 +28,6 @@ namespace jlcxx
             std::integral_constant<ElementShape, S>,
             std::integral_constant<ElementOrder, O>
         > type;
-    };
-}
-
-FuncFloatToCmplx cmplx_func(
-    const jlcxx::SafeCFunction& real,
-    const jlcxx::SafeCFunction& imag
-) {
-    auto f_real = jlcxx::make_function_pointer<Float(Float)>(real);
-    auto f_imag = jlcxx::make_function_pointer<Float(Float)>(imag);
-    return [f_real, f_imag](const Float f) -> Cmplx {
-        return Cmplx(f_real(f), f_imag(f));
     };
 }
 
@@ -118,7 +118,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
     >([](auto&& wrapped) {
         using WrappedT = typename std::decay_t<decltype(wrapped)>::type;
         wrapped.template constructor<>();
-        wrapped.module().method("set_frequency_steps!",
+        wrapped.module().method("_cpp_set_frequency_vector!",
             []( WrappedT& w,
                 const jlcxx::ArrayRef<Float> freq_steps
             ) { 
@@ -127,17 +127,15 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
                 for (auto& f : freq_steps) {
                     cpp_vec.emplace_back(f);
                 }
-                w.set_frequency_steps(cpp_vec);
+                w.set_frequency_vector(cpp_vec);
             }
         );
-        wrapped.module().method("load_mesh!",
+        wrapped.module().method("_cpp_load_mesh!",
             []( WrappedT& w,
                 const char* const path_to_mesh
             ) { w.load_mesh(path_to_mesh); }
         );
-
-        // _add_volume_material
-        wrapped.module().method("_add_volume_material!",
+        wrapped.module().method("_cpp_add_volume_material!",
             []( WrappedT& w,
                 const uint64_t evpg,
                 jlcxx::SafeCFunction pqv1_re,
@@ -152,84 +150,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
                 );
             }
         );
-        wrapped.module().method("_add_volume_material!",
-            []( WrappedT& w,
-                const uint64_t evpg,
-                jlcxx::SafeCFunction pqv1_re,
-                jlcxx::SafeCFunction pqv1_im,
-                const Cmplx pqv2
-            ) { 
-                w.add_volume_material(
-                    evpg, cmplx_func(pqv1_re, pqv1_im), pqv2
-                );
-            }
-        );
-        wrapped.module().method("_add_volume_material!",
-            []( WrappedT& w,
-                const uint64_t evpg,
-                jlcxx::SafeCFunction pqv1_re,
-                jlcxx::SafeCFunction pqv1_im,
-                const char* const pqv2
-            ) { 
-                w.add_volume_material(
-                    evpg, cmplx_func(pqv1_re, pqv1_im), pqv2
-                );
-            }
-        );
-        wrapped.module().method("_add_volume_material!",
-            []( WrappedT& w,
-                const uint64_t evpg,
-                const Cmplx pqv1,
-                jlcxx::SafeCFunction pqv2_re,
-                jlcxx::SafeCFunction pqv2_im
-            ) { 
-                w.add_volume_material(
-                    evpg, pqv1, cmplx_func(pqv2_re, pqv2_im)
-                );
-            }
-        );
-        wrapped.module().method("_add_volume_material!",
-            []( WrappedT& w,
-                const uint64_t evpg,
-                const Cmplx pqv1,
-                const Cmplx pqv2
-            ) { w.add_volume_material(evpg, pqv1, pqv2); }
-        );
-        wrapped.module().method("_add_volume_material!",
-            []( WrappedT& w,
-                const uint64_t evpg,
-                const Cmplx pqv1,
-                const char* const pqv2
-            ) { w.add_volume_material(evpg, pqv1, pqv2); }
-        );
-        wrapped.module().method("_add_volume_material!",
-            []( WrappedT& w,
-                const uint64_t evpg,
-                const char* const pqv1,
-                jlcxx::SafeCFunction pqv2_re,
-                jlcxx::SafeCFunction pqv2_im
-            ) { 
-                w.add_volume_material(
-                    evpg, pqv1, cmplx_func(pqv2_re, pqv2_im));
-                }
-        );
-        wrapped.module().method("_add_volume_material!",
-            []( WrappedT& w,
-                const uint64_t evpg,
-                const char* const pqv1,
-                const Cmplx pqv2
-            ) { w.add_volume_material(evpg, pqv1, pqv2); }
-        );
-        wrapped.module().method("_add_volume_material!",
-            []( WrappedT& w,
-                const uint64_t evpg,
-                const char* const pqv1,
-                const char* const pqv2
-            ) { w.add_volume_material(evpg, pqv1, pqv2); }
-        );
-
-        // _add_surface_material
-        wrapped.module().method("_add_surface_material!",
+        wrapped.module().method("_cpp_add_surface_material!",
             []( WrappedT& w,
                 const uint64_t espg,
                 const PhysicalQuantity pq,
@@ -237,23 +158,8 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
                 jlcxx::SafeCFunction pqv_im
             ) { w.add_surface_material(espg, pq, cmplx_func(pqv_re, pqv_im)); }
         );
-        wrapped.module().method("_add_surface_material!",
-            []( WrappedT& w,
-                const uint64_t espg,
-                const PhysicalQuantity pq,
-                const Cmplx pqv
-            ) { w.add_surface_material(espg, pq, pqv); }
-        );
-        wrapped.module().method("_add_surface_material!",
-            []( WrappedT& w,
-                const uint64_t espg,
-                const PhysicalQuantity pq,
-                const char* const pqv
-            ) { w.add_surface_material(espg, pq, pqv); }
-        );
-        
         // _add_sound_source
-        wrapped.module().method("_add_sound_source!",
+        wrapped.module().method("_cpp_add_sound_source!",
             []( WrappedT& w,
                 const SourceType source_type,
                 const jlcxx::ArrayRef<Float> coords,
@@ -269,27 +175,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
                 );
             }
         );
-        wrapped.module().method("_add_sound_source!",
-            []( WrappedT& w,
-                const SourceType source_type,
-                const jlcxx::ArrayRef<Float> coords,
-                const PhysicalQuantity pq,
-                const Cmplx pqv
-            ) { 
-                w.add_sound_source(source_type, jl2cpp_array(coords), pq, pqv);
-            }
-        );
-        wrapped.module().method("_add_sound_source!",
-            []( WrappedT& w,
-                const SourceType source_type,
-                const jlcxx::ArrayRef<Float> coords,
-                const PhysicalQuantity pq,
-                const char* const pqv
-            ) { 
-                w.add_sound_source(source_type, jl2cpp_array(coords), pq, pqv);
-            }
-        );
-        wrapped.module().method("_add_sound_source!",
+        wrapped.module().method("_cpp_add_sound_source!",
             []( WrappedT& w,
                 const SourceType source_type,
                 const uint64_t espg,
@@ -302,34 +188,12 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
                 );
             }
         );
-        wrapped.module().method("_add_sound_source!",
-            []( WrappedT& w,
-                const SourceType source_type,
-                const uint64_t espg,
-                const PhysicalQuantity pq,
-                const Cmplx pqv
-            ) { w.add_sound_source(source_type, espg, pq, pqv); }
-        );
-        wrapped.module().method("_add_sound_source!",
-            []( WrappedT& w,
-                const SourceType source_type,
-                const uint64_t espg,
-                const PhysicalQuantity pq,
-                const char* const pqv
-            ) { w.add_sound_source(source_type, espg, pq, pqv); }
-        );
-
-        wrapped.module().method("add_receiver!", 
-            []( WrappedT& w,
-                const jlcxx::ArrayRef<Float> coords
-            ) { w.add_receiver(jl2cpp_array(coords)); }
-        );
-        wrapped.module().method("set_result_export_path!", 
+        wrapped.module().method("_cpp_set_result_export_path!", 
             []( WrappedT& w,
                 const char* const path_to_hdf5_file
             ) { w.set_result_export_path(path_to_hdf5_file); }
         );
-        wrapped.module().method("run!", 
+        wrapped.module().method("_cpp_run!", 
             [](WrappedT& w) { w.run(); }
         );
     });

@@ -95,70 +95,6 @@ void SimulationFemHelmTet<O>::add_volume_material(
     _evpg_ivpg_bimap.insert({evpg, ivpg});
     _ivpg_to_volprop.emplace_back(density, soundspeed);
 }
-template <ElementOrder O>
-void SimulationFemHelmTet<O>::add_volume_material(
-    const uint64_t evpg,
-    const FuncFloatToCmplx& density,
-    const Cmplx soundspeed
-) {
-    add_volume_material(evpg, density, const2func(soundspeed));
-}
-template <ElementOrder O>
-void SimulationFemHelmTet<O>::add_volume_material(
-    const uint64_t evpg,
-    const FuncFloatToCmplx& density,
-    const char* const soundspeed
-) {
-    add_volume_material(evpg, density, table2func(soundspeed));
-}
-template <ElementOrder O>
-void SimulationFemHelmTet<O>::add_volume_material(
-    const uint64_t evpg,
-    const Cmplx density,
-    const FuncFloatToCmplx& soundspeed
-) {
-    add_volume_material(evpg, const2func(density), soundspeed);
-}
-template <ElementOrder O>
-void SimulationFemHelmTet<O>::add_volume_material(
-    const uint64_t evpg,
-    const Cmplx density,
-    const Cmplx soundspeed
-) {
-    add_volume_material(evpg, const2func(density), const2func(soundspeed));
-}
-template <ElementOrder O>
-void SimulationFemHelmTet<O>::add_volume_material(
-    const uint64_t evpg,
-    const Cmplx density,
-    const char* const soundspeed
-) {
-    add_volume_material(evpg, const2func(density), table2func(soundspeed));
-}
-template <ElementOrder O>
-void SimulationFemHelmTet<O>::add_volume_material(
-    const uint64_t evpg,
-    const char* const density,
-    const FuncFloatToCmplx& soundspeed
-) {
-    add_volume_material(evpg, table2func(density), soundspeed);
-}
-template <ElementOrder O>
-void SimulationFemHelmTet<O>::add_volume_material(
-    const uint64_t evpg,
-    const char* const density,
-    const Cmplx soundspeed
-) {
-    add_volume_material(evpg, table2func(density), const2func(soundspeed));
-}
-template <ElementOrder O>
-void SimulationFemHelmTet<O>::add_volume_material(
-    const uint64_t evpg,
-    const char* const density,
-    const char* const soundspeed
-) {
-    add_volume_material(evpg, table2func(density), table2func(soundspeed));
-}
 
 template <ElementOrder O>
 void SimulationFemHelmTet<O>::add_surface_material(
@@ -176,24 +112,6 @@ void SimulationFemHelmTet<O>::add_surface_material(
     ++_ispgi_count;
     _espg_ispgi_bimap.insert({espg, ispgi});
     _ispgi_to_impedance.emplace_back(pqv);
-}
-
-template <ElementOrder O>
-void SimulationFemHelmTet<O>::add_surface_material(
-    const uint64_t espg,
-    const PhysicalQuantity pq,
-    const Cmplx pqv
-) {
-    add_surface_material(espg, pq, const2func(pqv));
-}
-
-template <ElementOrder O>
-void SimulationFemHelmTet<O>::add_surface_material(
-    const uint64_t espg,
-    const PhysicalQuantity pq,
-    const char* const pqv
-) {
-    add_surface_material(espg, pq, table2func(pqv));
 }
 
 template <ElementOrder O>
@@ -227,24 +145,6 @@ void SimulationFemHelmTet<O>::add_sound_source(
     }
     _is_any_source_defined = true;
 }
-template <ElementOrder O>
-void SimulationFemHelmTet<O>::add_sound_source(
-    const SourceType source_type,
-    const std::array<Float,3UL> point_coords,
-    const PhysicalQuantity pq,
-    const Cmplx pqv
-) {
-    add_sound_source(source_type, point_coords, pq, const2func(pqv));
-}
-template <ElementOrder O>
-void SimulationFemHelmTet<O>::add_sound_source(
-    const SourceType source_type,
-    const std::array<Float,3UL> point_coords,
-    const PhysicalQuantity pq,
-    const char* const pqv
-) {
-    add_sound_source(source_type, point_coords, pq, table2func(pqv));
-}
 
 template <ElementOrder O>
 void SimulationFemHelmTet<O>::add_sound_source(
@@ -277,38 +177,6 @@ void SimulationFemHelmTet<O>::add_sound_source(
             "volume velocity or pressure.");
     }
     _is_any_source_defined = true;
-}
-template <ElementOrder O>
-void SimulationFemHelmTet<O>::add_sound_source(
-    const SourceType source_type,
-    const uint64_t espg,
-    const PhysicalQuantity pq,
-    const Cmplx pqv
-) {
-    add_sound_source(source_type, espg, pq, const2func(pqv));
-}
-template <ElementOrder O>
-void SimulationFemHelmTet<O>::add_sound_source(
-    const SourceType source_type,
-    const uint64_t espg,
-    const PhysicalQuantity pq,
-    const char* const pqv
-) {
-    add_sound_source(source_type, espg, pq, table2func(pqv));
-}
-
-template <ElementOrder O>
-void SimulationFemHelmTet<O>::add_receiver(
-    const std::array<Float,DIM> point_coords
-) {
-    _check_if_mesh_is_defined();
-    _check_if_did_run();
-    // TODO: check if the point is outside the mesh
-    const Float& x = point_coords[0UL];
-    const Float& y = point_coords[1UL];
-    const Float& z = point_coords[2UL];
-    _receiver_points.emplace_back(std::array<Float,DIM>{x, y, z});
-    ++_ri_count;
 }
 
 template <ElementOrder O>
@@ -355,7 +223,6 @@ void SimulationFemHelmTet<O>::run()
     _organize_physical_group_data();
     _assemble_freq_independent_parts();
     _solve_systems();
-    _post_process();
 }
 
 } // namespace numav

@@ -21,7 +21,6 @@ void SimulationFemHelmTet<O>::_clear_data_not_used_in_freq_iterations()
     _espg_ispgv_bimap.clear();
     _espg_ispgp_bimap.clear();
     
-    _receiver_points.clear();
     _ni_to_coords.free();
     _sei_to_ni.free();
     _vei_to_ni.free();

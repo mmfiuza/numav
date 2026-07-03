@@ -20,7 +20,6 @@ SimulationFemHelmTet<O>::Simulation() {
     _ispgv_count = 0UL;
     _ppi_count = 0UL;
     _ispgp_count = 0UL;
-    _ri_count = 0UL;
     #if NUMAV_SYSTEM_SOLVER == NUMAV_EIGEN
         _solver = std::make_unique<Eigen::SparseLU<
             Eigen::SparseMatrix<Cmplx, Eigen::ColMajor, Eigen::Index>,

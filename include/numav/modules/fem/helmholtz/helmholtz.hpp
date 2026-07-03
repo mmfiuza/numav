@@ -62,65 +62,16 @@ public:
     void add_volume_material(
         const uint64_t, const FuncFloatToCmplx&, const FuncFloatToCmplx&
     );
-    void add_volume_material(
-        const uint64_t, const FuncFloatToCmplx&, const Cmplx
-    );
-    void add_volume_material(
-        const uint64_t, const FuncFloatToCmplx&, const char* const
-    );
-    void add_volume_material(
-        const uint64_t, const Cmplx, const FuncFloatToCmplx&
-    );
-    void add_volume_material(
-        const uint64_t, const Cmplx, const Cmplx
-    );
-    void add_volume_material(
-        const uint64_t, const Cmplx, const char* const
-    );
-    void add_volume_material(
-        const uint64_t, const char* const, const FuncFloatToCmplx&
-    );
-    void add_volume_material(
-        const uint64_t, const char* const, const Cmplx
-    );
-    void add_volume_material(
-        const uint64_t, const char* const, const char* const
-    );
     void add_surface_material(
         const uint64_t, const PhysicalQuantity, const FuncFloatToCmplx&
     );
-    void add_surface_material(
-        const uint64_t, const PhysicalQuantity, const Cmplx
-    );
-    void add_surface_material(
-        const uint64_t, const PhysicalQuantity, const char* const
-    );
     void add_sound_source(
         const SourceType, const Coord,
         const PhysicalQuantity, const FuncFloatToCmplx&
     );
     void add_sound_source(
-        const SourceType, const Coord,
-        const PhysicalQuantity, const Cmplx
-    );
-    void add_sound_source(
-        const SourceType, const Coord,
-        const PhysicalQuantity, const char* const
-    );
-    void add_sound_source(
         const SourceType, const uint64_t,
         const PhysicalQuantity, const FuncFloatToCmplx&
-    );
-    void add_sound_source(
-        const SourceType, const uint64_t,
-        const PhysicalQuantity, const Cmplx
-    );
-    void add_sound_source(
-        const SourceType, const uint64_t,
-        const PhysicalQuantity, const char* const
-    );
-    void add_receiver(
-        const Coord
     );
     void set_result_export_path(
         const char* const
@@ -151,7 +102,6 @@ private:
     void _assemble_fi_part_for_pressure();
     void _assemble_freq_independent_parts();
     void _solve_systems();
-    void _post_process();
     H5::DataSet _begin_hdf5_file();
     void _write_simulation_inputs_to_hdf5_file();
     void _write_solution_for_one_freq(H5::DataSet& ds, const uint64_t fi);
@@ -199,8 +149,6 @@ private:
     std::vector<FuncFloatToCmplx> _vpi_to_volvel;
     std::vector<uint64_t> _ppi_to_ni;
     std::vector<FuncFloatToCmplx> _ppi_to_pressure;
-
-    std::vector<std::array<Float, DIM>> _receiver_points;
 
     // members allocated during mesh load
     fz::SafePtr<std::array<Float, DIM>> _ni_to_coords;
@@ -251,7 +199,6 @@ private:
     uint64_t _vpi_count;
     uint64_t _ppi_count;
     uint64_t _apvi_count;
-    uint64_t _ri_count;
 
     std::unique_ptr<indicators::ProgressBar> _progress_bar;
 

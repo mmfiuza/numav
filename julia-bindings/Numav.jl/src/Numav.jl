@@ -16,9 +16,14 @@ export
     set_result_export_path!,
     run!
 
-# wrap the C++ part
-using CxxWrap
+# include dependencies
 using numav_julia_jll
+using CxxWrap
+using DelimitedFiles
+using Interpolations
+using Base.Threads
+
+# wrap the C++ part
 @wrapmodule(() -> libnumav_julia)
 function __init__()
     @initcxx
@@ -27,13 +32,19 @@ function __init__()
     ENV["MKL_THREADING_LAYER"] = "INTEL"
 end
 
-using Base.Threads
+# type aliases
+const Pq = Union{Function, Number, AbstractString}
+const SimulationFemHelmTet{O} = Simulation{
+    NumericalMethod_fem,
+    Equation_helmholtz,
+    ElementShape_tetrahedron,
+    O
+}
 
 # global storage for user-defined functions
 const _user_functions::Vector{Ref{Function}} = [ ]
 global _next_index::UInt = 1
 _lock = ReentrantLock()
-
 function _cmplx_split_and_store(f::Function)
     idx = lock(_lock) do
         global _next_index
@@ -85,12 +96,7 @@ function cubic_range(start::Real, stop::Real, length::Integer)
 end
 
 function set_frequency!( 
-    simulation::Simulation{
-        NumericalMethod_fem,
-        Equation_helmholtz,
-        ElementShape_tetrahedron,
-        O
-    };
+    simulation::SimulationFemHelmTet{O};
     max::Union{Real, Nothing} = nothing,
     vector::Union{AbstractVector{<:Real}, Nothing} = nothing,
     min::Union{Real, Nothing} = nothing,
@@ -142,85 +148,72 @@ function set_frequency!(
             end
         end
     end
-    set_frequency_steps!(simulation, Float64.(Vector(vector)))
+    _cpp_set_frequency_vector!(simulation, Float64.(Vector(vector)))
+end
+
+function load_mesh!(
+    simulation::SimulationFemHelmTet{O},
+    path_to_mesh::AbstractString
+) where O
+    _cpp_load_mesh!(simulation, String(path_to_mesh))
+end
+
+function _read_pqv_table(filename::AbstractString)
+    data = readdlm(filename, ',')
+    freq = Float64.(data[:, 1])
+    pqv = Complex.(Float64.(data[:, 2]), Float64.(data[:, 3]))
+    return (freq, pqv)
+end
+
+function _pqv_to_function(pqv::Pq)::Function
+    if pqv isa Number
+        return (_ -> pqv)
+    elseif pqv isa AbstractString
+        interp = linear_interpolation(_read_pqv_table(pqv)...) 
+        return (x -> interp(x))
+    elseif pqv isa Function
+        return pqv
+    end
+    throw(ArgumentError("type of `pqv` could not be handled"))
 end
 
 function add_volume_material!( 
-    simulation::Simulation{
-        NumericalMethod_fem,
-        Equation_helmholtz,
-        ElementShape_tetrahedron,
-        O
-    };
+    simulation::SimulationFemHelmTet{O};
     physical_group::Integer,
-    density::Union{Function, Number, String},
-    speed_of_sound::Union{Function, Number, String}
+    density::Pq,
+    speed_of_sound::Pq
 ) where O
-    density_args =
-    if density isa Function
-        _cmplx_split_and_store(density)
-    elseif density isa Number
-        (ComplexF64(density),)
-    else
-        (density,)
-    end
-
-    speed_of_sound_args =
-    if speed_of_sound isa Function
-        _cmplx_split_and_store(speed_of_sound)
-    elseif speed_of_sound isa Number
-        (ComplexF64(speed_of_sound),)
-    else
-        (speed_of_sound,)
-    end
-
-    _add_volume_material!(
+    density = _pqv_to_function(density)
+    speed_of_sound = _pqv_to_function(speed_of_sound)
+    _cpp_add_volume_material!(
         simulation,
         UInt64(physical_group),
-        density_args...,
-        speed_of_sound_args...
+        _cmplx_split_and_store(density)...,
+        _cmplx_split_and_store(speed_of_sound)...
     )
 end
 
 function add_surface_material!( 
-    simulation::Simulation{
-        NumericalMethod_fem,
-        Equation_helmholtz,
-        ElementShape_tetrahedron,
-        O
-    };
+    simulation::SimulationFemHelmTet{O};
     physical_group::Integer,
-    specific_acoustic_impedance::Union{Function, Number, String},
+    specific_acoustic_impedance::Pq
 ) where O
-    impedance_args =
-    if specific_acoustic_impedance isa Function
-        _cmplx_split_and_store(specific_acoustic_impedance)
-    elseif specific_acoustic_impedance isa Number
-        (ComplexF64(specific_acoustic_impedance),)
-    elseif specific_acoustic_impedance isa String
-        (specific_acoustic_impedance,)
-    end
-
-    _add_surface_material!(
+    specific_acoustic_impedance = _pqv_to_function(specific_acoustic_impedance)
+    _cpp_add_surface_material!(
         simulation,
         UInt64(physical_group),
         PhysicalQuantity_impedance,
-        impedance_args...
+        _cmplx_split_and_store(specific_acoustic_impedance)...
     )
 end
 
 function add_sound_source!( 
-    simulation::Simulation{
-        NumericalMethod_fem,
-        Equation_helmholtz,
-        ElementShape_tetrahedron,
-        O
-    };
+    simulation::SimulationFemHelmTet{O};
     coordinates::Union{AbstractVector{<:Real}, Nothing} = nothing,
     physical_group::Union{Integer, Nothing} = nothing,
-    volume_velocity::Union{Function, Number, String, Nothing} = nothing,
-    particle_velocity::Union{Function, Number, String, Nothing} = nothing,
-    pressure::Union{Function, Number, String, Nothing} = nothing
+    volume_velocity::Union{Pq, Nothing} = nothing,
+    particle_velocity::Union{Pq, Nothing} = nothing,
+    pressure::Union{Pq, Nothing} = nothing
 ) where O
     if isnothing(coordinates) && isnothing(physical_group)
         throw(ArgumentError(
@@ -253,7 +246,7 @@ function add_sound_source!(
     end
 
     # Check if volume_velocity, particle_velocity or pressure was given
-    pqv = Ref{Any}()
+    pqv = Ref{Pq}()
     if !isnothing(volume_velocity)
         pq_type = PhysicalQuantity_volume_velocity
         pqv[] = volume_velocity
@@ -265,15 +258,7 @@ function add_sound_source!(
         pqv[] = pressure
     end
 
-    pq_args =
-    if pqv[] isa Function
-        _cmplx_split_and_store(pqv[])
-    elseif pqv[] isa Number
-        (ComplexF64(pqv[]),)
-    elseif pqv[] isa String
-        (pqv[],)
-    end
-
+    pqv[] = _pqv_to_function(pqv[])
     source_args =
     if !isnothing(coordinates)
         (SourceType_point, Float64.(coordinates))
@@ -281,7 +266,23 @@ function add_sound_source!(
         (SourceType_surface, UInt64(physical_group))
     end
 
-    _add_sound_source!(simulation, source_args..., pq_type, pq_args...)
+    _cpp_add_sound_source!(
+        simulation,
+        source_args...,
+        pq_type,
+        _cmplx_split_and_store(pqv[])...
+    )
+end
+
+function set_result_export_path!(
+    simulation::SimulationFemHelmTet{O},
+    path_to_hdf5_file::AbstractString
+) where O
+    _cpp_set_result_export_path!(simulation, String(path_to_hdf5_file))
+end
+
+function run!(simulation::SimulationFemHelmTet{O}) where O
+    _cpp_run!(simulation)
 end
 
 end # module Numav
