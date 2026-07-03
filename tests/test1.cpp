@@ -17,10 +17,8 @@ int main()
     // load the mesh
     s.load_mesh("build/tests_bin/test1.bdf");
 
-    // determine simulation frequency range
-    double freq_max = 100;
-    s.set_maximum_frequency(freq_max);
-    s.set_frequency_steps_count(1000);
+    // determine simulation frequency
+    s.set_frequency_vector(std::vector<double>({20,50,100}));
 
     // add volume materials
     s.add_volume_material(

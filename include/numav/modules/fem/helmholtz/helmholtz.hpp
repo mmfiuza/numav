@@ -53,19 +53,7 @@ public:
     Simulation(Simulation&&) noexcept;
     Simulation& operator=(Simulation&&) noexcept;
     
-    void set_maximum_frequency(
-        const Float
-    );
-    void set_frequency_range(
-        const Float, const Float
-    );
-    void set_frequency_steps_count(
-        const uint64_t
-    );
-    void set_frequency_sampling_density(
-        const FrequencySamplingDensity
-    );
-    void set_frequency_steps(
+    void set_frequency_vector(
         const std::vector<Float>&
     );
     void load_mesh(
@@ -148,7 +136,6 @@ private:
     void _check_if_did_run();
     void _validate_espg(const uint64_t espg);
     void _check_if_it_can_run();
-    void _define_freq_vector();
     void _organize_volume_physical_group_data();
     void _organize_pressure_physical_group_data();
     void _organize_impedance_physical_group_data();
@@ -184,13 +171,6 @@ private:
         void _solve_using_mumps_solver();
         void _terminate_mumps_solver();
     #endif
-
-    enum class _FreqTypeDefinedByUser : uint64_t {
-        UNDEFINED,
-        MAXIMUM,
-        RANGE,
-        STEPS
-    };
     
     // volume element properties
     struct _VolProp {
@@ -273,13 +253,9 @@ private:
     uint64_t _apvi_count;
     uint64_t _ri_count;
 
-    Float _freq_min;
-    Float _freq_max;
-    FrequencySamplingDensity _freq_sampling_density;
-    _FreqTypeDefinedByUser _freq_type_defined_by_user;
-
     std::unique_ptr<indicators::ProgressBar> _progress_bar;
 
+    bool _is_freq_defined;
     bool _is_mesh_defined;
     bool _is_any_source_defined;
     bool _did_run;

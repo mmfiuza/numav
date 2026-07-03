@@ -9,11 +9,10 @@ template<ElementOrder O>
 SimulationFemHelmTet<O>::Simulation() {
     log::set_level();
     log::set_pattern();
+    _is_freq_defined = false;
     _is_mesh_defined = false;
     _is_any_source_defined = false;
     _did_run = false;
-    _freq_type_defined_by_user = _FreqTypeDefinedByUser::UNDEFINED;
-    _freq_sampling_density = FrequencySamplingDensity::QUADRATIC;
     _fi_count = DEFAULT_FREQ_STEPS_COUNT;
     _ivpg_count = 0UL;
     _ispgi_count = 0UL;
@@ -39,9 +38,7 @@ SimulationFemHelmTet<O>::~Simulation() {
         _sei_to_espg.free();
         _vei_to_evpg.free();
     }
-    if (!_did_run &&
-        _freq_type_defined_by_user == _FreqTypeDefinedByUser::STEPS
-    ) {
+    if (!_did_run && _is_freq_defined) {
         _fi_to_freq.free();
     }
     if (_did_run) {

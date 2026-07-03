@@ -37,92 +37,19 @@ void SimulationFemHelmTet<O>::_validate_espg(const uint64_t espg) {
 }
 
 template <ElementOrder O>
-void SimulationFemHelmTet<O>::set_maximum_frequency(
-    const Float freq_max
-) {
-    _check_if_did_run();
-    if (freq_max < 0_F) {
-        error("Maximum frequency should be positive.");
-    }
-    if (freq_max == 0_F) {
-        error("Maximum frequency should not be zero.");
-    }
-    if (_freq_type_defined_by_user != _FreqTypeDefinedByUser::UNDEFINED) {
-        error("Simulation frequency is already defined.");
-    }
-    _freq_max = freq_max;
-    _freq_type_defined_by_user = _FreqTypeDefinedByUser::MAXIMUM;
-}
-
-template <ElementOrder O>
-void SimulationFemHelmTet<O>::set_frequency_range(
-    const Float freq_min,
-    const Float freq_max
-) {
-    _check_if_did_run();
-    if (freq_min < 0_F || freq_max < 0_F) {
-        error("Frequency limits should be positive.");
-    }
-    if (freq_min == 0_F || freq_max == 0_F) {
-        error("Frequency limits should not be zero.");
-    }
-    if (freq_min >= freq_max) {
-        error("Upper frequency should be greater than the lower.");
-    }
-    if (_freq_type_defined_by_user != _FreqTypeDefinedByUser::UNDEFINED) {
-        error("Simulation frequency is already defined.");
-    }
-    _freq_min = freq_min;
-    _freq_max = freq_max;
-    _freq_type_defined_by_user = _FreqTypeDefinedByUser::RANGE;
-}
-
-template <ElementOrder O>
-void SimulationFemHelmTet<O>::set_frequency_steps_count(
-    const uint64_t freq_steps_count
-) {
-    _check_if_did_run();
-    if (_freq_type_defined_by_user == _FreqTypeDefinedByUser::UNDEFINED) {
-        error("Simulation frequency was not defined."
-            " Call set_maximum_frequency to do so.");
-    }
-    if (_freq_type_defined_by_user == _FreqTypeDefinedByUser::STEPS) {
-        error("Simulation frequency steps already defined.");
-    }
-    _fi_count = freq_steps_count;
-}
-
-template <ElementOrder O>
-void SimulationFemHelmTet<O>::set_frequency_sampling_density(
-    const FrequencySamplingDensity freq_sampling_density
-) {
-    _check_if_did_run();
-    if (_freq_type_defined_by_user == _FreqTypeDefinedByUser::UNDEFINED) {
-        error("Simulation frequency was not defined."
-            " Call set_maximum_frequency to do so.");
-    }
-    if (_freq_type_defined_by_user == _FreqTypeDefinedByUser::STEPS) {
-        error("Simulation frequency steps already defined.");
-    }
-    _freq_sampling_density = freq_sampling_density;
-}
-
-template <ElementOrder O>
-void SimulationFemHelmTet<O>::set_frequency_steps(
+void SimulationFemHelmTet<O>::set_frequency_vector(
     const std::vector<Float>& freq_steps
 ) {
     _check_if_did_run();
-    if (_freq_type_defined_by_user != _FreqTypeDefinedByUser::UNDEFINED) {
+    if (_is_freq_defined) {
         error("Simulation frequency is already defined.");
     }
     _fi_count = freq_steps.size();
-    _freq_min = freq_steps.front();
-    _freq_max = freq_steps.back();
     _fi_to_freq = fz::SafePtr<Float>(_fi_count);
     for (uint64_t i = 0UL; i != _fi_count; ++i) {
         _fi_to_freq[i] = freq_steps[i];
     }
-    _freq_type_defined_by_user = _FreqTypeDefinedByUser::STEPS;
+    _is_freq_defined = true;
 }
 
 template <ElementOrder O>
@@ -407,7 +334,7 @@ void SimulationFemHelmTet<O>::_check_if_it_can_run() {
         error("No sound source was defined."
             " Call add_sound_source to do so.");
     }
-    if (_freq_type_defined_by_user == _FreqTypeDefinedByUser::UNDEFINED){
+    if (!_is_freq_defined){
         error("Simulation frequency was not defined."
             " Call set_maximum_frequency to do so.");
     }
@@ -425,7 +352,6 @@ void SimulationFemHelmTet<O>::run()
     _check_if_it_can_run();
     log::print_opening();
     log::print_opening_ac_fem_freq_d3();
-    _define_freq_vector();
     _organize_physical_group_data();
     _assemble_freq_independent_parts();
     _solve_systems();
