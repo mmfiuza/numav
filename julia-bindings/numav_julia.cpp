@@ -37,56 +37,56 @@ std::array<Float,3UL> jl2cpp_array(const jlcxx::ArrayRef<Float> jl_array) {
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
 {
-    mod.add_enum<NumericalMethod>("NumericalMethod",
+    mod.add_enum<NumericalMethod>("_cpp_NumericalMethod",
         std::vector<const char*>({
-            "NumericalMethod_fem"
+            "_cpp_NumericalMethod_fem"
         }),
         std::vector<uint64_t>({
             static_cast<uint64_t>(NumericalMethod::FEM)
         })
     );
-    mod.add_enum<Equation>("Equation",
+    mod.add_enum<Equation>("_cpp_Equation",
         std::vector<const char*>({
-            "Equation_helmholtz"
+            "_cpp_Equation_helmholtz"
         }),
         std::vector<uint64_t>({
             static_cast<uint64_t>(Equation::HELMHOLTZ)
         })
     );
-    mod.add_enum<ElementShape>("ElementShape",
+    mod.add_enum<ElementShape>("_cpp_ElementShape",
         std::vector<const char*>({
-            "ElementShape_tetrahedron"
+            "_cpp_ElementShape_tetrahedron"
         }),
         std::vector<uint64_t>({
             static_cast<uint64_t>(ElementShape::TETRAHEDRON)
         })
     );
-    mod.add_enum<ElementOrder>("ElementOrder",
+    mod.add_enum<ElementOrder>("_cpp_ElementOrder",
         std::vector<const char*>({
-            "ElementOrder_linear",
-            "ElementOrder_quadratic"
+            "_cpp_ElementOrder_linear",
+            "_cpp_ElementOrder_quadratic"
         }),
         std::vector<uint64_t>({
             static_cast<uint64_t>(ElementOrder::LINEAR),
             static_cast<uint64_t>(ElementOrder::QUADRATIC)
         })
     );
-    mod.add_enum<SourceType>("SourceType",
+    mod.add_enum<SourceType>("_cpp_SourceType",
         std::vector<const char*>({
-            "SourceType_point",
-            "SourceType_surface"
+            "_cpp_SourceType_point",
+            "_cpp_SourceType_surface"
         }),
         std::vector<uint64_t>({
             static_cast<uint64_t>(SourceType::POINT),
             static_cast<uint64_t>(SourceType::SURFACE),
         })
     );
-    mod.add_enum<PhysicalQuantity>("PhysicalQuantity",
+    mod.add_enum<PhysicalQuantity>("_cpp_PhysicalQuantity",
         std::vector<const char*>({
-            "PhysicalQuantity_volume_velocity",
-            "PhysicalQuantity_particle_velocity",
-            "PhysicalQuantity_pressure",
-            "PhysicalQuantity_impedance"
+            "_cpp_PhysicalQuantity_volume_velocity",
+            "_cpp_PhysicalQuantity_particle_velocity",
+            "_cpp_PhysicalQuantity_pressure",
+            "_cpp_PhysicalQuantity_impedance"
         }),
         std::vector<uint64_t>({
             static_cast<uint64_t>(PhysicalQuantity::VOLUME_VELOCITY),

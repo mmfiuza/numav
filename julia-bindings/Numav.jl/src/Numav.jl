@@ -4,6 +4,15 @@ module Numav
 
 # export structs
 export Simulation
+    
+# export options
+export
+    Fem,
+    Helmholtz,
+    Tetrahedron,
+    Constant,
+    Linear,
+    Quadratic
 
 # export functions
 export
@@ -35,9 +44,9 @@ end
 # type aliases
 const Pq = Union{Function, Number, AbstractString}
 const SimulationFemHelmTet{O} = Simulation{
-    NumericalMethod_fem,
-    Equation_helmholtz,
-    ElementShape_tetrahedron,
+    _cpp_NumericalMethod_fem,
+    _cpp_Equation_helmholtz,
+    _cpp_ElementShape_tetrahedron,
     O
 }
 
@@ -64,28 +73,59 @@ function _cmplx_split_and_store(f::Function)
     return (f_real, f_imag)
 end
 
+abstract type Option end
+
+struct FemType <: Option end
+const Fem = FemType()
+
+struct HelmholtzType <: Option end
+const Helmholtz = HelmholtzType()
+
+struct TetrahedronType <: Option end
+const Tetrahedron = TetrahedronType()
+
+struct ConstantType <: Option end
+const Constant = ConstantType()
+
+struct LinearType <: Option end
+const Linear = LinearType()
+
+struct QuadraticType <: Option end
+const Quadratic = QuadraticType()
+
 function create_simulation(;
-    numerical_method::Symbol,
-    equation::Symbol,
-    element_shape::Symbol,
-    element_order::Symbol
+    numerical_method::Option,
+    equation::Option,
+    element_shape::Option,
+    element_order::Option
 )
     args = ()
-    if numerical_method == :fem
-        args = (args..., NumericalMethod_fem)
+    if numerical_method === Fem
+        args = (args..., _cpp_NumericalMethod_fem)
+    else
+        throw(ArgumentError("Invalid `numerical_method` option"))
     end
-    if equation == :helmholtz 
-        args = (args..., Equation_helmholtz)
+
+    if equation === Helmholtz 
+        args = (args..., _cpp_Equation_helmholtz)
+    else
+        throw(ArgumentError("Invalid `equation` option"))
     end
-    if element_shape == :tetrahedron
-        args = (args..., ElementShape_tetrahedron)
+
+    if element_shape === Tetrahedron
+        args = (args..., _cpp_ElementShape_tetrahedron)
+    else
+        throw(ArgumentError("Invalid `element_shape` option"))
     end
-    if element_order == :linear
-        args = (args..., ElementOrder_linear)
+
+    if element_order === Linear
+        args = (args..., _cpp_ElementOrder_linear)
+    elseif element_order === Quadratic
+        args = (args..., _cpp_ElementOrder_quadratic)
+    else
+        throw(ArgumentError("Invalid `element_order` option"))
     end
-    if element_order == :quadratic
-        args = (args..., ElementOrder_quadratic)
-    end
+
     return Simulation{args...}()
 end
 
@@ -101,11 +141,11 @@ function set_frequency!(
     vector::Union{AbstractVector{<:Real}, Nothing} = nothing,
     min::Union{Real, Nothing} = nothing,
     length::Union{Integer, Nothing} = nothing,
-    sampling_density::Union{Symbol, Nothing} = nothing,
+    sampling_density::Union{Option, Nothing} = nothing,
     step::Union{Real, Nothing} = nothing,
 ) where O
     if isnothing(max) && isnothing(vector)
-        throw(ArgumentError("`max` or `vector` must be passed"))
+        throw(ArgumentError("Neither `max` nor `vector` passed"))
     end
     if !isnothing(vector)
         if (
@@ -116,18 +156,18 @@ function set_frequency!(
             !isnothing(step)
         )
             throw(ArgumentError(
-                "If `vector` is passed, no other parameter is allowed"
+                "`vector` and other parameter(s) passed simultaneously"
             ))
         end
     end
     if !isnothing(step) && !isnothing(length)
         throw(ArgumentError(
-            "`step` and `length` cannot be passed simultaneously"
+            "`step` and `length` passed simultaneously"
         ))
     end
     if !isnothing(step) && !isnothing(sampling_density)
         throw(ArgumentError(
-            "`step` and `sampling_density` cannot be passed simultaneously"
+            "`step` and `sampling_density` passed simultaneously"
         ))
     end
     if !isnothing(max)
@@ -136,15 +176,13 @@ function set_frequency!(
             vector = range(min, max, step=step)
         else
             length = something(length, 4096)
-            sampling_density = something(sampling_density, :quadratic)
-            if sampling_density == :constant
+            sampling_density = something(sampling_density, Quadratic)
+            if sampling_density === Constant
                 vector = range(min, max, length=length)
-            elseif sampling_density == :quadratic
+            elseif sampling_density === Quadratic
                 vector = cubic_range(min, max, length)
             else
-                throw(ArgumentError(
-                    "`sampling_density` must be `:constant` or `:quadratic`"
-                ))
+                throw(ArgumentError("Invalid `sampling_density` option"))
             end
         end
     end
@@ -174,7 +212,7 @@ function _pqv_to_function(pqv::Pq)::Function
     elseif pqv isa Function
         return pqv
     end
-    throw(ArgumentError("type of `pqv` could not be handled"))
+    throw(ArgumentError("Invalid type of `pqv`"))
 end
 
 function add_volume_material!( 
@@ -202,7 +240,7 @@ function add_surface_material!(
     _cpp_add_surface_material!(
         simulation,
         UInt64(physical_group),
-        PhysicalQuantity_impedance,
+        _cpp_PhysicalQuantity_impedance,
         _cmplx_split_and_store(specific_acoustic_impedance)...
     )
 end
@@ -248,22 +286,22 @@ function add_sound_source!(
     # Check if volume_velocity, particle_velocity or pressure was given
     pqv = Ref{Pq}()
     if !isnothing(volume_velocity)
-        pq_type = PhysicalQuantity_volume_velocity
+        pq_type = _cpp_PhysicalQuantity_volume_velocity
         pqv[] = volume_velocity
     elseif !isnothing(particle_velocity)
-        pq_type = PhysicalQuantity_particle_velocity
+        pq_type = _cpp_PhysicalQuantity_particle_velocity
         pqv[] = particle_velocity
     elseif !isnothing(pressure)
-        pq_type = PhysicalQuantity_pressure
+        pq_type = _cpp_PhysicalQuantity_pressure
         pqv[] = pressure
     end
 
     pqv[] = _pqv_to_function(pqv[])
     source_args =
     if !isnothing(coordinates)
-        (SourceType_point, Float64.(coordinates))
+        (_cpp_SourceType_point, Float64.(coordinates))
     elseif !isnothing(physical_group)
-        (SourceType_surface, UInt64(physical_group))
+        (_cpp_SourceType_surface, UInt64(physical_group))
     end
 
     _cpp_add_sound_source!(

@@ -4,29 +4,65 @@
 
 using Numav
 
-redirect_stdout(devnull) do
+# redirect_stdout(devnull) do
 
 result_path = "test1.h5"
 mesh_path = "test1.bdf"
 pqv = "pqv.txt"
 func(x) = x
 
+@test_throws ArgumentError create_simulation(
+    numerical_method = Constant,
+    equation = Helmholtz,
+    element_shape = Tetrahedron,
+    element_order = Linear
+)
+@test_throws ArgumentError create_simulation(
+    numerical_method = Fem,
+    equation = Constant,
+    element_shape = Tetrahedron,
+    element_order = Linear
+)
+@test_throws ArgumentError create_simulation(
+    numerical_method = Fem,
+    equation = Helmholtz,
+    element_shape = Constant,
+    element_order = Linear
+)
+@test_throws ArgumentError create_simulation(
+    numerical_method = Fem,
+    equation = Helmholtz,
+    element_shape = Tetrahedron,
+    element_order = Constant
+)
+create_simulation(
+    numerical_method = Fem,
+    equation = Helmholtz,
+    element_shape = Tetrahedron,
+    element_order = Linear
+)
+create_simulation(
+    numerical_method = Fem,
+    equation = Helmholtz,
+    element_shape = Tetrahedron,
+    element_order = Quadratic
+)
 s = create_simulation(
-    numerical_method = :fem,
-    equation = :helmholtz,
-    element_shape = :tetrahedron,
-    element_order = :linear
+    numerical_method = Fem,
+    equation = Helmholtz,
+    element_shape = Tetrahedron,
+    element_order = Linear
 )
 @test_throws ErrorException run!(s)
 @test_throws ArgumentError set_frequency!(s, vector=[1,2], max=100)
 @test_throws ArgumentError set_frequency!(s, vector=[1,2], min=10)
 @test_throws ArgumentError set_frequency!(s, vector=[1,2], length=1000)
-@test_throws ArgumentError set_frequency!(s, vector=[1,2], sampling_density=:constant)
+@test_throws ArgumentError set_frequency!(s, vector=[1,2], sampling_density=Constant)
 @test_throws ArgumentError set_frequency!(s, vector=[1,2], step=1)
 @test_throws ArgumentError set_frequency!(s, min=20)
 @test_throws ArgumentError set_frequency!(s, max=300, step=1, length=200)
-@test_throws ArgumentError set_frequency!(s, max=300, step=1, sampling_density=:constant)
-@test_throws ArgumentError set_frequency!(s, max=300, sampling_density=:foo)
+@test_throws ArgumentError set_frequency!(s, max=300, step=1, sampling_density=Constant)
+@test_throws ArgumentError set_frequency!(s, max=300, sampling_density=Tetrahedron)
 set_frequency!(s, max=200)
 @test_throws ErrorException set_frequency!(s, vector=[20,30])
 load_mesh!(s, mesh_path)
@@ -67,12 +103,12 @@ run!(s)
 @test_throws ErrorException run!(s)
 
 s = create_simulation(
-    numerical_method = :fem,
-    equation = :helmholtz,
-    element_shape = :tetrahedron,
-    element_order = :quadratic
+    numerical_method = Fem,
+    equation = Helmholtz,
+    element_shape = Tetrahedron,
+    element_order = Quadratic
 )
-set_frequency!(s, min=10, max=300, length=100, sampling_density=:constant)
+set_frequency!(s, min=10, max=300, length=100, sampling_density=Quadratic)
 load_mesh!(s, mesh_path)
 add_volume_material!(s, physical_group=1, density=1, speed_of_sound=f->f)
 add_volume_material!(s, physical_group=2, density=1, speed_of_sound=1)
@@ -82,10 +118,10 @@ set_result_export_path!(s, result_path)
 run!(s)
 
 s = create_simulation(
-    numerical_method = :fem,
-    equation = :helmholtz,
-    element_shape = :tetrahedron,
-    element_order = :linear
+    numerical_method = Fem,
+    equation = Helmholtz,
+    element_shape = Tetrahedron,
+    element_order = Linear
 )
 set_frequency!(s, min=30, max=100, step=2)
 load_mesh!(s, mesh_path)
@@ -97,10 +133,10 @@ set_result_export_path!(s, result_path)
 run!(s)
 
 s = create_simulation(
-    numerical_method = :fem,
-    equation = :helmholtz,
-    element_shape = :tetrahedron,
-    element_order = :linear
+    numerical_method = Fem,
+    equation = Helmholtz,
+    element_shape = Tetrahedron,
+    element_order = Linear
 )
 set_frequency!(s, vector=[20, 30, 50, 70, 110])
 load_mesh!(s, mesh_path)
@@ -111,7 +147,7 @@ add_sound_source!(s, coordinates=[1.0, 1.0, 1.0], volume_velocity=func)
 set_result_export_path!(s, result_path)
 run!(s)
 
-end # redirect_stdout
+# end # redirect_stdout
 
 return true # Passed if code reaches here
 
