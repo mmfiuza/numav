@@ -86,7 +86,7 @@ const Quadratic = QuadraticType()
 
 abstract type Members end
 
-struct Simulation{numerical_method, equation, element_shape, element_order}
+struct Simulation{option_1, option_2, option_3, option_4}
     _m::Members
 end
 
@@ -103,8 +103,6 @@ function create_simulation(;
     element_shape::Option,
     element_order::Option
 )
-    args = typeof.((numerical_method, equation, element_shape, element_order))
-
     cpp_args = ()
     if numerical_method === Fem
         cpp_args = (cpp_args..., _cpp_NumericalMethod_fem)
@@ -133,11 +131,16 @@ function create_simulation(;
     end
 
     if numerical_method === Fem && equation === Helmholtz
-        return Simulation{args...}(
-            MembersFemHelmholtz{typeof.((element_shape, element_order))...}(
-                _cpp_Simulation{cpp_args...}()
+        return Simulation{
+                numerical_method,
+                equation,
+                element_shape,
+                element_order
+            }(
+                MembersFemHelmholtz{element_shape, element_order}(
+                    _cpp_Simulation{cpp_args...}()
+                )
             )
-        )
     end
     throw(ErrorException("Invalid options"))
 end
@@ -149,7 +152,7 @@ function _cubic_range(start::Real, stop::Real, length::Integer)
 end
 
 function set_frequency!( 
-    simulation::Simulation{FemType, HelmholtzType};
+    simulation::Simulation{Fem, Helmholtz};
     max::Union{Real, Nothing} = nothing,
     vector::Union{AbstractVector{<:Real}, Nothing} = nothing,
     min::Union{Real, Nothing} = nothing,
@@ -206,7 +209,7 @@ function set_frequency!(
 end
 
 function load_mesh!(
-    simulation::Simulation{FemType},
+    simulation::Simulation{Fem},
     path_to_mesh::AbstractString
 )
     _cpp_load_mesh!(simulation._m._cpp_simulation, String(path_to_mesh))
@@ -232,7 +235,7 @@ function _pqv_to_function(pqv::Pq)::Function
 end
 
 function add_volume_material!( 
-    simulation::Simulation{FemType, HelmholtzType};
+    simulation::Simulation{Fem, Helmholtz};
     physical_group::Integer,
     density::Pq,
     speed_of_sound::Pq
@@ -248,7 +251,7 @@ function add_volume_material!(
 end
 
 function add_surface_material!( 
-    simulation::Simulation{FemType, HelmholtzType};
+    simulation::Simulation{Fem, Helmholtz};
     physical_group::Integer,
     specific_acoustic_impedance::Pq
 )
@@ -262,7 +265,7 @@ function add_surface_material!(
 end
 
 function add_sound_source!( 
-    simulation::Simulation{FemType, HelmholtzType};
+    simulation::Simulation{Fem, Helmholtz};
     coordinates::Union{AbstractVector{<:Real}, Nothing} = nothing,
     physical_group::Union{Integer, Nothing} = nothing,
     volume_velocity::Union{Pq, Nothing} = nothing,
@@ -329,7 +332,7 @@ function add_sound_source!(
 end
 
 function set_result_export_path!(
-    simulation::Simulation{FemType, HelmholtzType},
+    simulation::Simulation{Fem, Helmholtz},
     path_to_hdf5_file::AbstractString
 )
     _cpp_set_result_export_path!(
@@ -338,7 +341,7 @@ function set_result_export_path!(
     )
 end
 
-function run!(simulation::Simulation{FemType, HelmholtzType})
+function run!(simulation::Simulation{Fem, Helmholtz})
     _cpp_run!(simulation._m._cpp_simulation)
 end
 
