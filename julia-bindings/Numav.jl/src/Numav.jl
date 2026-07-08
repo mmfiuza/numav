@@ -154,11 +154,11 @@ end
 function set_frequency!( 
     simulation::Simulation{Fem, Helmholtz};
     max::Union{Real, Nothing} = nothing,
-    vector::Union{AbstractVector{<:Real}, Nothing} = nothing,
     min::Union{Real, Nothing} = nothing,
     length::Union{Integer, Nothing} = nothing,
     sampling_density::Union{Option, Nothing} = nothing,
     step::Union{Real, Nothing} = nothing,
+    vector::Union{AbstractVector{<:Real}, Nothing} = nothing
 )
     if isnothing(max) && isnothing(vector)
         throw(ArgumentError("Neither `max` nor `vector` passed"))
