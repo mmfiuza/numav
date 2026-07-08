@@ -84,7 +84,13 @@ const Linear = LinearType()
 struct QuadraticType <: Option end
 const Quadratic = QuadraticType()
 
+abstract type Members end
+
 struct Simulation{numerical_method, equation, element_shape, element_order}
+    _m::Members
+end
+
+struct MembersFemHelmholtz{S, O} <: Members
     _cpp_simulation::_cpp_Simulation
 end
 
@@ -126,7 +132,14 @@ function create_simulation(;
         throw(ArgumentError("Invalid `element_order` option"))
     end
 
-    return Simulation{args...}(_cpp_Simulation{cpp_args...}())
+    if numerical_method === Fem && equation === Helmholtz
+        return Simulation{args...}(
+            MembersFemHelmholtz{typeof.((element_shape, element_order))...}(
+                _cpp_Simulation{cpp_args...}()
+            )
+        )
+    end
+    throw(ErrorException("Invalid options"))
 end
 
 function _cubic_range(start::Real, stop::Real, length::Integer)
@@ -187,7 +200,7 @@ function set_frequency!(
         end
     end
     _cpp_set_frequency_vector!(
-        simulation._cpp_simulation,
+        simulation._m._cpp_simulation,
         Float64.(Vector(vector))
     )
 end
@@ -196,7 +209,7 @@ function load_mesh!(
     simulation::Simulation{FemType},
     path_to_mesh::AbstractString
 )
-    _cpp_load_mesh!(simulation._cpp_simulation, String(path_to_mesh))
+    _cpp_load_mesh!(simulation._m._cpp_simulation, String(path_to_mesh))
 end
 
 function _read_pqv_table(filename::AbstractString)
@@ -227,7 +240,7 @@ function add_volume_material!(
     density = _pqv_to_function(density)
     speed_of_sound = _pqv_to_function(speed_of_sound)
     _cpp_add_volume_material!(
-        simulation._cpp_simulation,
+        simulation._m._cpp_simulation,
         UInt64(physical_group),
         _cmplx_split_and_store(density)...,
         _cmplx_split_and_store(speed_of_sound)...
@@ -241,7 +254,7 @@ function add_surface_material!(
 )
     specific_acoustic_impedance = _pqv_to_function(specific_acoustic_impedance)
     _cpp_add_surface_material!(
-        simulation._cpp_simulation,
+        simulation._m._cpp_simulation,
         UInt64(physical_group),
         _cpp_PhysicalQuantity_impedance,
         _cmplx_split_and_store(specific_acoustic_impedance)...
@@ -308,7 +321,7 @@ function add_sound_source!(
     end
 
     _cpp_add_sound_source!(
-        simulation._cpp_simulation,
+        simulation._m._cpp_simulation,
         source_args...,
         pq_type,
         _cmplx_split_and_store(pqv[])...
@@ -320,13 +333,13 @@ function set_result_export_path!(
     path_to_hdf5_file::AbstractString
 )
     _cpp_set_result_export_path!(
-        simulation._cpp_simulation,
+        simulation._m._cpp_simulation,
         String(path_to_hdf5_file)
     )
 end
 
 function run!(simulation::Simulation{FemType, HelmholtzType})
-    _cpp_run!(simulation._cpp_simulation)
+    _cpp_run!(simulation._m._cpp_simulation)
 end
 
 end # module Numav
