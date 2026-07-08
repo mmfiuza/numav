@@ -236,10 +236,21 @@ end
 
 function add_volume_material!( 
     simulation::Simulation{Fem, Helmholtz};
-    physical_group::Integer,
+    physical_group::Union{Integer, AbstractVector{<:Integer}},
     density::Pq,
     speed_of_sound::Pq
 )
+    if physical_group isa AbstractVector
+        for pg in physical_group
+            add_volume_material!(
+                simulation,
+                physical_group = pg,
+                density = density,
+                speed_of_sound = speed_of_sound
+            )
+        end
+        return
+    end
     density = _pqv_to_function(density)
     speed_of_sound = _pqv_to_function(speed_of_sound)
     _cpp_add_volume_material!(
@@ -252,9 +263,19 @@ end
 
 function add_surface_material!( 
     simulation::Simulation{Fem, Helmholtz};
-    physical_group::Integer,
+    physical_group::Union{Integer, AbstractVector{<:Integer}},
     specific_acoustic_impedance::Pq
 )
+    if physical_group isa AbstractVector
+        for pg in physical_group
+            add_surface_material!(
+                simulation,
+                physical_group = pg,
+                specific_acoustic_impedance = specific_acoustic_impedance
+            )
+        end
+        return
+    end
     specific_acoustic_impedance = _pqv_to_function(specific_acoustic_impedance)
     _cpp_add_surface_material!(
         simulation._m._cpp_simulation,
@@ -266,8 +287,16 @@ end
 
 function add_sound_source!( 
     simulation::Simulation{Fem, Helmholtz};
-    coordinates::Union{AbstractVector{<:Real}, Nothing} = nothing,
-    physical_group::Union{Integer, Nothing} = nothing,
+    coordinates::Union{
+        AbstractVector{<:Real},
+        AbstractVector{<:AbstractVector{<:Real}},
+        Nothing
+    } = nothing,
+    physical_group::Union{
+        Integer,
+        AbstractVector{<:Integer},
+        Nothing
+    } = nothing,
     volume_velocity::Union{Pq, Nothing} = nothing,
     particle_velocity::Union{Pq, Nothing} = nothing,
     pressure::Union{Pq, Nothing} = nothing
@@ -296,10 +325,36 @@ function add_sound_source!(
             "simultaneously"
         ))
     end
-    if !isnothing(coordinates) && length(coordinates) != 3
+    if coordinates isa AbstractVector{<:Real} && length(coordinates) != 3
         throw(ArgumentError(
-            "`coordinates` vector does not have 3 elements"
+            "x,y,z coordinates does not have 3 components"
         ))
+    end
+    if coordinates isa AbstractVector{<:AbstractVector}
+        for c in coordinates
+            add_sound_source!(
+                simulation,
+                coordinates = c,
+                physical_group = physical_group,
+                volume_velocity = volume_velocity,
+                particle_velocity = particle_velocity,
+                pressure = pressure
+            )
+        end
+        return
+    end
+    if physical_group isa AbstractVector
+        for pg in physical_group
+            add_sound_source!(
+                simulation,
+                coordinates = coordinates,
+                physical_group = pg,
+                volume_velocity = volume_velocity,
+                particle_velocity = particle_velocity,
+                pressure = pressure
+            )
+        end
+        return
     end
 
     # Check if volume_velocity, particle_velocity or pressure was given
