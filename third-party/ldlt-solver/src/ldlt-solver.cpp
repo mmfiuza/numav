@@ -3,134 +3,64 @@
 #include "ldlt-solver.hpp"
 
 #include <complex>
+#include <cmath>
 #include <algorithm>
-#include <iostream>
-#include <vector>
+#include <array>
 #include <limits>
+#include <iostream>
+
+constexpr size_t TS = 32UL;
 
 template<typename T>
-class LdltSolver<T>::Impl
-{
-public:
-    Impl() = default;
-    ~Impl();
+LdltSolver<T>::LdltSolver() = default;
 
-    void define_sparsity_pattern(
-        const T* const a_diag,
-        const size_t* const a_row_idxs,
-        const size_t* const a_col_idxs,
-        const T* const a_vals,
-        T* const x,
-        const T* const b,
-        const size_t& row_count
-    );
-    void solve();
-
-private:
-    void _error(
-        const char* const message
-    );
-    void _check_if_input_is_valid(
-        const size_t* const a_row_idxs,
-        const size_t* const a_col_idxs
-    );
-    void _check_if_a_is_diagonal(
-        const size_t* const a_row_idxs
-    );
-
-    struct _NzilData {
-        size_t sum_count;
-        T* over_d;
-        const T* a;
-    };
-
-    const T* _a_diag;
-    const T* _a_vals;
-    T* _x;
-    const T* _b;
-    size_t _row_count;
-    const T** _l_sum_factors;
-    size_t* _l_row_idx;
-    std::vector<size_t> _l_col_idx;
-    T* _l_vals;
-    T* _ld_vals;
-    T* _over_d;
-    size_t* _nzil_count_in_row;
-    size_t* _nzil_count_in_col;
-    _NzilData* _nzil_data;
-    std::vector<const T*> _y_sum_factors;
-    std::vector<const T*> _x_sum_factors;
-    bool _is_sparsity_pattern_defined = false;
-    bool _is_a_diagonal;
+template<typename T>
+LdltSolver<T>::~LdltSolver() {
+    delete[] _over_d;
+    delete[] _l;
+    delete[] _nzi_to_l_ptr;
 };
 
 template<typename T>
-LdltSolver<T>::Impl::~Impl() {
-    if (_is_sparsity_pattern_defined && !_is_a_diagonal) {
-        delete[] _l_sum_factors;
-        delete[] _l_row_idx;
-        delete[] _l_vals;
-        delete[] _ld_vals;
-        delete[] _over_d;
-        delete[] _nzil_count_in_row;
-        delete[] _nzil_count_in_col;
-        delete[] _nzil_data;
-    }
-}
+LdltSolver<T>::LdltSolver(LdltSolver&& other) noexcept = default;
 
 template<typename T>
-void LdltSolver<T>::Impl::_error(
-    const char* const message
-) {
-    std::cerr <<
-    "[" << "\033[31m" << "LDLT Solver error" << "\033[0m" << "]: " <<
-    message << "\n";
-    throw std::runtime_error("LDLT Solver error");
-}
+LdltSolver<T>& LdltSolver<T>::operator=(LdltSolver&& other) noexcept = default;
 
 template<typename T>
-void LdltSolver<T>::Impl::_check_if_input_is_valid(
+void LdltSolver<T>::_check_if_input_is_valid(
     const size_t* const a_row_idxs,
     const size_t* const a_col_idxs
 ) {
     if (a_row_idxs[0] != 0) {
-        _error("a_row_idx's first element is not zero.");
+        std::cout << "a_row_idxs first element is not zero.\n";
+        throw;
     }
 
-    for (size_t ri = 0; ri != _row_count; ++ri) {
-        if (a_row_idxs[ri] > a_row_idxs[ri + 1]) {
-            _error("a_row_idx is not in ascending order.");
+    for (size_t ri=0; ri!=_unknown_count; ++ri) {
+        if (a_row_idxs[ri] > a_row_idxs[ri+1]) {
+            std::cout << "a_row_idxs is not in ascending order.\n";
+            throw;
         }
     }
 
-    const size_t nz_count = a_row_idxs[_row_count];
-    for (size_t nzi = 0; nzi != nz_count; ++nzi) {
-        if (a_col_idxs[nzi] > _row_count - 1) {
-            _error("Some element in a_col_idx is out of bounds.");
+    const size_t nz_count = a_row_idxs[_unknown_count];
+    for (size_t nzi=0; nzi!=nz_count; ++nzi) {
+        if (a_col_idxs[nzi] > _unknown_count - 1) {
+            std::cout << "a_col_idxs[" << nzi << "] is out of bounds.\n";
+            throw;
         }
     }
 
-    for (size_t ri = 0; ri != _row_count; ++ri) {
+    for (size_t ri=0; ri!=_unknown_count; ++ri) {
         const size_t nzi_row_begin = a_row_idxs[ri];
-        const size_t nzi_row_end = a_row_idxs[ri + 1];
+        const size_t nzi_row_end = a_row_idxs[ri+1];
         if (nzi_row_begin == nzi_row_end) { continue; }
-        for (size_t nzi = nzi_row_begin; nzi != nzi_row_end - 1; ++nzi) {
-            if (a_col_idxs[nzi] >= a_col_idxs[nzi + 1]) {
-                _error("a_col_idx is not in ascending order for every row.");
+        for (size_t nzi=nzi_row_begin; nzi!=nzi_row_end-1; ++nzi) {
+            if (a_col_idxs[nzi] >= a_col_idxs[nzi+1]) {
+                std::cout << "a_col_idxs is not in ascending order.\n";
+                throw;
             }
-        }
-    }
-}
-
-template<typename T>
-void LdltSolver<T>::Impl::_check_if_a_is_diagonal(
-    const size_t* const a_row_idxs
-) {
-    _is_a_diagonal = true;
-    for (size_t ri = 0; ri != _row_count; ++ri) {
-        if (a_row_idxs[ri] != 0) {
-            _is_a_diagonal = false;
-            return;
         }
     }
 }
@@ -138,346 +68,191 @@ void LdltSolver<T>::Impl::_check_if_a_is_diagonal(
 inline constexpr size_t SIZE_T_MAX = std::numeric_limits<size_t>::max();
 
 template<typename T>
-void LdltSolver<T>::Impl::define_sparsity_pattern(
+void LdltSolver<T>::define_sparsity_pattern(
     const T* const a_diag,
-    const size_t* const a_row_idxs,
-    const size_t* const a_col_idxs,
+    const size_t* const a_row_idx,
+    const size_t* const a_col_idx,
     const T* const a_vals,
     T* const x,
     const T* const b,
-    const size_t& row_count
+    const size_t& unknown_count
 ) {
     _a_diag = a_diag;
     _a_vals = a_vals;
     _x = x;
     _b = b;
-    _row_count = row_count;
+    _unknown_count = unknown_count;
 
-    if (_is_sparsity_pattern_defined) {
-        _error("Sparsity pattern is already defined.");
-    }
+    _check_if_input_is_valid(a_row_idx, a_col_idx);
 
-    _check_if_input_is_valid(a_row_idxs, a_col_idxs);
+    _li_count = _unknown_count * _unknown_count;
+    _nzi_count = a_row_idx[_unknown_count];
 
-    _check_if_a_is_diagonal(a_row_idxs);
-    if (_is_a_diagonal) {
-        _is_sparsity_pattern_defined = true;
-        return;
-    }
-
-    // fist loop:
-    //   Count sizes to allocate the containers that will be used soon.
-    _l_row_idx = new size_t[_row_count + 1];
-    _l_row_idx[0] = 0;
-    size_t l_sum_factors_count = 0;
-    for (size_t ri = 0; ri != _row_count; ++ri) {
-        _l_row_idx[ri + 1] = _l_row_idx[ri];
-        for (size_t ci = 0; ci != ri; ++ci) {
-            bool was_element_already_added = false;
-            auto add_element_to_l_if_its_new = [&]() {
-                if (!was_element_already_added) {
-                    ++_l_row_idx[ri + 1];
-                    _l_col_idx.emplace_back(ci);
-                    was_element_already_added = true;
-                }
-            };
-
-            // check if a is nz for (ri,ci)
-            const size_t a_row_idx = a_row_idxs[ri];
-            const size_t a_row_idx_next = a_row_idxs[ri + 1];
-            const size_t* binary_search_begin = a_col_idxs + a_row_idx;
-            const size_t* binary_search_end = a_col_idxs + a_row_idx_next;
-            const bool is_a_nz = std::binary_search(
-                binary_search_begin, binary_search_end, ci
-            );
-            if (is_a_nz) {
-                add_element_to_l_if_its_new();
-            }
-
-            // check if the sum is nz for (ri,ci)
-            if (_l_col_idx.size() == 0) { continue; }
-            size_t idx_it_1 = _l_row_idx[ri];
-            size_t idx_it_2 = _l_row_idx[ci];
-            size_t idx_it_1_end = _l_row_idx[ri + 1];
-            size_t idx_it_2_end = _l_row_idx[ci + 1];
-            while (
-                _l_col_idx[idx_it_1] < ci &&
-                _l_col_idx[idx_it_2] < ci &&
-                idx_it_1 != idx_it_1_end &&
-                idx_it_2 != idx_it_2_end
-            ) {
-                if (_l_col_idx[idx_it_1] < _l_col_idx[idx_it_2]) {
-                    ++idx_it_1;
-                } else if (_l_col_idx[idx_it_1] > _l_col_idx[idx_it_2]) {
-                    ++idx_it_2;
-                } else { // (*it_l_col_idxs_1 == *it_l_col_idxs_2)
-                    add_element_to_l_if_its_new();
-                    l_sum_factors_count += 2;
-                    ++idx_it_1;
-                    ++idx_it_2;
-                }
-            }
+    _l = new T[_li_count];
+    _nzi_to_l_ptr = new T*[_nzi_count];
+    
+    const size_t* it_a_row_idx = a_row_idx;
+    size_t nz_count_in_row = 0UL;
+    size_t nzci = SIZE_T_MAX;
+    size_t ri = SIZE_T_MAX;
+    for (size_t nzi = 0UL; nzi != _nzi_count; ++nzi)
+    {
+        ++nzci;
+        while (nzci == nz_count_in_row) {
+            ++ri;
+            nzci = 0UL;
+            nz_count_in_row = *(it_a_row_idx + 1) - *it_a_row_idx;
+            ++it_a_row_idx;
         }
-    }
-    _l_col_idx.shrink_to_fit();
-    const size_t nzil_count = _l_col_idx.size();
-    _nzil_data = new _NzilData[nzil_count];
-    _l_vals = new T[nzil_count];
-    _ld_vals = new T[nzil_count];
-    _over_d = new T[_row_count];
-    _l_sum_factors = new const T*[l_sum_factors_count];
-
-    // second loop:
-    //   Get all the pointers organized in a way to speed up the solution as
-    //   much as possible.
-    _NzilData* it_nzil_data = _nzil_data;
-    const T** it_l_sum_factors = _l_sum_factors;
-    for (size_t ri = 0; ri != _row_count; ++ri) {
-        for (size_t ci = 0; ci != ri; ++ci) {
-            // check if a is nz for (ri,ci)
-            const size_t a_row_idx = a_row_idxs[ri];
-            const size_t a_row_idx_next = a_row_idxs[ri + 1];
-            const size_t* binary_search_begin = a_col_idxs + a_row_idx;
-            const size_t* binary_search_end = a_col_idxs + a_row_idx_next;
-            const size_t* ptr_to_nz_a = std::lower_bound(
-                binary_search_begin, binary_search_end, ci
-            );
-            bool is_a_nz;
-            if (ptr_to_nz_a != binary_search_end && *ptr_to_nz_a == ci) {
-                is_a_nz = true;
-                size_t nzci = ptr_to_nz_a - binary_search_begin;
-                it_nzil_data->a = _a_vals + a_row_idxs[ri] + nzci;
-            } else {
-                is_a_nz = false;
-            }
-
-            // check if the sum is nz for (ri,ci)
-            size_t sum_count = 0;
-            const size_t* it_l_col_idxs_1 =
-                _l_col_idx.data() + _l_row_idx[ri];
-            const size_t* it_l_col_idxs_2 =
-                _l_col_idx.data() + _l_row_idx[ci];
-            const size_t* it_l_col_idxs_end_1 =
-                _l_col_idx.data() + _l_row_idx[ri + 1];
-            const size_t* it_l_col_idxs_end_2 =
-                _l_col_idx.data() + _l_row_idx[ci + 1];
-            while (
-                *it_l_col_idxs_1 < ci &&
-                *it_l_col_idxs_2 < ci &&
-                it_l_col_idxs_1 != it_l_col_idxs_end_1 &&
-                it_l_col_idxs_2 != it_l_col_idxs_end_2
-            ) {
-                if (*it_l_col_idxs_1 < *it_l_col_idxs_2) {
-                    ++it_l_col_idxs_1;
-                } else if (*it_l_col_idxs_1 > *it_l_col_idxs_2) {
-                    ++it_l_col_idxs_2;
-                } else { // (*it_l_col_idxs_1 == *it_l_col_idxs_2)
-                    ++sum_count;
-
-                    const size_t nzil_l = it_l_col_idxs_1 - _l_col_idx.data();
-                    T* const l_ptr = _l_vals + nzil_l;
-                    const size_t nzil_ld = it_l_col_idxs_2 - _l_col_idx.data();
-                    T* const ld_ptr = _ld_vals + nzil_ld;
-
-                    *it_l_sum_factors = l_ptr;
-                    ++it_l_sum_factors;
-                    *it_l_sum_factors = ld_ptr;
-                    ++it_l_sum_factors;
-
-                    ++it_l_col_idxs_1;
-                    ++it_l_col_idxs_2;
-                }
-            }
-            bool is_sum_nz = (sum_count != 0) ? true : false;
-
-            if (!is_a_nz && is_sum_nz) {
-                it_nzil_data->a = nullptr;
-            }
-            if (is_a_nz || is_sum_nz) {
-                it_nzil_data->over_d = _over_d + ci;
-                it_nzil_data->sum_count = sum_count;
-                ++it_nzil_data;
-            }
-        }
+        const size_t ci = a_col_idx[nzi];
+        const size_t row_offset = ri;
+        const size_t col_offset = ci*_unknown_count;
+        const size_t offset = row_offset + col_offset;
+        _nzi_to_l_ptr[nzi] = _l + offset;
     }
 
-    // calculate the non zero count of elements in each row of L
-    _nzil_count_in_row = new size_t[_row_count];
-    for (size_t ri = 0; ri != _row_count; ++ri) {
-        const size_t row_idx = _l_row_idx[ri];
-        const size_t next_row_idx = _l_row_idx[ri + 1];
-        _nzil_count_in_row[ri] = next_row_idx - row_idx;
-    }
-
-    // pre-compute pointers to sum factors of y
-    T* const& y = _x;
-    for (size_t ri = 1; ri != _row_count; ++ri) {
-        const size_t l_row_idx_begin = _l_row_idx[ri];
-        const size_t l_row_idx_end = _l_row_idx[ri + 1];
-        for (size_t nzi = l_row_idx_begin; nzi != l_row_idx_end; ++nzi) {
-            _y_sum_factors.emplace_back(_l_vals + nzi);
-            _y_sum_factors.emplace_back(y + _l_col_idx[nzi]);
-        }
-    }
-    _y_sum_factors.shrink_to_fit();
-
-    // pre-compute pointers to sum factors of x
-    _nzil_count_in_col = new size_t[_row_count];
-    for (size_t ci = 0; ci != _row_count; ++ci) {
-        _nzil_count_in_col[ci] = 0;
-    }
-    for (size_t ci = _row_count - 2; ci != SIZE_T_MAX; --ci) {
-        for (size_t ri = ci + 1; ri != _row_count; ++ri) {
-            const size_t* const l_row_idx_begin = &_l_col_idx[_l_row_idx[ri]];
-            const size_t* const l_row_idx_end = &_l_col_idx[_l_row_idx[ri + 1]];
-            const size_t* const lb_ptr = std::lower_bound(
-                l_row_idx_begin, l_row_idx_end, ci
-            );
-            if (lb_ptr != l_row_idx_end && *lb_ptr == ci) {
-                ++_nzil_count_in_col[ci];
-                const size_t nzi = lb_ptr - _l_col_idx.data();
-                _x_sum_factors.emplace_back(_l_vals + nzi);
-                _x_sum_factors.emplace_back(_x + ri);
-            }
-        }
-    }
-    _x_sum_factors.shrink_to_fit();
-
-    _is_sparsity_pattern_defined = true;
+    _over_d = new T[_unknown_count];
 }
 
 template<typename T>
-void LdltSolver<T>::Impl::solve()
+void LdltSolver<T>::solve()
 {
-    if (!_is_sparsity_pattern_defined) {
-        _error("Sparsity pattern not defined.");
+    // initialize L as zero
+    for (size_t li = 0UL; li != _li_count; ++li) {
+        _l[li] = T(0);
     }
-
-    if (_is_a_diagonal) {
-        for (size_t ri = 0; ri != _row_count; ++ri) {
-            _x[ri] = _b[ri] / _a_diag[ri];
-        }
-        return;
+    
+    // add A to L
+    for (size_t nzi = 0UL; nzi != _nzi_count; ++nzi) {
+        *_nzi_to_l_ptr[nzi] = _a_vals[nzi];
     }
+    
+    // add A to D
+    for (size_t ri = 0UL; ri != _unknown_count; ++ri) {
+        _over_d[ri] = _a_diag[ri];
+    }
+    
+    const size_t& n = _unknown_count;
 
-    _NzilData* it_nzil_data = _nzil_data;
-    T* it_l_vals = _l_vals;
-    T* it_ld_vals = _ld_vals;
-    const T** it_l_sum_factors = _l_sum_factors;
-    const T* it_d_sum_factors_l = _l_vals;
-    const T* it_d_sum_factors_ld = _ld_vals;
-    for (size_t ri = 0; ri != _row_count; ++ri) {
-        // lower matrix
-        for (size_t nzci = 0; nzci != _nzil_count_in_row[ri]; ++nzci) {
-            const size_t si_count = it_nzil_data->sum_count;
-            T sum = 0;
-            for (size_t si = 0; si != si_count; ++si) {
-                T product = **it_l_sum_factors;
-                ++it_l_sum_factors;
-                product *= **it_l_sum_factors;
-                ++it_l_sum_factors;
-                sum += product;
+    // 1. Add to LD
+    // 2. Calculate L
+    // 3. Add to D
+    // 4. Invert D
+    for (size_t tci = 0UL; tci < n; tci += TS)
+    {
+        //! tri1 and tri2 in the first block
+        for (size_t ci = tci; ci < std::min(tci+TS-1UL, n-1UL); ++ci)
+        {
+            const size_t ci_stride = ci*n;
+            _over_d[ci] = T(1) / _over_d[ci]; //* invert D
+            for (size_t ri1 = ci+1UL; ri1 < std::min(tci+TS-1UL, n-1UL); ++ri1)
+            {
+                const T l = _l[ri1 + ci_stride] * _over_d[ci]; //* calculate L
+                _over_d[ri1] -= l * _l[ri1 + ci_stride]; //* add to L*LD to D
+                _l[ri1 + ci_stride] = l; //* Update LD to L
+                const size_t ri1_stride = ri1*n;
+                for (size_t ri2 = ri1+1UL; ri2 < std::min(tci+TS, n); ++ri2)
+                {
+                    _l[ri2 + ri1_stride] -= _l[ri1 + ci_stride] * _l[ri2 + ci_stride]; //* add to L*LD to LD
+                }
             }
-            if (it_nzil_data->a != nullptr) {
-                *it_ld_vals = *it_nzil_data->a - sum;
-            } else {
-                *it_ld_vals = -sum;
-            }
-            const T over_d = *it_nzil_data->over_d;
-            *it_l_vals = *it_ld_vals * over_d;
-            ++it_l_vals;
-            ++it_ld_vals;
-            ++it_nzil_data;
+            //* remaining ri1
+            const size_t rem_ri1 = std::min(tci+TS-1UL, n-1UL);
+            const T l = _l[rem_ri1 + ci_stride] * _over_d[ci]; //* calculate L
+            _over_d[rem_ri1] -= l * _l[rem_ri1 + ci_stride]; //* add to L*LD to D
+            _l[rem_ri1 + ci_stride] = l; //* Update LD to L
         }
+        //* remaining ci
+        const size_t rem_ci = std::min(tci+TS-1UL, n-1UL);
+        _over_d[rem_ci] = T(1) / _over_d[rem_ci]; //* invert last D of block
+        //! tri1 in the first block and tri2 in all others
+        for (size_t tri2 = tci+TS; tri2 < n; tri2 += TS)
+        {
+            for (size_t ci = tci; ci < std::min(tci+TS-1UL, n-1UL); ++ci)
+            {
+                const size_t ci_stride = ci*n;
+                for (size_t ri1 = ci+1UL; ri1 < std::min(tci+TS, n); ++ri1)
+                {
+                    const size_t ri1_stride = ri1*n;
+                    for (size_t ri2 = tri2; ri2 < std::min(tri2+TS, n); ++ri2)
+                    {
+                        _l[ri2 + ri1_stride] -= _l[ri1 + ci_stride] * _l[ri2 + ci_stride]; //* add to L*LD to LD
+                    }
+                }
+            }
+        }
+        for (size_t tri1 = tci+TS; tri1 < n; tri1 += TS)
+        {
+            //! every first iteration of tri1 in a given tci
+            for (size_t ci = tci; ci < std::min(tci+TS, n-1UL); ++ci)
+            {
+                const size_t ci_stride = ci*n;
+                for (size_t ri1 = tri1; ri1 < std::min(tri1+TS-1UL, n-1UL); ++ri1)
+                {
+                    const T l = _l[ri1 + ci_stride] * _over_d[ci]; //* calculate L
+                    _over_d[ri1] -= l * _l[ri1 + ci_stride]; //* add to L*LD to D
+                    _l[ri1 + ci_stride] = l; //* Update LD to L
+                    const size_t ri1_stride = ri1*n;
+                    for (size_t ri2 = ri1+1UL; ri2 < std::min(tri1+TS, n); ++ri2)
+                    {
+                        _l[ri2 + ri1_stride] -= _l[ri1 + ci_stride] * _l[ri2 + ci_stride]; //* add to L*LD to LD
+                    }
+                }
+                //* remaining ri1
+                const size_t rem_ri1 = std::min(tri1+TS-1UL, n-1UL);
+                const T l = _l[rem_ri1 + ci_stride] * _over_d[ci]; //* calculate L
+                _over_d[rem_ri1] -= l * _l[rem_ri1 + ci_stride]; //* add to L*LD to D
+                _l[rem_ri1 + ci_stride] = l; //* Update LD to L
+            }
 
-        // diagonal matrix
-        T sum = 0;
-        for (size_t nzci = 0; nzci != _nzil_count_in_row[ri]; ++nzci) {
-            T product = *it_d_sum_factors_l;
-            ++it_d_sum_factors_l;
-            product *= *it_d_sum_factors_ld;
-            ++it_d_sum_factors_ld;
-            sum += product;
+            //! square block of tri1 and tri2
+            for (size_t tri2 = tri1+TS; tri2 < n; tri2 += TS)
+            {
+                for (size_t ci = tci; ci < std::min(tci+TS, n-1UL); ++ci)
+                {
+                    const size_t ci_stride = ci*n;
+                    for (size_t ri1 = tri1; ri1 < std::min(tri1+TS, n-1UL); ++ri1)
+                    {
+                        const size_t ri1_stride = ri1*n;
+                        for (size_t ri2 = tri2; ri2 < std::min(tri2+TS, n); ++ri2)
+                        {
+                            _l[ri2 + ri1_stride] -= _l[ri1 + ci_stride] * _l[ri2 + ci_stride]; //* add to L*LD to LD
+                        }
+                    }
+                }
+            }
         }
-        _over_d[ri] = T(1.0) / (_a_diag[ri] - sum);
     }
 
     // compute y
-    T* const& y = _x;
-    y[0] = _b[0];
-    auto it_y_sum_factors = _y_sum_factors.begin();
-    for (size_t ri = 1; ri != _row_count; ++ri) {
-        T sum = 0;
-        for (size_t nzci = 0; nzci != _nzil_count_in_row[ri]; ++nzci) {
-            T product = **it_y_sum_factors;
-            ++it_y_sum_factors;
-            product *= **it_y_sum_factors;
-            ++it_y_sum_factors;
-            sum += product;
+    for(size_t ui = 0UL; ui != n; ++ui) {
+        _x[ui] = _b[ui];
+    }
+    for(size_t ci = 0UL; ci != n-1UL; ++ci)
+    {
+        const size_t ci_stride = ci*n;
+        for(size_t ri = ci+1UL; ri != n; ++ri)
+        {
+            _x[ri] -= _l[ri + ci_stride] * _x[ci];
         }
-        y[ri] = _b[ri] - sum;
     }
 
     // compute z
-    T* const& z = y;
-    for (size_t ri = 0; ri != _row_count; ++ri) {
-        z[ri] = y[ri] * _over_d[ri];
+    for(size_t ui = 0; ui != n; ++ui) {
+        _x[ui] *= _over_d[ui];
     }
 
     // compute x
     // x[_row_count-1] = z[_row_count-1]; (this line is not needed because x=z)
-    auto it_x_sum_factors = _x_sum_factors.begin();
-    for (size_t ri = _row_count - 2; ri != SIZE_T_MAX; --ri) {
-        const size_t& ci_l = ri;
-        T sum = 0;
-        for (size_t nzci = 0; nzci != _nzil_count_in_col[ci_l]; ++nzci) {
-            T product = **it_x_sum_factors;
-            ++it_x_sum_factors;
-            product *= **it_x_sum_factors;
-            ++it_x_sum_factors;
-            sum += product;
+    for(size_t ui = n-2UL; ui != SIZE_T_MAX; --ui) {
+        const size_t ui_stride = ui*n;
+        for(size_t si = ui+1UL; si != n; ++si) {
+            _x[ui] -= _l[si + ui_stride] * _x[si];
         }
-        _x[ri] = z[ri] - sum;
     }
 }
 
-// public interface – forwards to _pimpl
-template<typename T>
-LdltSolver<T>::LdltSolver() {
-    _pimpl = std::make_unique<Impl>();
-}
-template<typename T>
-LdltSolver<T>::~LdltSolver() = default;
-template<typename T>
-LdltSolver<T>::LdltSolver(LdltSolver&&) noexcept = default;
-template<typename T>
-LdltSolver<T>& LdltSolver<T>::operator=(LdltSolver&&) noexcept = default;
-template<typename T>
-void LdltSolver<T>::define_sparsity_pattern(
-    const T* const a_diag,
-    const size_t* const a_row_idxs,
-    const size_t* const a_col_idxs,
-    const T* const a_vals,
-    T* const x,
-    const T* const b,
-    const size_t& row_count
-) {
-    _pimpl->define_sparsity_pattern(
-        a_diag,
-        a_row_idxs,
-        a_col_idxs,
-        a_vals,
-        x,
-        b,
-        row_count
-    );
-}
-template<typename T>
-void LdltSolver<T>::solve() {
-    _pimpl->solve();
-}
-
-// explicit template instantiations
+// Explicit template instantiations
 template class LdltSolver<float>;
 template class LdltSolver<double>;
 template class LdltSolver<std::complex<float>>;

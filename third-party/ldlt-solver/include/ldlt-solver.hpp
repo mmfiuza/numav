@@ -3,7 +3,7 @@
 #pragma once
 
 #include <cstddef>
-#include <memory>
+#include <vector>
 
 template<typename T>
 class LdltSolver {
@@ -27,6 +27,17 @@ public:
     void solve();
 
 private:
-    class Impl;
-    std::unique_ptr<Impl> _pimpl;
+    void _check_if_input_is_valid(const size_t* const, const size_t* const);
+
+    const T* __restrict__ _a_diag;
+    const T* __restrict__ _a_vals;
+    T* __restrict__ _x;
+    const T* __restrict__ _b;
+    size_t _unknown_count;
+    size_t _li_count;
+    size_t _nzi_count;
+
+    T* __restrict__ _over_d;
+    T* __restrict__ _l;
+    T** __restrict__ _nzi_to_l_ptr;
 };
