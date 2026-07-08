@@ -41,15 +41,6 @@ function __init__()
     ENV["MKL_THREADING_LAYER"] = "INTEL"
 end
 
-# type aliases
-const Pq = Union{Function, Number, AbstractString}
-const SimulationFemHelmTet{O} = Simulation{
-    _cpp_NumericalMethod_fem,
-    _cpp_Equation_helmholtz,
-    _cpp_ElementShape_tetrahedron,
-    O
-}
-
 # global storage for user-defined functions
 const _user_functions::Vector{Ref{Function}} = [ ]
 global _next_index::UInt = 1
@@ -93,57 +84,66 @@ const Linear = LinearType()
 struct QuadraticType <: Option end
 const Quadratic = QuadraticType()
 
+struct Simulation{numerical_method, equation, element_shape, element_order}
+    _cpp_simulation::_cpp_Simulation
+end
+
+# type aliases
+const Pq = Union{Function, Number, AbstractString}
+
 function create_simulation(;
     numerical_method::Option,
     equation::Option,
     element_shape::Option,
     element_order::Option
 )
-    args = ()
+    args = typeof.((numerical_method, equation, element_shape, element_order))
+
+    cpp_args = ()
     if numerical_method === Fem
-        args = (args..., _cpp_NumericalMethod_fem)
+        cpp_args = (cpp_args..., _cpp_NumericalMethod_fem)
     else
         throw(ArgumentError("Invalid `numerical_method` option"))
     end
 
     if equation === Helmholtz 
-        args = (args..., _cpp_Equation_helmholtz)
+        cpp_args = (cpp_args..., _cpp_Equation_helmholtz)
     else
         throw(ArgumentError("Invalid `equation` option"))
     end
 
     if element_shape === Tetrahedron
-        args = (args..., _cpp_ElementShape_tetrahedron)
+        cpp_args = (cpp_args..., _cpp_ElementShape_tetrahedron)
     else
         throw(ArgumentError("Invalid `element_shape` option"))
     end
 
     if element_order === Linear
-        args = (args..., _cpp_ElementOrder_linear)
+        cpp_args = (cpp_args..., _cpp_ElementOrder_linear)
     elseif element_order === Quadratic
-        args = (args..., _cpp_ElementOrder_quadratic)
+        cpp_args = (cpp_args..., _cpp_ElementOrder_quadratic)
     else
         throw(ArgumentError("Invalid `element_order` option"))
     end
 
-    return Simulation{args...}()
+    return Simulation{args...}(_cpp_Simulation{cpp_args...}())
 end
 
-function cubic_range(start::Real, stop::Real, length::Integer)
+function _cubic_range(start::Real, stop::Real, length::Integer)
     @assert length != 0 && length != 1
     x = range(0, 1, length=length)
     return @. cbrt( start^3 + (stop^3 - start^3) * x );
 end
 
 function set_frequency!( 
-    simulation::SimulationFemHelmTet{O};
+    simulation::Simulation{FemType, HelmholtzType};
     max::Union{Real, Nothing} = nothing,
     vector::Union{AbstractVector{<:Real}, Nothing} = nothing,
     min::Union{Real, Nothing} = nothing,
     length::Union{Integer, Nothing} = nothing,
     sampling_density::Union{Option, Nothing} = nothing,
     step::Union{Real, Nothing} = nothing,
-) where O
+)
     if isnothing(max) && isnothing(vector)
         throw(ArgumentError("Neither `max` nor `vector` passed"))
     end
@@ -180,20 +180,23 @@ function set_frequency!(
             if sampling_density === Constant
                 vector = range(min, max, length=length)
             elseif sampling_density === Quadratic
-                vector = cubic_range(min, max, length)
+                vector = _cubic_range(min, max, length)
             else
                 throw(ArgumentError("Invalid `sampling_density` option"))
             end
         end
     end
-    _cpp_set_frequency_vector!(simulation, Float64.(Vector(vector)))
+    _cpp_set_frequency_vector!(
+        simulation._cpp_simulation,
+        Float64.(Vector(vector))
+    )
 end
 
 function load_mesh!(
-    simulation::SimulationFemHelmTet{O},
+    simulation::Simulation{FemType},
     path_to_mesh::AbstractString
-) where O
-    _cpp_load_mesh!(simulation, String(path_to_mesh))
+)
+    _cpp_load_mesh!(simulation._cpp_simulation, String(path_to_mesh))
 end
 
 function _read_pqv_table(filename::AbstractString)
@@ -216,15 +219,15 @@ function _pqv_to_function(pqv::Pq)::Function
 end
 
 function add_volume_material!( 
-    simulation::SimulationFemHelmTet{O};
+    simulation::Simulation{FemType, HelmholtzType};
     physical_group::Integer,
     density::Pq,
     speed_of_sound::Pq
-) where O
+)
     density = _pqv_to_function(density)
     speed_of_sound = _pqv_to_function(speed_of_sound)
     _cpp_add_volume_material!(
-        simulation,
+        simulation._cpp_simulation,
         UInt64(physical_group),
         _cmplx_split_and_store(density)...,
         _cmplx_split_and_store(speed_of_sound)...
@@ -232,13 +235,13 @@ function add_volume_material!(
 end
 
 function add_surface_material!( 
-    simulation::SimulationFemHelmTet{O};
+    simulation::Simulation{FemType, HelmholtzType};
     physical_group::Integer,
     specific_acoustic_impedance::Pq
-) where O
+)
     specific_acoustic_impedance = _pqv_to_function(specific_acoustic_impedance)
     _cpp_add_surface_material!(
-        simulation,
+        simulation._cpp_simulation,
         UInt64(physical_group),
         _cpp_PhysicalQuantity_impedance,
         _cmplx_split_and_store(specific_acoustic_impedance)...
@@ -246,13 +249,13 @@ function add_surface_material!(
 end
 
 function add_sound_source!( 
-    simulation::SimulationFemHelmTet{O};
+    simulation::Simulation{FemType, HelmholtzType};
     coordinates::Union{AbstractVector{<:Real}, Nothing} = nothing,
     physical_group::Union{Integer, Nothing} = nothing,
     volume_velocity::Union{Pq, Nothing} = nothing,
     particle_velocity::Union{Pq, Nothing} = nothing,
     pressure::Union{Pq, Nothing} = nothing
-) where O
+)
     if isnothing(coordinates) && isnothing(physical_group)
         throw(ArgumentError(
             "`coordinates` and `physical_group` not defined"
@@ -305,7 +308,7 @@ function add_sound_source!(
     end
 
     _cpp_add_sound_source!(
-        simulation,
+        simulation._cpp_simulation,
         source_args...,
         pq_type,
         _cmplx_split_and_store(pqv[])...
@@ -313,14 +316,17 @@ function add_sound_source!(
 end
 
 function set_result_export_path!(
-    simulation::SimulationFemHelmTet{O},
+    simulation::Simulation{FemType, HelmholtzType},
     path_to_hdf5_file::AbstractString
-) where O
-    _cpp_set_result_export_path!(simulation, String(path_to_hdf5_file))
+)
+    _cpp_set_result_export_path!(
+        simulation._cpp_simulation,
+        String(path_to_hdf5_file)
+    )
 end
 
-function run!(simulation::SimulationFemHelmTet{O}) where O
-    _cpp_run!(simulation)
+function run!(simulation::Simulation{FemType, HelmholtzType})
+    _cpp_run!(simulation._cpp_simulation)
 end
 
 end # module Numav

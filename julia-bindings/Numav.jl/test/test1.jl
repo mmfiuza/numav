@@ -4,7 +4,7 @@
 
 using Numav
 
-# redirect_stdout(devnull) do
+redirect_stdout(devnull) do
 
 result_path = "test1.h5"
 mesh_path = "test1.bdf"
@@ -51,7 +51,7 @@ s = create_simulation(
     numerical_method = Fem,
     equation = Helmholtz,
     element_shape = Tetrahedron,
-    element_order = Linear
+    element_order = Quadratic
 )
 @test_throws ErrorException run!(s)
 @test_throws ArgumentError set_frequency!(s, vector=[1,2], max=100)
@@ -147,7 +147,7 @@ add_sound_source!(s, coordinates=[1.0, 1.0, 1.0], volume_velocity=func)
 set_result_export_path!(s, result_path)
 run!(s)
 
-# end # redirect_stdout
+end # redirect_stdout
 
 return true # Passed if code reaches here
 

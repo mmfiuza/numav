@@ -102,7 +102,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
             jlcxx::TypeVar<3>,
             jlcxx::TypeVar<4>
         >
-    >("Simulation").apply<
+    >("_cpp_Simulation").apply<
         Simulation<
             NumericalMethod::FEM,
             Equation::HELMHOLTZ,
