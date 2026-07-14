@@ -7,7 +7,7 @@ Numav.jl is a Julia wrapper for the C++ library Numav, to perform acoustics and 
 ## Installation
 Just type into the Julia REPL:
 ```julia
-] add Numav
+]add Numav
 ```
 
 ---
@@ -20,53 +20,46 @@ Here is a complete example on how to run your first simulation in Numav:
 using Numav
 
 # Create the simulation object
-s = Simulation{
-    Phenomenon.acoustic,
-    NumericalMethod.fem,
-    Domain.frequency,
-    Dimension.d3,
-    ElementOrder.o1 # can be o2
-}()
+s = create_simulation(
+    numerical_method = Fem,
+    equation = Helmholtz,
+    element_shape = Tetrahedron,
+    element_order = Linear
+)
 
-# Set simulated frequencies (Hz)
-set_maximum_frequency(s, 200)
-
-# Optional: set frequency range
-# set_frequency_range(s, 20, 200)
-
-# Optional: manually specify frequencies
-# set_frequency_steps(s, [20, 50, 100, 200])
+# Set simulated frequencies
+set_frequency!(s, max=200) # (Hz)
 
 # Load mesh
-load_mesh(s, "path/to/mesh_file.bdf")
+load_mesh!(s, "path/to/mesh_file.bdf")
 
 # Define material (frequency-dependent)
 rho(f) = 1.20
 c(f) = 343
-add_volume_material(s, physical_group=1, density=rho, sound_speed=c)
+add_volume_material!(s, physical_group=1, density=rho, speed_of_sound=c)
 
 # Add a monopole volume velocity source at a point
 Q(f) = 10/f
-add_sound_source(s, coordinates=[1.0, 1.5, 2.0], volume_velocity=Q)
+add_sound_source!(s, coordinates=[1.0, 1.5, 2.0], volume_velocity=Q)
 
 # Add a particle velocity source on a surface
 U(f) = 15/f
-add_sound_source(s, physical_group=2, particle_velocity=U)
+add_sound_source!(s, physical_group=2, particle_velocity=U)
 
 # Add pressure sources (to point or surface)
 P(f) = 2f
-add_sound_source(s, coordinates=[2.0, 2.5, 1.0], pressure=P)
-add_sound_source(s, physical_group=3, pressure=P)
+add_sound_source!(s, coordinates=[2.0, 2.5, 1.0], pressure=P)
+add_sound_source!(s, physical_group=3, pressure=P)
 
 # Add a surface impedance boundary condition
 Z(f) = 1f + 2im
-add_surface_material(s, physical_group=4, impedance=Z)
+add_surface_material!(s, physical_group=4, specific_acoustic_impedance=Z)
 
 # Set output file
-set_result_export_path(s, "result.h5")
+set_result_export_path!(s, "result.h5")
 
 # Run the simulation
-simulate(s)
+run!(s)
 ```
 
 ---
@@ -103,7 +96,7 @@ end
 A plain scalar value (complex or not). Numav will treat it as uniform across all frequencies:
 
 ```julia
-add_volume_material(s, physical_group=1, density=1.20, sound_speed=343)
+add_volume_material!(s, physical_group=1, density=1.20, speed_of_sound=343)
 ```
 
 ### 3. Tabulated file (path string)
@@ -111,15 +104,15 @@ add_volume_material(s, physical_group=1, density=1.20, sound_speed=343)
 A `String` containing the path to a plain-text CSV-like file with three columns: `frequency`, `real`, and `imag`. Numav reads the table and interpolates between the provided data points at each required frequency step. There is no header row.
 
 ```
-0,   1, 2
-25,  1, 2
-50,  5, 1
-75,  3, 2
+  0, 1, 2
+ 25, 1, 2
+ 50, 5, 1
+ 75, 3, 2
 100, 1, 0
 ```
 
 ```julia
-add_surface_material(s, physical_group=4, impedance="data/wall_impedance.txt")
+add_surface_material!(s, physical_group=4, specific_acoustic_impedance="data/wall_impedance.txt")
 ```
 
 The file format rules are:
@@ -132,135 +125,98 @@ The file format rules are:
 
 ## API reference
 
-### `Simulation{...}()`
+### `create_simulation(...)`
 
-Creates the top-level simulation object. All simulation parameters are encoded as type parameters.
+Creates an instance of type `Simulation`.
 
 ```julia
-s = Simulation{
-    Phenomenon.acoustic, # Physics type    
-    NumericalMethod.fem, # Numerical method
-    Domain.frequency,    # Analysis domain
-    Dimension.d3,        # Spatial dimension
-    ElementOrder.o1      # Finite element polynomial order
-}()
+s = create_simulation(
+    numerical_method = Fem,
+    equation = Helmholtz,
+    element_shape = Tetrahedron,
+    element_order = Linear
+)
 ```
 
 **Type parameters:**
 
 | Parameter | Supported options | Description |
 |---|---|---|
-| `Phenomenon` | `acoustic` | The physical phenomenon being simulated |
-| `NumericalMethod` | `fem` | Numerical method used |
-| `Domain` | `frequency` | Whether to solve in the frequency or time domain |
-| `Dimension` | `d3` | Spatial dimensionality of the problem |
-| `ElementOrder` | `o1`, `o2` | Polynomial order of the finite elements (1st or 2nd order) |
+| `numerical_method` | `Fem` | Numerical method used |
+| `equation` | `Helmholtz` | Differential equation to be solved |
+| `element_shape` | `Tetrahedron` | Geometrical shape of elements |
+| `element_order` | `Linear`, `Quadratic` | Polynomial order of the finite elements (1st or 2nd order) |
 
 ---
+ 
+### `set_frequency!(s; max, min, length, sampling_density, step, vector)`
 
-### Frequency specification
-
-There are three functions to specify which frequencies the solver should evaluate:
-- `set_maximum_frequency` (recommended);
-- `set_frequency_range`;
-- `set_frequency_steps`.
-
-They are mutually exclusive. Use whichever best fits your workflow.
-
-#### `set_maximum_frequency(s, freq_max)`
-
-The simplest way to define the frequency range. Numav will automatically determine a suitable set of frequency steps from 0 Hz up to `freq_max` (see [`set_frequency_sampling_density`](#set_frequency_sampling_densitys-mode)).
-
-```julia
-set_maximum_frequency(s, 200)  # Solve from 0 Hz to 200 Hz
-```
-
-| Argument | Type | Description |
-|---|---|---|
-| `s` | `Simulation` | The simulation object |
-| `freq_max` | `Real` | Upper frequency limit (Hz) |
-
+Sets the frequecies to perform the simulations with two mutually exclusive ways to use it:
+- **automatic mode**: pass `max` (and optionally `min`, `length`, `sampling_density` and `step`), and Numav will automatically determine a suitable set of frequency steps;
+- **manual mode**: pass `vector` directly, giving full control over which frequencies are evaluated.
 ---
 
-#### `set_frequency_range(s, freq_min, freq_max)`
-
-Defines both a lower and upper bound for the frequency sweep. Numav will automatically determine the frequency steps within this range, based on the sampling density.
-
 ```julia
-set_frequency_range(s, 20, 200)  # Solve from 20 Hz to 200 Hz
+set_frequency!(s, max=200)  # Solve from 0 Hz to 200 Hz
 ```
-
-| Argument | Type | Description |
+ 
+| Keyword | Type | Description |
 |---|---|---|
-| `s` | `Simulation` | The simulation object |
-| `freq_min` | `Real` | Lower bound of the frequency range (Hz) |
-| `freq_max` | `Real` | Upper bound of the frequency range (Hz) |
-
----
-
-#### `set_frequency_steps(s, frequencies)`
-
-Manually specifies the exact set of frequencies to solve at, as a vector of values in Hz. Use this when you need full control over which frequencies are evaluated, for example to match measurement points or concentrate resolution around a resonance.
-
+| `max` | `Real` | Upper frequency limit (Hz). Required unless `steps` is provided; mutually exclusive with `steps`. |
+| `min` | `Real` | Lower bound of the frequency range (Hz). Only usable together with `max`. Defaults to `0` if omitted. |
+| `length` | `Integer` | Number of frequency steps to compute within the `min`/`max` range. Only usable together with `max`. Defaults to `4096` if omitted. |
+| `sampling_density` | `Numav.Option` | Sampling strategy to use within the the range: `Constant` or `Quadratic`. Only usable together with `max`. Defaults to `Quadratic` if omitted. |
+| `step` | `Real` | Defference in Hertz between each frequency step, supposing equally spaced steps. Only usable together with `max`. Cannot be used together with `length` and `sampling_density` |
+| `vector` | `Vector{Real}` | List of frequencies in Hertz to solve at. Cannot be used together with `max`, `min`, `length`, `sampling_density` and `step`. |
+ 
+**Solve up to a maximum frequency**, letting Numav automatically pick the steps from 0 Hz:
+ 
 ```julia
-set_frequency_steps(s, [10, 40, 60, 100])  # Solve only at these four frequencies
+set_frequency!(s, max=200) # Solve from 0 Hz to 200 Hz
 ```
-
-| Argument | Type | Description |
-|---|---|---|
-| `s` | `Simulation` | The simulation object |
-| `frequencies` | `Vector{Real}` | List of frequencies to solve at (Hz), in any order |
-
-> **Note:** When using `set_frequency_steps`, `set_frequency_steps_count` and `set_frequency_sampling_density` cannot be used.
-
----
-
-#### `set_frequency_steps_count(s, freq_count)`
-
-Sets the number of frequency steps the solver will evaluate within the range defined by `set_maximum_frequency` or `set_frequency_range`. If this function is never called, the default step count is **4096**. This function cannot be used if `set_frequency_steps` was used before.
-
+ 
+**Solve within an explicit range**, by adding `min`:
+ 
 ```julia
-set_frequency_steps_count(s, 500)  # Evaluate at 500 frequency points
+set_frequency!(s, min=20, max=200) # Solve from 20 Hz to 200 Hz
 ```
-
-| Argument | Type | Description |
-|---|---|---|
-| `s` | `Simulation` | The simulation object |
-| `freq_count` | `Int` | Number of frequency steps to compute |
-
-A higher step count gives finer frequency resolution at the cost of longer computation time. The distribution of those steps within the range is controlled by [`set_frequency_sampling_density`](#set_frequency_sampling_densitys-mode).
-
----
-
-#### `set_frequency_sampling_density(s, mode)`
-
-An optional function to control how automatically-generated frequency steps are distributed within the range defined by `set_maximum_frequency` or `set_frequency_range`. If this function is never called, the **quadratic mode will be picked by default**. This function cannot be used if `set_frequency_steps` was used before.
-
+ 
+**Control the number of frequency steps** with `length` (defaults to `4096` when not specified):
+ 
 ```julia
-set_frequency_sampling_density(s, FrequencySamplingDensity.constant)
-set_frequency_sampling_density(s, FrequencySamplingDensity.quadratic)
+set_frequency!(s, max=200, length=500) # Evaluate at 500 frequency points
 ```
-
-| Argument | Type | Description |
-|---|---|---|
-| `s` | `Simulation` | The simulation object |
-| `mode` | `FrequencySamplingDensity` | Sampling strategy to use |
-
+ 
+A higher step count gives finer frequency resolution at the cost of longer computation time.
+ 
+**Control how steps are distributed** with `sampling_density` (defaults to `Quadratic` when not specified):
+ 
+```julia
+set_frequency!(s, max=200, sampling_density=Constant)
+set_frequency!(s, max=200, sampling_density=Quadratic)
+```
+ 
 **Sampling modes:**
-
+ 
 | Mode | Description |
 |---|---|
-| `FrequencySamplingDensity.constant` | Frequency steps are evenly spaced (uniform spacing). Suitable for broadband analyses where equal resolution at all frequencies is desired. |
-| `FrequencySamplingDensity.quadratic`<br>(default) | Frequency discretization density grows quadratically with frequency. This tends to follow the modal density of rooms, being the recommended option for good accuracy and computation time balance. |
-
+| `Constant` | Frequency steps are evenly spaced (uniform spacing). Suitable for broadband analyses where equal resolution at all frequencies is desired. |
+| `Quadratic`<br>(default) | Frequency discretization density grows quadratically with frequency. This tends to follow the modal density of rooms, being the recommended option for good accuracy and computation time balance. |
+ 
+**Manually specify the exact frequencies** with `vector`, for example to match measurement points or concentrate resolution around a resonance:
+ 
+```julia
+set_frequency!(s, vector=[10, 40, 60, 100]) # Solve only at these frequencies
+```
+ 
 ---
 
-### `load_mesh(s, file_path)`
+### `load_mesh!(s, file_path)`
 
 Loads the mesh file. It defines the geometry of the domain and must contain the physical groups that are referenced when assigning boundary conditions. Currently, only meshes in the **small field BDF** format are supported. To generate meshes, a good open-source option is [Gmsh](https://gmsh.info/). The coordinates present in the mesh file must be given in meters.
 
 ```julia
-load_mesh(s, "some_mesh_file.bdf")
+load_mesh!(s, "some_mesh_file.bdf")
 ```
 
 | Argument | Type | Description |
@@ -270,44 +226,48 @@ load_mesh(s, "some_mesh_file.bdf")
 
 ---
 
-### `add_volume_material(s; physical_group, density, sound_speed)`
+### `add_volume_material!(s; physical_group, density, speed_of_sound)`
 
-Assigns acoustic material properties to a volumetric region of the mesh, identified by its physical group tag. Both `density` and `sound_speed` are [frequency-dependent quantities](#frequency-dependent-quantities).
+Assigns acoustic material properties to a volumetric region of the mesh, identified by its physical group tag. Both `density` and `speed_of_sound` are [frequency-dependent quantities](#frequency-dependent-quantities).
 
 ```julia
-rho(f) = 1.20 # Air density in kg/m³
-c(f) = 343    # Speed of sound in m/s
-
-add_volume_material(s, physical_group=1, density=rho, sound_speed=c)
+rho(f) = 1.20 # air density in kg/m³
+c(f) = 343 # speed of sound in m/s
+add_volume_material!(s, physical_group=1, density=rho, speed_of_sound=c)
 ```
 
 | Keyword | Type | Description |
 |---|---|---|
-| `physical_group` | `Int` | Physical group ID from the mesh |
-| `density` | frequency-dependent | Density (kg/m³) |
-| `sound_speed` | frequency-dependent | Speed of sound (m/s) |
+| `physical_group` | `Integer`, `Vector{Integer}` | Physical group ID (or vector of IDs) from the mesh |
+| `density` | frequency-dependent | Density in kg/m³ |
+| `speed_of_sound` | frequency-dependent | Speed of sound in m/s |
 
-Frequency-dependent properties can model media such as absorptive foams or frequency-dependent fluids:
+Frequency-dependent properties can model any media, including frequency-dependent complex quantities to add absorption:
 
 ```julia
 rho(f) = 1.20 + 0.001*f
 c(f) = 340 + 0.1*sqrt(f)
-add_volume_material(s, physical_group=1, density=rho, sound_speed=c)
+add_volume_material!(s, physical_group=1, density=rho, speed_of_sound=c)
+```
+
+Additionally, multiple physical groups can be assigned at once:
+```julia
+add_volume_material!(s, physical_group=[4,6], density=1.2, speed_of_sound=343)
 ```
 
 ---
 
-### `add_sound_source(s; ...)`
+### `add_sound_source!(s; ...)`
 
 Sources can be applied either at a specific point in space (via `coordinates`) or over a surface/volume region (via `physical_group`). Three excitation types are supported: `volume_velocity`, `particle velocity`, and `pressure`. All excitation amplitudes are [frequency-dependent quantities](#frequency-dependent-quantities).
 
 #### Volume velocity source (monopole)
 
-Suitable for modeling compact omnidirectional sources.
+Suitable for modeling punctual omnidirectional sources.
 
 ```julia
 Q(f) = 10/f # Volume velocity in m³/s as a function of frequency
-add_sound_source(s, coordinates=[1.0, 1.5, 2.0], volume_velocity=Q)
+add_sound_source!(s, coordinates=[1.0, 1.5, 2.0], volume_velocity=Q)
 ```
 
 #### Particle velocity source (vibrating surface)
@@ -316,7 +276,7 @@ Prescribes the normal component of particle velocity on all surfaces of a physic
 
 ```julia
 U(f) = 15/f # Particle velocity in m/s
-add_sound_source(s, physical_group=2, particle_velocity=U)
+add_sound_source!(s, physical_group=2, particle_velocity=U)
 ```
 
 #### Pressure source
@@ -327,54 +287,59 @@ Prescribes acoustic pressure, either at a point or on a surface.
 P(f) = 2f # Pressure in Pa as a function of frequency
 
 # At a point in space
-add_sound_source(s, coordinates=[2.0, 2.5, 1.0], pressure=P)
+add_sound_source!(s, coordinates=[2.0, 2.5, 1.0], pressure=P)
 
 # On a mesh surface
-add_sound_source(s, physical_group=3, pressure=P)
+add_sound_source!(s, physical_group=3, pressure=P)
 ```
-
-**Summary of keyword arguments:**
 
 | Keyword | Type | Description |
 |---|---|---|
-| `coordinates` | `Vector{Float64}` | `[x, y, z]` location of a point source in m |
-| `physical_group` | `Int` | Physical group ID of a surface or volume region |
-| `volume_velocity` | frequency-dependent | Volume velocity `Q(f)` in m³/s |
-| `particle_velocity` | frequency-dependent | Normal particle velocity `U(f)` in m/s |
-| `pressure` | frequency-dependent | Acoustic pressure `P(f)` in Pa |
+| `coordinates` | `Vector{Real}`, `Vector{Vector{Real}}` | `[x, y, z]` location of a point source in m |
+| `physical_group` | `Integer`, `Vector{Integer}` | Physical group ID of a surface or volume region |
+| `volume_velocity` | frequency-dependent | Volume velocity in m³/s |
+| `particle_velocity` | frequency-dependent | Normal particle velocity in m/s |
+| `pressure` | frequency-dependent | Acoustic pressure in Pa |
 
-> **Note:** Each call to `add_sound_source` should specify either `coordinates` or `physical_group` (not both), and exactly one excitation type keyword.
+> **Note:** Each call to `add_sound_source!` should specify either `coordinates` or `physical_group` (not both), and exactly one excitation type keyword.
+
+Additionally, multiple physical groups or points can be assigned at once:
+```julia
+add_sound_source!(s, coordinates=[[1.0, 3.0, 2.0], [1.0, 1,0, 1.0]], volume_velocity=0.03)
+add_sound_source!(s, physical_group=[3,5,9,2], density=1.2, particle_velocity=0.01)
+```
 
 ---
 
-### `add_surface_material(s; physical_group, impedance)`
+### `add_surface_material!(s; physical_group, specific_acoustic_impedance)`
 
 Assigns a specific acoustic impedance boundary condition to a surface in the mesh. This is used to model absorbing or reflecting walls, liners, and other boundary treatments.
 
-The impedance is the ratio of acoustic pressure to normal particle velocity (in Pa·s/m), and is a [frequency-dependent quantity](#frequency-dependent-quantities). It can be complex-valued to represent both resistive and reactive components.
+The impedance is the ratio of acoustic pressure to normal particle velocity (in Pa·s/m), and is a [frequency-dependent quantity](#frequency-dependent-quantities). It can be complex-valued.
 
 ```julia
-# As a function
 Z(f) = 1f + 2im
-add_surface_material(s, physical_group=4, impedance=Z)
-
-# As a tabulated file
-add_surface_material(s, physical_group=4, impedance="data/wall_impedance.txt")
+add_surface_material!(s, physical_group=4, specific_acoustic_impedance=Z)
 ```
 
 | Keyword | Type | Description |
 |---|---|---|
-| `physical_group` | `Int` | Physical group ID of the boundary surface |
-| `impedance` | frequency-dependent | specific surface acoustic impedance (Pa·s/m) |
+| `physical_group` | `Integer`, `Vector{Integer}` | Physical group ID of the boundary surface |
+| `specific_acoustic_impedance` | frequency-dependent | specific surface acoustic impedance (Pa·s/m) |
+
+Additionally, multiple physical groups can be assigned at once:
+```julia
+add_surface_material!(s, physical_group=[3,1], specific_acoustic_impedance=1.0)
+```
 
 ---
 
-### `set_result_export_path(s, file_path)`
+### `set_result_export_path!(s, file_path)`
 
 Specifies the file path where simulation results will be written. Results are stored in [HDF5 format](https://www.hdfgroup.org/solutions/hdf5/) (`.h5`).
 
 ```julia
-set_result_export_path(s, "result.h5")
+set_result_export_path!(s, "result.h5")
 ```
 
 | Argument | Type | Description |
@@ -384,12 +349,12 @@ set_result_export_path(s, "result.h5")
 
 ---
 
-### `simulate(s)`
+### `run!(s)`
 
 Assembles and solves the system of equations for all frequencies in the defined range, and writes the results to the specified export path during the solution.
 
 ```julia
-simulate(s)
+run!(s)
 ```
 
 #### Output format
