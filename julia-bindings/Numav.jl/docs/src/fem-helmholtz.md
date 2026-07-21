@@ -1,9 +1,5 @@
 # FEM-Helmholtz
 
-```@eval
-Main.parse_md_file("fem.md")
-```
-
 This section explains how Numav can perform acoustic simulations based on the Helmholtz equation.
 
 ## Quick start
@@ -53,6 +49,8 @@ add_sound_source!(s, physical_group=3, pressure=P)
 set_result_export_path!(s, "result.h5")
 run!(s)
 ```
+
+For more details, look at the [Functions](@ref) section.
 
 ## Functions
 
