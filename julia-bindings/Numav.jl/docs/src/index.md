@@ -1,6 +1,6 @@
 # Numav.jl
 
-Numav.jl is the Julia wrapper for the C++ library Numav, to perform acoustics and vibrations simulations. Currently, the supported modules are:
+Numav.jl is the Julia wrapper for the C++ library Numav, to perform acoustics and vibrations simulations. Currently, the supported components are:
 
 ```@contents
 Pages = ["fem-helmholtz.md"]
