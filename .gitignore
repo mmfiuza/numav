@@ -32,7 +32,7 @@
 *.pdf
 
 # build files
-/build
+*build
 /products
 
 # meshes (with exception in any test directory)

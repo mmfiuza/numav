@@ -1,0 +1,20 @@
+/* 
+This file is needed to allow conditional choosing of images to insert based on
+the theme pick.
+*/
+.display-light-only { display: block; }
+.display-dark-only  { display: none; }
+
+.theme--documenter-dark .display-light-only,
+.theme--catppuccin-frappe .display-light-only,
+.theme--catppuccin-macchiato .display-light-only,
+.theme--catppuccin-mocha .display-light-only {
+  display: none;
+}
+
+.theme--documenter-dark .display-dark-only,
+.theme--catppuccin-frappe .display-dark-only,
+.theme--catppuccin-macchiato .display-dark-only,
+.theme--catppuccin-mocha .display-dark-only {
+  display: block;
+}

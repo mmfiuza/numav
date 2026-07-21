@@ -80,7 +80,9 @@ RUN julia +release -e 'using Pkg; Pkg.add([ \
     PackageSpec(name="Plots"), \
     PackageSpec(name="Symbolics"), \
     PackageSpec(name="Revise"), \
-    PackageSpec(name="HDF5") \
+    PackageSpec(name="HDF5"), \
+    PackageSpec(name="Documenter"), \
+    PackageSpec(name="LiveServer") \
 ])'
 RUN julia +${BINARY_BUILDER_JULIA_VERSION} -e "using Pkg; Pkg.add([ \
     PackageSpec(name=\"BinaryBuilder\",version=\"${BINARY_BUILDER_VERSION}\"),\
