@@ -16,7 +16,7 @@ makedocs(
     ),
     pages = [
         "Home" => "index.md",
-        "Modules" => [
+        "Components" => [
             "FEM" => [
                 "Helmholtz" => "fem-helmholtz.md",
             ],
