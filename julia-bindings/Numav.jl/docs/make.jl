@@ -26,3 +26,8 @@ makedocs(
         "License" => "license.md",
     ],
 )
+
+deploydocs(
+    repo = "github.com/mmfiuza/numav.git",
+    devbranch = "main",
+)
