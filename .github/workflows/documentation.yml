@@ -5,11 +5,7 @@ on:
     branches:
       - main
     tags: '*'
-    paths:
-      - 'julia-bindings/Numav.jl/**'
   pull_request:
-    paths:
-      - 'julia-bindings/Numav.jl/**'
 
 jobs:
   build:
