@@ -1,6 +1,6 @@
 name = "Numav"
 uuid = "8e910097-05db-4d5e-bf44-3d692aba33cf"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Matheus Machado Fiuza <matheusmachadofiuza@gmail.com>"]
 
 [deps]
