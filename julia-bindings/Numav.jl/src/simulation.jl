@@ -75,7 +75,8 @@ function create_simulation(;
                 element_order
             }(
                 MembersFemHelmholtz{element_shape, element_order}(
-                    _cpp_Simulation{cpp_args...}()
+                    _cpp_Simulation{cpp_args...}(),
+                    [],
                 )
             )
     end

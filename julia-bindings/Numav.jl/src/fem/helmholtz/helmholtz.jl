@@ -2,12 +2,14 @@
 
 export
     set_frequency!,
+    get_frequency_vector,
     add_volume_material!,
     add_surface_material!,
     add_sound_source!
 
-struct MembersFemHelmholtz{S, O} <: Members
+mutable struct MembersFemHelmholtz{S, O} <: Members
     _cpp_simulation::_cpp_Simulation
+    _fi_to_freq::Vector{Float64}
 end
 
 """
@@ -63,6 +65,9 @@ Sets the frequecies to perform the simulations with two mutually exclusive ways 
 > ```julia
 > set_frequency!(s, vector=[10, 40, 60, 100]) # Solve only at these frequencies
 > ```
+
+!!! tip
+    Use [`get_frequency_vector`](@ref) to visually check the defined frequency vector.
 """
 function set_frequency!( 
     simulation::Simulation{Fem, Helmholtz};
@@ -115,10 +120,31 @@ function set_frequency!(
             end
         end
     end
+    simulation._m._fi_to_freq = Float64.(Vector(vector))
     _cpp_set_frequency_vector!(
         simulation._m._cpp_simulation,
-        Float64.(Vector(vector))
+        simulation._m._fi_to_freq
     )
+end
+
+"""
+Returns a copy of the frequency vector set by [`set_frequency!`](@ref).
+
+| Positional arguments | Type | Description |
+|:--|:--|:--|
+| `simulation` | `Simulation` | the simulation instance |
+
+---
+# Examples
+
+> ```julia
+> get_frequency_vector(s)
+> ```
+"""
+function get_frequency_vector(
+    simulation::Simulation{Fem, Helmholtz}
+)
+    return copy(simulation._m._fi_to_freq)
 end
 
 """

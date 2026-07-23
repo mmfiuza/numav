@@ -57,6 +57,7 @@ For more details, look at the [Functions](@ref) section.
 ```@docs; canonical=false
 create_simulation
 set_frequency!
+get_frequency_vector
 load_mesh!
 add_volume_material!
 add_surface_material!
