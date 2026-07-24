@@ -6,11 +6,20 @@ export
     set_result_export_path!,
     run!
 
-abstract type Members end
+abstract type Simulation end
 
-struct Simulation{option_1, option_2, option_3, option_4}
-    _m::Members
-end
+abstract type NumericalMethod end
+struct FemNumericalMethod <: NumericalMethod end
+
+abstract type Equation end
+struct HelmholtzEquation <: Equation end
+
+abstract type ElementShape end
+struct TetrahedronElementShape <: ElementShape end
+
+abstract type ElementOrder end
+struct LinearElementOrder <: ElementOrder end
+struct QuadraticElementOrder <: ElementOrder end
 
 """
 Creates and returns an instance of the `Simulation` type.
@@ -40,47 +49,44 @@ function create_simulation(;
     element_shape::Option,
     element_order::Option
 )
-    cpp_args = ()
-    if numerical_method === Fem
-        cpp_args = (cpp_args..., _cpp_NumericalMethod_fem)
-    else
-        throw(ArgumentError("Invalid `numerical_method` option"))
-    end
-
-    if equation === Helmholtz 
-        cpp_args = (cpp_args..., _cpp_Equation_helmholtz)
-    else
-        throw(ArgumentError("Invalid `equation` option"))
-    end
-
-    if element_shape === Tetrahedron
-        cpp_args = (cpp_args..., _cpp_ElementShape_tetrahedron)
-    else
-        throw(ArgumentError("Invalid `element_shape` option"))
-    end
-
-    if element_order === Linear
-        cpp_args = (cpp_args..., _cpp_ElementOrder_linear)
-    elseif element_order === Quadratic
-        cpp_args = (cpp_args..., _cpp_ElementOrder_quadratic)
-    else
-        throw(ArgumentError("Invalid `element_order` option"))
-    end
-
     if numerical_method === Fem && equation === Helmholtz
-        return Simulation{
-                numerical_method,
-                equation,
-                element_shape,
-                element_order
-            }(
-                MembersFemHelmholtz{element_shape, element_order}(
-                    _cpp_Simulation{cpp_args...}(),
-                    [],
-                )
-            )
+        cpp_args = ()
+
+        if numerical_method === Fem
+            cpp_args = (cpp_args..., _cpp_NumericalMethod_fem)
+        else
+            throw(ArgumentError("Invalid `numerical_method` option"))
+        end
+
+        if equation === Helmholtz 
+            cpp_args = (cpp_args..., _cpp_Equation_helmholtz)
+        else
+            throw(ArgumentError("Invalid `equation` option"))
+        end
+
+        if element_shape === Tetrahedron
+            element_shape_type = TetrahedronElementShape
+            cpp_args = (cpp_args..., _cpp_ElementShape_tetrahedron)
+        else
+            throw(ArgumentError("Invalid `element_shape` option"))
+        end
+
+        if element_order === Linear
+            element_order_type = LinearElementOrder
+            cpp_args = (cpp_args..., _cpp_ElementOrder_linear)
+        elseif element_order === Quadratic
+            element_order_type = QuadraticElementOrder
+            cpp_args = (cpp_args..., _cpp_ElementOrder_quadratic)
+        else
+            throw(ArgumentError("Invalid `element_order` option"))
+        end
+
+        return SimulationFemHelmholtz{
+                element_shape_type,
+                element_order_type,
+            }( _cpp_simulation = _cpp_Simulation{cpp_args...}() )
     end
-    throw(ErrorException("Invalid options"))
+    throw(ArgumentError("Invalid options"))
 end
 
 """
@@ -104,7 +110,7 @@ function set_result_export_path!(
     path_to_hdf5_file::AbstractString
 )
     _cpp_set_result_export_path!(
-        simulation._m._cpp_simulation,
+        simulation._cpp_simulation,
         String(path_to_hdf5_file)
     )
 end
@@ -138,5 +144,5 @@ r = h5open("result.h5", "r")
 function run!(
     simulation::Simulation
 )
-    _cpp_run!(simulation._m._cpp_simulation)
+    _cpp_run!(simulation._cpp_simulation)
 end

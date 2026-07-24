@@ -31,3 +31,7 @@ function _cubic_range(start::Real, stop::Real, length::Integer)
     x = range(0, 1, length=length)
     return @. cbrt( start^3 + (stop^3 - start^3) * x );
 end
+
+function _throw_simulation_not_applicable()
+    throw(ArgumentError("Function not applicable to the simulation"))
+end

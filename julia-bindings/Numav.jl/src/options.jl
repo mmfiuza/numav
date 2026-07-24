@@ -10,20 +10,20 @@ export
 
 abstract type Option end
 
-struct FemType <: Option end
-const Fem = FemType()
+struct FemOptionType <: Option end
+const Fem = FemOptionType()
 
-struct HelmholtzType <: Option end
-const Helmholtz = HelmholtzType()
+struct HelmholtzOptionType <: Option end
+const Helmholtz = HelmholtzOptionType()
 
-struct TetrahedronType <: Option end
-const Tetrahedron = TetrahedronType()
+struct TetrahedronOptionType <: Option end
+const Tetrahedron = TetrahedronOptionType()
 
-struct ConstantType <: Option end
-const Constant = ConstantType()
+struct ConstantOptionType <: Option end
+const Constant = ConstantOptionType()
 
-struct LinearType <: Option end
-const Linear = LinearType()
+struct LinearOptionType <: Option end
+const Linear = LinearOptionType()
 
-struct QuadraticType <: Option end
-const Quadratic = QuadraticType()
+struct QuadraticOptionType <: Option end
+const Quadratic = QuadraticOptionType()
